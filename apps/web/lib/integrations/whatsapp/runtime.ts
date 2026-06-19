@@ -15,6 +15,7 @@ export interface HandleAgentRuntimeOptions {
   stream?: boolean; // Enable streaming output (default: true)
   aiSoulPrompt?: string | null; // User-defined AI Soul prompt
   language?: string | null; // User language preference
+  loopIdForGuard?: string | null; // Optional loop policy context for chat/tool advisory guard
   modelConfig?: {
     // Model configuration for custom API endpoints
     apiKey?: string;

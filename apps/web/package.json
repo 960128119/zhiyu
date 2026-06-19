@@ -30,6 +30,7 @@
     "db:pull": "drizzle-kit pull",
     "db:check": "drizzle-kit check",
     "db:up": "drizzle-kit up",
+    "smoke:loops": "node scripts/run-loop-runtime-smoke.cjs",
     "pretest:unit": "node -e \"const fs=require('node:fs');fs.mkdirSync('coverage/unit/.tmp',{recursive:true});\"",
     "test": "vitest run --coverage",
     "test:benchmark": "tsx tests/benchmark/run-live.ts",

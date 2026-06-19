@@ -19,6 +19,7 @@ export interface HandleAgentRuntimeOptions {
   stream?: boolean;
   aiSoulPrompt?: string | null;
   language?: string | null;
+  loopIdForGuard?: string | null;
   modelConfig?: {
     apiKey?: string;
     baseUrl?: string;

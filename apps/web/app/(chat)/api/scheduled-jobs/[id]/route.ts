@@ -20,6 +20,7 @@ import { createJobExecutionStreamResponse } from "@/lib/cron/stream-response";
 import { isTauriMode } from "@/lib/env";
 import { AI_PROXY_BASE_URL } from "@/lib/env/constants";
 import type { JobExecutionContext } from "@/lib/cron/types";
+import { runScheduledJobLoop } from "@/lib/loops";
 
 export const dynamic = "force-dynamic";
 
@@ -220,16 +221,23 @@ export async function POST(
           });
 
           try {
-            const result = await executeJob(
+            const result = await runScheduledJobLoop({
+              job,
               context,
               jobConfigStr,
-              job.description || undefined,
-              {
-                userMessageId,
-                assistantMessageId,
-                onAgentEvent: send,
-              },
-            );
+              jobDescription: job.description || undefined,
+              execute: () =>
+                executeJob(
+                  context,
+                  jobConfigStr,
+                  job.description || undefined,
+                  {
+                    userMessageId,
+                    assistantMessageId,
+                    onAgentEvent: send,
+                  },
+                ),
+            });
             await completeJobExecution(context, result);
             send({
               type: "execution_done",
@@ -258,7 +266,14 @@ export async function POST(
       // Execute job asynchronously - don't wait for completion
       // This allows the UI to update immediately
       console.log("[ScheduledJobs] Starting async execution...");
-      executeJob(context, jobConfigStr, job.description || undefined)
+      runScheduledJobLoop({
+        job,
+        context,
+        jobConfigStr,
+        jobDescription: job.description || undefined,
+        execute: () =>
+          executeJob(context, jobConfigStr, job.description || undefined),
+      })
         .then(async (result) => {
           console.log(
             "[ScheduledJobs] Execution completed, updating database:",

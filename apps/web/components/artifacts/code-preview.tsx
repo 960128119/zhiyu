@@ -9,6 +9,7 @@ import { useState, useCallback } from "react";
 import { RemixIcon } from "@/components/remix-icon";
 import { Button } from "@openloomi/ui";
 import { cn } from "@/lib/utils";
+import { copyTextToClipboard } from "@/lib/utils/clipboard";
 
 /**
  * Language mapping
@@ -103,10 +104,14 @@ export function CodePreview({
   const language = propLanguage || getLanguage(filename);
   const isDark = document.documentElement.classList.contains("dark");
 
-  const handleCopy = useCallback(() => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = useCallback(async () => {
+    try {
+      await copyTextToClipboard(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("[CodePreview] Failed to copy code:", error);
+    }
   }, [code]);
 
   return (

@@ -1252,6 +1252,7 @@ ${characterContextSection}`,
         message: messageText,
         executionId: context.executionId,
         sessionDir,
+        structuredReport,
       },
       duration: 0,
     };

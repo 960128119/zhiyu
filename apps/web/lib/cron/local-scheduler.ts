@@ -21,6 +21,11 @@ import { db } from "../db/index";
 import { characters, jobExecutions, scheduledJobs } from "../db/schema";
 import { eq } from "drizzle-orm";
 import type { ScheduledJob } from "@/lib/db/schema";
+import { runScheduledJobLoop } from "@/lib/loops";
+import {
+  getNativeLoopSchedulerStatus,
+  runDueNativeLoops,
+} from "@/lib/loops/native-scheduler";
 import {
   runInsightEmbeddingDreamIfDue,
   runInsightMaintenanceIfDue,
@@ -193,9 +198,10 @@ async function checkAndExecuteDueJobs() {
       );
       await runInsightEmbeddingDreamIfDue(schedulerUserId, schedulerAuthToken);
       await runInsightMaintenanceIfDue(schedulerUserId);
+      await runDueNativeLoops({ userId: schedulerUserId });
     } catch (error) {
       console.error(
-        "[LocalScheduler] Error running insight maintenance:",
+        "[LocalScheduler] Error running maintenance loops:",
         error,
       );
     }
@@ -295,7 +301,14 @@ async function checkAndExecuteDueJobs() {
             : JSON.stringify(job.jobConfig);
 
         // Execute job asynchronously - don't wait for completion
-        executeJob(context, jobConfigStr, job.description || undefined)
+        runScheduledJobLoop({
+          job,
+          context,
+          jobConfigStr,
+          jobDescription: job.description || undefined,
+          execute: () =>
+            executeJob(context, jobConfigStr, job.description || undefined),
+        })
           .then(async (result) => {
             console.log(
               `[LocalScheduler] Job ${job.id} completed:`,
@@ -345,5 +358,6 @@ export function getSchedulerStatus() {
   return {
     isRunning: schedulerInterval !== null,
     checkInterval: CHECK_INTERVAL,
+    nativeLoops: getNativeLoopSchedulerStatus(),
   };
 }

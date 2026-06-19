@@ -284,7 +284,12 @@ export async function weixinGetUploadUrl(params: {
   filesize: number;
   aeskey: string;
   noNeedThumb?: boolean;
-}): Promise<{ upload_param?: string; thumb_upload_param?: string }> {
+}): Promise<{
+  upload_param?: string;
+  upload_full_url?: string;
+  thumb_upload_param?: string;
+  thumb_upload_full_url?: string;
+}> {
   const baseUrl = params.credentials.baseUrl?.trim() || DEFAULT_BASE_URL;
   const body = JSON.stringify({
     filekey: params.filekey,
@@ -307,7 +312,9 @@ export async function weixinGetUploadUrl(params: {
   });
   return JSON.parse(rawText) as {
     upload_param?: string;
+    upload_full_url?: string;
     thumb_upload_param?: string;
+    thumb_upload_full_url?: string;
   };
 }
 
@@ -342,9 +349,9 @@ export async function weixinSendImageMessage(params: {
     aeskey: aeskeyHex,
     noNeedThumb: true,
   });
-  if (!uploadResp.upload_param) {
+  if (!uploadResp.upload_param && !uploadResp.upload_full_url) {
     throw new Error(
-      "[Weixin sendImage] getUploadUrl did not return upload_param",
+      `[Weixin sendImage] getUploadUrl did not return upload target: ${JSON.stringify(uploadResp)}`,
     );
   }
 
@@ -352,6 +359,7 @@ export async function weixinSendImageMessage(params: {
   const { downloadParam } = await uploadBufferToCdn({
     buf: plaintext,
     uploadParam: uploadResp.upload_param,
+    uploadUrl: uploadResp.upload_full_url,
     filekey,
     aeskey,
     cdnBaseUrl: cdnBase,
@@ -437,15 +445,16 @@ export async function weixinSendFileMessage(params: {
     aeskey: aeskeyHex,
     noNeedThumb: true,
   });
-  if (!uploadResp.upload_param) {
+  if (!uploadResp.upload_param && !uploadResp.upload_full_url) {
     throw new Error(
-      "[Weixin sendFile] getUploadUrl did not return upload_param",
+      `[Weixin sendFile] getUploadUrl did not return upload target: ${JSON.stringify(uploadResp)}`,
     );
   }
 
   const { downloadParam } = await uploadBufferToCdn({
     buf: plaintext,
     uploadParam: uploadResp.upload_param,
+    uploadUrl: uploadResp.upload_full_url,
     filekey,
     aeskey,
     cdnBaseUrl: cdnBase,

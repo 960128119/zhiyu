@@ -1,5 +1,4 @@
 import { useSWRConfig } from "swr";
-import { useCopyToClipboard } from "usehooks-ts";
 import { useMemo, useState, useEffect } from "react";
 
 import type { Vote } from "@/lib/db/schema";
@@ -17,6 +16,7 @@ import IntegrationIcon from "./integration-icon";
 import { RemixIcon } from "@/components/remix-icon";
 import { MessageForwardPanel } from "./message-forward-panel";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
+import { copyTextToClipboard } from "@/lib/utils/clipboard";
 
 /**
  * Extract cited Insight IDs from message text
@@ -119,7 +119,6 @@ export function PureMessageActions({
   onSourcesClick?: () => void;
 }) {
   const { mutate } = useSWRConfig();
-  const [_, copyToClipboard] = useCopyToClipboard();
   const [isForwardMenuOpen, setIsForwardMenuOpen] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
   // Locally maintained vote state
@@ -297,8 +296,13 @@ export function PureMessageActions({
                 return;
               }
 
-              await copyToClipboard(textFromParts);
-              toast.success("Copied to clipboard!");
+              try {
+                await copyTextToClipboard(textFromParts);
+                toast.success("Copied to clipboard!");
+              } catch (error) {
+                console.error("[MessageActions] Failed to copy:", error);
+                toast.error("Failed to copy to clipboard");
+              }
             }}
           >
             <RemixIcon name="copy" size="size-4" />

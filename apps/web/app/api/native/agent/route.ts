@@ -31,6 +31,12 @@ import { readFile } from "@/lib/storage";
 import { getUserLlmProviderConfig } from "@/lib/ai/user-llm-api-settings";
 import { permissionResponses } from "./permission/route";
 import { detectSudoPasswordPrompt } from "./password/route";
+import {
+  resolveChatLoopGuardContext,
+  type ChatLoopGuardContext,
+  type NativeAgentPermissionRequestEvent,
+  withNativeAgentLoopGuardMetadata,
+} from "@/lib/loops";
 
 // Register Claude Agent plugin
 getAgentRegistry().register(claudePlugin);
@@ -88,6 +94,8 @@ interface AgentRequest {
   }>;
   // Cloud auth token for embeddings API (needed in Tauri mode)
   authToken?: string;
+  // Optional loop policy context for advisory tool guard metadata
+  loopIdForGuard?: string | null;
 }
 
 // Helper to create SSE stream with heartbeat to keep connection alive
@@ -168,6 +176,75 @@ const SSE_HEADERS = {
   Connection: "keep-alive",
   "X-Accel-Buffering": "no",
 };
+
+function normalizeOptionalEnv(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  if (!trimmed || trimmed === "****") return undefined;
+  return trimmed;
+}
+
+async function createOpenAICompatibleResponse(body: AgentRequest) {
+  const baseUrl = normalizeOptionalEnv(process.env.LLM_BASE_URL);
+  const apiKey = normalizeOptionalEnv(process.env.LLM_API_KEY);
+  const model = normalizeOptionalEnv(process.env.LLM_MODEL);
+
+  if (!baseUrl || !apiKey || !model) {
+    return null;
+  }
+
+  const endpoint = `${baseUrl.replace(/\/+$/, "")}/chat/completions`;
+  const messages = [
+    ...(body.conversation || []).map((message) => ({
+      role: message.role,
+      content: message.content,
+    })),
+    { role: "user", content: body.prompt },
+  ];
+
+  const upstream = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      stream: false,
+    }),
+  });
+
+  if (!upstream.ok) {
+    const detail = await upstream.text().catch(() => "");
+    return Response.json(
+      {
+        error: `OpenAI-compatible provider error: ${upstream.status} ${detail}`,
+      },
+      { status: upstream.status },
+    );
+  }
+
+  const payload = await upstream.json();
+  const content =
+    payload?.choices?.[0]?.message?.content ||
+    payload?.choices?.[0]?.text ||
+    "";
+
+  const encoder = new TextEncoder();
+  return new Response(
+    new ReadableStream({
+      start(controller) {
+        controller.enqueue(
+          encoder.encode(
+            `data: ${JSON.stringify({ type: "text", content })}\n\n`,
+          ),
+        );
+        controller.close();
+      },
+    }),
+    { headers: SSE_HEADERS },
+  );
+}
 
 /**
  * Convert home directory tilde path to absolute path
@@ -349,6 +426,24 @@ export async function POST(req: NextRequest) {
 
     // Get user insight settings (including aiSoulPrompt and language)
     const userSettings = await getUserInsightSettings(session.user.id);
+    let chatLoopGuardContext: ChatLoopGuardContext | null = null;
+    try {
+      chatLoopGuardContext = await resolveChatLoopGuardContext({
+        userId: session.user.id,
+        loopId: body.loopIdForGuard,
+      });
+    } catch (error) {
+      console.warn("[AgentAPI] Failed to resolve loop guard context", error);
+    }
+
+    function withLoopGuardMetadata(
+      request: NativeAgentPermissionRequestEvent,
+    ): NativeAgentPermissionRequestEvent {
+      return withNativeAgentLoopGuardMetadata({
+        context: chatLoopGuardContext,
+        request,
+      });
+    }
 
     if (!body.prompt) {
       console.error("[AgentAPI] ERROR: prompt is missing or empty!");
@@ -366,6 +461,18 @@ export async function POST(req: NextRequest) {
         { error: "prompt must be a non-empty string" },
         { status: 400 },
       );
+    }
+
+    if (
+      !normalizeOptionalEnv(process.env.ANTHROPIC_AUTH_TOKEN) &&
+      !normalizeOptionalEnv(process.env.ANTHROPIC_API_KEY)
+    ) {
+      const openAICompatibleResponse = await createOpenAICompatibleResponse(
+        body,
+      );
+      if (openAICompatibleResponse) {
+        return openAICompatibleResponse;
+      }
     }
 
     // Build context with priority order: Images > RAG Documents > Focused Insights > User Question
@@ -696,13 +803,7 @@ ${insightsContent}
     const agent = getAgentRegistry().create(config);
 
     // Create permission request event queue
-    const permissionRequestEventQueue: Array<{
-      toolName: string;
-      toolInput: Record<string, unknown>;
-      toolUseID: string;
-      decisionReason?: string;
-      blockedPath?: string;
-    }> = [];
+    const permissionRequestEventQueue: NativeAgentPermissionRequestEvent[] = [];
 
     // Track pending sudo commands for password input flow
     const pendingSudoCommands = new Map<
@@ -766,7 +867,7 @@ ${insightsContent}
               request,
             );
             // Add to event queue and wait for user response
-            permissionRequestEventQueue.push(request);
+            permissionRequestEventQueue.push(withLoopGuardMetadata(request));
 
             // Create a promise that will be resolved when user responds.
             // A TTL timer prevents the Map entry from leaking if the user
@@ -868,7 +969,7 @@ ${insightsContent}
               }
 
               // Add to event queue and wait for user response
-              permissionRequestEventQueue.push(request);
+              permissionRequestEventQueue.push(withLoopGuardMetadata(request));
 
               // Create a promise that will be resolved when user responds.
               // A TTL timer prevents the Map entry from leaking if the user

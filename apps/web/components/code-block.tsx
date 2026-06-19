@@ -2,6 +2,7 @@
 
 import React, { memo, useState, useCallback } from "react";
 import { RemixIcon } from "./remix-icon";
+import { copyTextToClipboard } from "@/lib/utils/clipboard";
 
 interface CodeBlockProps {
   node: any;
@@ -22,12 +23,15 @@ function CodeBlockImpl({
   // Check if children is already a React element (e.g., <code> from markdown)
   const isReactElement = React.isValidElement(children);
 
-  const handleCopy = useCallback(() => {
+  const handleCopy = useCallback(async () => {
     const code = extractText(children);
-    navigator.clipboard.writeText(code).then(() => {
+    try {
+      await copyTextToClipboard(code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    });
+    } catch (error) {
+      console.error("[CodeBlock] Failed to copy code:", error);
+    }
   }, [children]);
 
   if (!inline) {

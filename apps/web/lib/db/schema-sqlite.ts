@@ -33,9 +33,9 @@ export const user = sqliteTable("User", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch() * 1000)`),
-  updatedAt: integer("updated_at", { mode: "timestamp" })
-    .notNull()
-    .default(sql`(unixepoch() * 1000)`),
+      updatedAt: integer("updated_at", { mode: "timestamp" })
+        .notNull()
+        .default(sql`(unixepoch() * 1000)`),
   firstLoginAt: integer("first_login_at", { mode: "timestamp" }),
   lastLoginAt: integer("last_login_at", { mode: "timestamp" }),
   finishOnboarding: integer("finish_on_boarding", { mode: "boolean" })
@@ -2368,6 +2368,191 @@ export const jobExecutions = sqliteTable(
 
 export type JobExecution = InferSelectModel<typeof jobExecutions>;
 export type InsertJobExecution = InferInsertModel<typeof jobExecutions>;
+
+// Loop Runtime tables
+export const loops = sqliteTable(
+  "loops",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description"),
+    goal: text("goal").notNull(),
+    status: text("status").notNull().default("active"),
+    triggerConfig: text("trigger_config")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    contextConfig: text("context_config")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    actionPolicy: text("action_policy")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    verificationConfig: text("verification_config")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    approvalPolicy: text("approval_policy")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    retryPolicy: text("retry_policy")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    escalationPolicy: text("escalation_policy")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    userIdx: index("loops_user_idx").on(table.userId),
+    statusIdx: index("loops_status_idx").on(table.status),
+    userStatusIdx: index("loops_user_status_idx").on(
+      table.userId,
+      table.status,
+    ),
+    updatedAtIdx: index("loops_updated_at_idx").on(table.updatedAt),
+  }),
+);
+
+export type Loop = InferSelectModel<typeof loops>;
+export type InsertLoop = InferInsertModel<typeof loops>;
+
+export const loopRuns = sqliteTable(
+  "loop_runs",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    loopId: text("loop_id")
+      .notNull()
+      .references(() => loops.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("running"),
+    triggerReason: text("trigger_reason").$type<Record<string, unknown>>(),
+    startedAt: integer("started_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    completedAt: integer("completed_at", { mode: "timestamp" }),
+    inputSnapshot: text("input_snapshot").$type<Record<string, unknown>>(),
+    outputSummary: text("output_summary"),
+    verificationResult: text("verification_result").$type<
+      Record<string, unknown>
+    >(),
+    error: text("error"),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    loopIdx: index("loop_runs_loop_idx").on(table.loopId),
+    statusIdx: index("loop_runs_status_idx").on(table.status),
+    startedAtIdx: index("loop_runs_started_at_idx").on(table.startedAt),
+    loopStartedAtIdx: index("loop_runs_loop_started_at_idx").on(
+      table.loopId,
+      table.startedAt,
+    ),
+  }),
+);
+
+export type LoopRun = InferSelectModel<typeof loopRuns>;
+export type InsertLoopRun = InferInsertModel<typeof loopRuns>;
+
+export const loopStates = sqliteTable("loop_states", {
+  loopId: text("loop_id")
+    .primaryKey()
+    .references(() => loops.id, { onDelete: "cascade" }),
+  currentPhase: text("current_phase").notNull().default("idle"),
+  memorySummary: text("memory_summary"),
+  openQuestions: text("open_questions")
+    .notNull()
+    .default("[]")
+    .$type<unknown[]>(),
+  lastObservation: text("last_observation"),
+  nextAction: text("next_action"),
+  blockedReason: text("blocked_reason"),
+  stateJson: text("state_json")
+    .notNull()
+    .default("{}")
+    .$type<Record<string, unknown>>(),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch() * 1000)`),
+});
+
+export type LoopState = InferSelectModel<typeof loopStates>;
+export type InsertLoopState = InferInsertModel<typeof loopStates>;
+
+export const loopApprovalRequests = sqliteTable(
+  "loop_approval_requests",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    loopId: text("loop_id")
+      .notNull()
+      .references(() => loops.id, { onDelete: "cascade" }),
+    loopRunId: text("loop_run_id")
+      .notNull()
+      .references(() => loopRuns.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("pending"),
+    source: text("source").notNull().default("tool_gate"),
+    actionName: text("action_name").notNull(),
+    capability: text("capability"),
+    reason: text("reason"),
+    message: text("message"),
+    toolInput: text("tool_input").$type<Record<string, unknown>>(),
+    actionPayload: text("action_payload").$type<Record<string, unknown>>(),
+    resolvedBy: text("resolved_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    resolvedAt: integer("resolved_at", { mode: "timestamp" }),
+    resolutionNote: text("resolution_note"),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    userStatusIdx: index("loop_approval_requests_user_status_idx").on(
+      table.userId,
+      table.status,
+    ),
+    loopIdx: index("loop_approval_requests_loop_idx").on(table.loopId),
+    runIdx: index("loop_approval_requests_run_idx").on(table.loopRunId),
+    createdAtIdx: index("loop_approval_requests_created_at_idx").on(
+      table.createdAt,
+    ),
+  }),
+);
+
+export type LoopApprovalRequest = InferSelectModel<
+  typeof loopApprovalRequests
+>;
+export type InsertLoopApprovalRequest = InferInsertModel<
+  typeof loopApprovalRequests
+>;
 
 // Characters
 export const characters = sqliteTable("characters", {

@@ -14,6 +14,7 @@ import { FilePreviewDrawerHeader } from "@/components/file-preview-drawer-header
 import { FilePreviewDrawerRichTextToolbar } from "@/components/file-preview-drawer-rich-text-toolbar";
 import { useTranslation } from "react-i18next";
 import { injectHtmlPreviewScrollFix } from "@/lib/files/html-preview-scroll-fix";
+import { copyTextToClipboard } from "@/lib/utils/clipboard";
 
 // Bundle optimization: Dynamically import CodePreview
 const CodePreview = lazy(() =>
@@ -120,7 +121,7 @@ export function WebsitePreview({
   // Handle copy to clipboard
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(inlineContent);
+      await copyTextToClipboard(inlineContent);
       setCopied(true);
       toast.success("HTML copied to clipboard");
       setTimeout(() => setCopied(false), 2000);

@@ -113,6 +113,10 @@ export const userRewardEvents = (currentSchema as any).userRewardEvents;
 export const userCreditLedger = (currentSchema as any).userCreditLedger;
 export const scheduledJobs = (currentSchema as any).scheduledJobs;
 export const jobExecutions = (currentSchema as any).jobExecutions;
+export const loops = (currentSchema as any).loops;
+export const loopRuns = (currentSchema as any).loopRuns;
+export const loopStates = (currentSchema as any).loopStates;
+export const loopApprovalRequests = (currentSchema as any).loopApprovalRequests;
 export const characters = (currentSchema as any).characters;
 
 // Functions
@@ -197,6 +201,14 @@ export type {
   InsertScheduledJob,
   JobExecution,
   InsertJobExecution,
+  Loop,
+  InsertLoop,
+  LoopRun,
+  InsertLoopRun,
+  LoopState,
+  InsertLoopState,
+  LoopApprovalRequest,
+  InsertLoopApprovalRequest,
   InsightTimelineHistory,
   InsertInsightTimelineHistory,
   InsightNote,

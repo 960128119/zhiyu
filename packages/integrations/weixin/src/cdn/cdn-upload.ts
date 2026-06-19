@@ -8,15 +8,24 @@ const UPLOAD_MAX_RETRIES = 3;
 /** Upload buffer to WeChat CDN, return download parameters. */
 export async function uploadBufferToCdn(params: {
   buf: Buffer;
-  uploadParam: string;
+  uploadParam?: string;
+  uploadUrl?: string;
   filekey: string;
   cdnBaseUrl: string;
   label: string;
   aeskey: Buffer;
 }): Promise<{ downloadParam: string }> {
-  const { buf, uploadParam, filekey, cdnBaseUrl, label, aeskey } = params;
+  const { buf, uploadParam, uploadUrl, filekey, cdnBaseUrl, label, aeskey } =
+    params;
   const ciphertext = encryptAesEcb(buf, aeskey);
-  const cdnUrl = buildCdnUploadUrl({ cdnBaseUrl, uploadParam, filekey });
+  const cdnUrl =
+    uploadUrl ??
+    (uploadParam
+      ? buildCdnUploadUrl({ cdnBaseUrl, uploadParam, filekey })
+      : undefined);
+  if (!cdnUrl) {
+    throw new Error(`${label}: missing CDN upload URL or upload_param`);
+  }
   logger.debug(
     `${label}: CDN POST url=${redactUrl(cdnUrl)} ciphertextSize=${ciphertext.length}`,
   );

@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "./toast";
 import { isTauri, openUrl } from "@/lib/tauri";
 import { getStoredAuthToken } from "@/lib/auth/remote-client";
+import { copyTextToClipboard } from "@/lib/utils/clipboard";
 
 type ContactUsPlacement = "floating" | "inline" | "sidebar";
 
@@ -73,13 +74,17 @@ export default function ContactUs({
     setShowEmailOptions(false);
   };
 
-  const copyEmailToClipboard = () => {
-    navigator.clipboard.writeText(email);
-    setCopyStatus("copied");
+  const copyEmailToClipboard = async () => {
+    try {
+      await copyTextToClipboard(email);
+      setCopyStatus("copied");
 
-    setTimeout(() => {
-      setCopyStatus("idle");
-    }, 2000);
+      setTimeout(() => {
+        setCopyStatus("idle");
+      }, 2000);
+    } catch (error) {
+      console.error("[ContactUs] Failed to copy email:", error);
+    }
   };
 
   const handleFeedbackChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {

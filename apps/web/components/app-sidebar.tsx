@@ -1012,6 +1012,63 @@ export function AppSidebar() {
                         </Tooltip>
                       )}
 
+                      {/* Loops - native loop runtime dashboard */}
+                      {isNavVisible("scheduled-jobs") && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              className={cn(
+                                "w-full gap-2 px-3 py-2 h-auto rounded-md transition-colors flex items-center",
+                                isCollapsed
+                                  ? "justify-center"
+                                  : "justify-start",
+                                pathname === "/loops"
+                                  ? "text-primary"
+                                  : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-sidebar-hover-foreground",
+                              )}
+                              onClick={() => {
+                                startTransition(() => {
+                                  router.push("/loops");
+                                  if (isMobile) {
+                                    setIsCollapsed(true);
+                                    window.dispatchEvent(
+                                      new CustomEvent(
+                                        "openloomi:close-sidebar",
+                                      ),
+                                    );
+                                  }
+                                });
+                              }}
+                              aria-current={
+                                pathname === "/loops" ? "page" : undefined
+                              }
+                            >
+                              <RemixIcon
+                                name="target"
+                                size={SIDEBAR_NAV_ICON_SIZE}
+                                filled={pathname === "/loops"}
+                                className={
+                                  pathname === "/loops" ? "text-primary" : ""
+                                }
+                              />
+                              {!isCollapsed && (
+                                <span
+                                  className={cn(
+                                    "truncate font-normal",
+                                    pathname === "/loops"
+                                      ? "text-primary"
+                                      : "text-sidebar-foreground",
+                                  )}
+                                >
+                                  循环
+                                </span>
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                        </Tooltip>
+                      )}
+
                       {/* Library - standalone page entry */}
                       {isNavVisible("workspace") && (
                         <Tooltip>

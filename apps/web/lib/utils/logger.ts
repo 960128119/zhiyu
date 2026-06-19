@@ -37,12 +37,32 @@ function logToFile(
     const timestamp = new Date().toISOString();
     let logLine = `[${timestamp}] [${level}] [${prefix}] ${message}`;
     if (data !== undefined) {
-      logLine += ` ${typeof data === "string" ? data : JSON.stringify(data, null, 2)}`;
+      logLine += ` ${serializeLogData(data)}`;
     }
     logLine += "\n";
     appendFileSync(LOG_FILE, logLine);
   } catch {
     // Ignore logging errors
+  }
+}
+
+function serializeLogData(data: unknown): string {
+  if (typeof data === "string") return data;
+  if (data instanceof Error) {
+    return JSON.stringify(
+      {
+        name: data.name,
+        message: data.message,
+        stack: data.stack,
+      },
+      null,
+      2,
+    );
+  }
+  try {
+    return JSON.stringify(data, null, 2);
+  } catch {
+    return String(data);
   }
 }
 

@@ -134,6 +134,7 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { t } = useTranslation();
+  const loopIdForGuard = searchParams.get("loopIdForGuard");
 
   // Model selection state
   const [selectedModel] = useModelPreference();
@@ -863,6 +864,7 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
           focusedInsightIds,
           focusedInsights,
           authToken: cloudAuthToken,
+          loopIdForGuard,
           // Immediately save abortFn to ref and state, reduce race conditions
           onAbortFnReady: (abortFn) => {
             // Update both ref and state simultaneously to ensure stop function can access synchronously
@@ -1655,7 +1657,14 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
         return Promise.reject(error);
       }
     },
-    [activeChatId, messages, setMessages, t, setIsAgentRunningForChatFn],
+    [
+      activeChatId,
+      messages,
+      setMessages,
+      t,
+      setIsAgentRunningForChatFn,
+      loopIdForGuard,
+    ],
   );
 
   // setSendMessage - no longer needed because sendMessage is implemented in context

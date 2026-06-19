@@ -21,6 +21,7 @@ export interface AIHandlerOptions {
   workDir?: string;
   aiSoulPrompt?: string | null;
   language?: string | null;
+  loopIdForGuard?: string | null;
   modelConfig?: {
     apiKey?: string;
     baseUrl?: string;

@@ -2304,6 +2304,187 @@ export const jobExecutions = pgTable(
 export type JobExecution = InferSelectModel<typeof jobExecutions>;
 export type InsertJobExecution = InferInsertModel<typeof jobExecutions>;
 
+// Loop Runtime
+export const loops = pgTable(
+  "loops",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 255 }).notNull(),
+    description: text("description"),
+    goal: text("goal").notNull(),
+    status: varchar("status", { length: 20 }).notNull().default("active"),
+    triggerConfig: jsonb("trigger_config")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    contextConfig: jsonb("context_config")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    actionPolicy: jsonb("action_policy")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    verificationConfig: jsonb("verification_config")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    approvalPolicy: jsonb("approval_policy")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    retryPolicy: jsonb("retry_policy")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    escalationPolicy: jsonb("escalation_policy")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userIdx: index("loops_user_idx").on(table.userId),
+    statusIdx: index("loops_status_idx").on(table.status),
+    userStatusIdx: index("loops_user_status_idx").on(
+      table.userId,
+      table.status,
+    ),
+    updatedAtIdx: index("loops_updated_at_idx").on(table.updatedAt),
+  }),
+);
+
+export type Loop = InferSelectModel<typeof loops>;
+export type InsertLoop = InferInsertModel<typeof loops>;
+
+export const loopRuns = pgTable(
+  "loop_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    loopId: uuid("loop_id")
+      .notNull()
+      .references(() => loops.id, { onDelete: "cascade" }),
+    status: varchar("status", { length: 20 }).notNull().default("running"),
+    triggerReason: jsonb("trigger_reason").$type<Record<string, unknown>>(),
+    startedAt: timestamp("started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    inputSnapshot: jsonb("input_snapshot").$type<Record<string, unknown>>(),
+    outputSummary: text("output_summary"),
+    verificationResult: jsonb("verification_result").$type<
+      Record<string, unknown>
+    >(),
+    error: text("error"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    loopIdx: index("loop_runs_loop_idx").on(table.loopId),
+    statusIdx: index("loop_runs_status_idx").on(table.status),
+    startedAtIdx: index("loop_runs_started_at_idx").on(table.startedAt),
+    loopStartedAtIdx: index("loop_runs_loop_started_at_idx").on(
+      table.loopId,
+      table.startedAt,
+    ),
+  }),
+);
+
+export type LoopRun = InferSelectModel<typeof loopRuns>;
+export type InsertLoopRun = InferInsertModel<typeof loopRuns>;
+
+export const loopStates = pgTable("loop_states", {
+  loopId: uuid("loop_id")
+    .primaryKey()
+    .references(() => loops.id, { onDelete: "cascade" }),
+  currentPhase: varchar("current_phase", { length: 50 })
+    .notNull()
+    .default("idle"),
+  memorySummary: text("memory_summary"),
+  openQuestions: jsonb("open_questions")
+    .$type<unknown[]>()
+    .notNull()
+    .default([]),
+  lastObservation: text("last_observation"),
+  nextAction: text("next_action"),
+  blockedReason: text("blocked_reason"),
+  stateJson: jsonb("state_json")
+    .$type<Record<string, unknown>>()
+    .notNull()
+    .default({}),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export type LoopState = InferSelectModel<typeof loopStates>;
+export type InsertLoopState = InferInsertModel<typeof loopStates>;
+
+export const loopApprovalRequests = pgTable(
+  "loop_approval_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    loopId: uuid("loop_id")
+      .notNull()
+      .references(() => loops.id, { onDelete: "cascade" }),
+    loopRunId: uuid("loop_run_id")
+      .notNull()
+      .references(() => loopRuns.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    status: varchar("status", { length: 20 }).notNull().default("pending"),
+    source: varchar("source", { length: 30 }).notNull().default("tool_gate"),
+    actionName: varchar("action_name", { length: 255 }).notNull(),
+    capability: varchar("capability", { length: 50 }),
+    reason: text("reason"),
+    message: text("message"),
+    toolInput: jsonb("tool_input").$type<Record<string, unknown>>(),
+    actionPayload: jsonb("action_payload").$type<Record<string, unknown>>(),
+    resolvedBy: uuid("resolved_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolutionNote: text("resolution_note"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userStatusIdx: index("loop_approval_requests_user_status_idx").on(
+      table.userId,
+      table.status,
+    ),
+    loopIdx: index("loop_approval_requests_loop_idx").on(table.loopId),
+    runIdx: index("loop_approval_requests_run_idx").on(table.loopRunId),
+    createdAtIdx: index("loop_approval_requests_created_at_idx").on(
+      table.createdAt,
+    ),
+  }),
+);
+
+export type LoopApprovalRequest = InferSelectModel<
+  typeof loopApprovalRequests
+>;
+export type InsertLoopApprovalRequest = InferInsertModel<
+  typeof loopApprovalRequests
+>;
+
 // Characters
 export const characters = pgTable(
   "characters",

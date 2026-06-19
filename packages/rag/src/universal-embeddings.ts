@@ -5,7 +5,9 @@
  */
 
 const EMBEDDING_BASE_URL =
-  process.env.LLM_EMBEDDING_BASE_URL || "https://openrouter.ai/api/v1";
+  process.env.LLM_EMBEDDING_BASE_URL ||
+  process.env.LLM_BASE_URL ||
+  "https://openrouter.ai/api/v1";
 
 /**
  * Custom embeddings implementation that can use OpenAI or OpenRouter API.

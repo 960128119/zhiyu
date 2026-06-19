@@ -23,6 +23,7 @@ export interface WebAIHandlerOptions {
   workDir?: string;
   aiSoulPrompt?: string | null;
   language?: string | null;
+  loopIdForGuard?: string | null;
   modelConfig?: {
     apiKey?: string;
     baseUrl?: string;
@@ -69,6 +70,7 @@ export class WebAIHandler implements AIHandler {
       workDir: options.workDir,
       aiSoulPrompt: options.aiSoulPrompt,
       language: options.language,
+      loopIdForGuard: options.loopIdForGuard,
       modelConfig: options.modelConfig,
     };
 

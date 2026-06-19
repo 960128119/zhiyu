@@ -23,6 +23,11 @@ import { getAppMemoryDir } from "@/lib/utils/path";
 import { getUserLlmProviderConfig } from "@/lib/ai/user-llm-api-settings";
 import { stripMalformedToolCalls } from "@/lib/utils/tool-names";
 import { formatAgentStreamErrorForUser } from "./format-error";
+import {
+  evaluateChatToolActionGuard,
+  resolveChatLoopGuardContext,
+  type ChatLoopGuardContext,
+} from "@/lib/loops";
 
 /**
  * Maximum tokens allowed in conversation history passed to the agent.
@@ -156,6 +161,7 @@ export interface HandleAgentRuntimeOptions {
   };
   silentTools?: boolean; // Don't send tool_use notifications to the user
   accountId?: string; // Account ID for per-day file persistence (used by compaction)
+  loopIdForGuard?: string | null; // Optional loop policy context for chat/tool advisory guard
 }
 
 /**
@@ -191,6 +197,15 @@ export async function handleAgentRuntime(
       // This enables business-tools (chatInsight, modifyInsight, etc.)
       const userType = await getUserTypeForService(options.userId);
       const userSettings = await getUserInsightSettings(options.userId);
+      let chatLoopGuardContext: ChatLoopGuardContext | null = null;
+      try {
+        chatLoopGuardContext = await resolveChatLoopGuardContext({
+          userId: options.userId,
+          loopId: options.loopIdForGuard,
+        });
+      } catch (error) {
+        console.warn(`[${platform}] Failed to resolve loop guard context`, error);
+      }
 
       // Build a minimal session object for business-tools MCP server (includes current session platform for sendReply etc. tools to distinguish channels)
       const session = {
@@ -511,6 +526,20 @@ ${prompt}`;
             "input:",
             message.input,
           );
+          if (message.name && chatLoopGuardContext) {
+            const guard = evaluateChatToolActionGuard({
+              context: chatLoopGuardContext,
+              toolName: message.name,
+            });
+            const guardedDecision = guard.decisions[0];
+            if (guardedDecision && guardedDecision.decision !== "allow") {
+              const guardMessage = `[Loop Guard:${chatLoopGuardContext.loopName}] ${guardedDecision.decision} for ${guardedDecision.actionName}: ${guardedDecision.reason}`;
+              console.warn(`[${platform}] ${guardMessage}`);
+              if (!options.silentTools) {
+                await replyCallback(`⚠️ ${guardMessage}`);
+              }
+            }
+          }
           // Real-time notification to user about tools being used and their inputs (skipped in silentTools mode)
           if (message.name && !options.silentTools) {
             const toolDisplayName = getToolDisplayName(

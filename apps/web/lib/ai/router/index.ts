@@ -276,6 +276,7 @@ export async function streamNativeAgentResponse(
       platform?: string | null;
     }>;
     authToken?: string;
+    loopIdForGuard?: string | null;
     onUpdate?: (message: any) => void;
     onDone?: () => void;
     onError?: (error: Error) => void;
@@ -297,6 +298,7 @@ export async function streamNativeAgentResponse(
     focusedInsightIds,
     focusedInsights,
     authToken,
+    loopIdForGuard,
     onUpdate,
     onDone,
     onError,
@@ -350,6 +352,7 @@ export async function streamNativeAgentResponse(
         focusedInsightIds,
         focusedInsights,
         authToken,
+        loopIdForGuard,
         skillsConfig: {
           enabled: true,
           userDirEnabled: true,

@@ -11,6 +11,7 @@ import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 // Directly import remark-gfm to bypass Turbopack dynamic import issue
 import remarkGfm from "remark-gfm";
+import { copyTextToClipboard } from "@/lib/utils/clipboard";
 
 export interface MarkdownPreviewProps {
   content: string;
@@ -38,7 +39,7 @@ export function MarkdownPreview({
   // Handle copy to clipboard
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(content);
+      await copyTextToClipboard(content);
       setCopied(true);
       toast.success("Markdown copied to clipboard");
       setTimeout(() => setCopied(false), 2000);

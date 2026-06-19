@@ -767,6 +767,7 @@ export function createSchedulerTools(
         try {
           const { getJob } = await import("@/lib/cron/service");
           const { executeJob } = await import("@/lib/cron/executor");
+          const { runScheduledJobLoop } = await import("@/lib/loops");
           const { startJobExecution, completeJobExecution } =
             await import("@/lib/cron/service");
           const { isTauriMode } = await import("@/lib/env/constants");
@@ -835,11 +836,18 @@ export function createSchedulerTools(
           // Execute job asynchronously (don't await)
           (async () => {
             try {
-              const result = await executeJob(
+              const result = await runScheduledJobLoop({
+                job,
                 context,
                 jobConfigStr,
-                job.description || undefined,
-              );
+                jobDescription: job.description || undefined,
+                execute: () =>
+                  executeJob(
+                    context,
+                    jobConfigStr,
+                    job.description || undefined,
+                  ),
+              });
               await completeJobExecution(context, result);
             } catch (error) {
               await completeJobExecution(context, {

@@ -2,7 +2,7 @@
  * WeChat iLink inbound message handling (consistent with QQ / Feishu Bot mode)
  */
 import path from "node:path";
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { LRUCache } from "lru-cache";
 import { sendReplyByBotId } from "@/lib/bots/send-reply";
 import {
@@ -25,7 +25,7 @@ import type { WeixinIlinkCredentials } from "@openloomi/integrations/weixin/ilin
 import { WeixinConversationStore } from "@openloomi/integrations/weixin/conversation-store";
 import { getAppMemoryDir } from "@/lib/utils/path";
 import { weixinLogger } from "@/lib/utils/logger";
-import { APP_DIR_NAME } from "@/lib/env/config/constants";
+import { createTaskSession } from "@/lib/files/workspace/sessions";
 
 // Singleton instance for WeChat conversation history
 const weixinConversationStore = new WeixinConversationStore(getAppMemoryDir());
@@ -39,14 +39,16 @@ const SEND_IMAGE_EXTS = new Set([
   ".webp",
   ".bmp",
 ]);
+const SKIP_WORKDIR_DIRS = new Set([".claude", "temp", "node_modules"]);
 
 // Guard against duplicate processing of the same messageId
 // (e.g. two poll loops racing before the async lock in ws-listener kicks in)
 const processingMessages = new LRUCache<string, boolean>({ max: 500 });
 
 /**
- * Scan workDir, send images and files one by one to WeChat user via CDN
- * Images use IMAGE message, other files use FILE message
+ * Scan workDir, send images and files one by one to WeChat user via CDN.
+ * Images prefer IMAGE messages and fall back to FILE messages if iLink rejects
+ * the image payload.
  */
 async function sendWorkDirFilesToWeixin(
   workDir: string,
@@ -54,34 +56,52 @@ async function sendWorkDirFilesToWeixin(
   toUserId: string,
   contextToken: string,
 ): Promise<void> {
-  let entries: string[];
+  let mediaFiles: Array<{ absPath: string; relPath: string }>;
   try {
-    entries = await readdir(workDir);
-  } catch {
+    mediaFiles = await collectWorkDirFiles(workDir);
+  } catch (err) {
+    weixinLogger.warn(`Unable to scan workDir=${workDir}`, err);
     return;
   }
 
-  const mediaFiles = entries.filter((f) => !f.startsWith("."));
   if (mediaFiles.length === 0) return;
 
   weixinLogger.debug(
-    `Found ${mediaFiles.length} files in workDir, preparing to send`,
+    `Found ${mediaFiles.length} files in workDir=${workDir}, preparing to send`,
   );
 
-  for (const filename of mediaFiles) {
-    const filePath = path.join(workDir, filename);
-    const ext = path.extname(filename).toLowerCase();
+  for (const file of mediaFiles) {
+    const filename = path.basename(file.relPath);
+    const ext = path.extname(file.relPath).toLowerCase();
     try {
-      const buf = await readFile(filePath);
+      const buf = await readFile(file.absPath);
       if (SEND_IMAGE_EXTS.has(ext)) {
-        await weixinSendImageMessage({
-          credentials,
-          toUserId,
-          contextToken,
-          imageBuffer: buf,
-          cdnBaseUrl: CDN_BASE_URL,
-        });
-        weixinLogger.debug(`workDir image sent: ${filename}`);
+        try {
+          await weixinSendImageMessage({
+            credentials,
+            toUserId,
+            contextToken,
+            imageBuffer: buf,
+            cdnBaseUrl: CDN_BASE_URL,
+          });
+          weixinLogger.debug(`workDir image sent: ${file.relPath}`);
+        } catch (imageErr) {
+          weixinLogger.error(
+            `Failed to send workDir image ${file.relPath}, falling back to file message`,
+            imageErr,
+          );
+          await weixinSendFileMessage({
+            credentials,
+            toUserId,
+            contextToken,
+            fileBuffer: buf,
+            fileName: filename,
+            cdnBaseUrl: CDN_BASE_URL,
+          });
+          weixinLogger.debug(
+            `workDir image sent as file fallback: ${file.relPath}`,
+          );
+        }
       } else {
         await weixinSendFileMessage({
           credentials,
@@ -91,11 +111,66 @@ async function sendWorkDirFilesToWeixin(
           fileName: filename,
           cdnBaseUrl: CDN_BASE_URL,
         });
-        weixinLogger.debug(`workDir file sent: ${filename}`);
+        weixinLogger.debug(`workDir file sent: ${file.relPath}`);
       }
     } catch (err) {
-      weixinLogger.error(`Failed to send workDir file ${filename}:`, err);
+      weixinLogger.error(`Failed to send workDir file ${file.relPath}:`, err);
+      await weixinSendFileFailureNotice(
+        credentials,
+        toUserId,
+        contextToken,
+        file.relPath,
+      );
     }
+  }
+}
+
+async function collectWorkDirFiles(
+  dir: string,
+  rootDir = dir,
+): Promise<Array<{ absPath: string; relPath: string }>> {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files: Array<{ absPath: string; relPath: string }> = [];
+  for (const entry of entries) {
+    if (entry.name.startsWith(".")) continue;
+    const absPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      if (SKIP_WORKDIR_DIRS.has(entry.name)) continue;
+      files.push(...(await collectWorkDirFiles(absPath, rootDir)));
+      continue;
+    }
+    if (!entry.isFile()) continue;
+    const fileStat = await stat(absPath);
+    if (fileStat.size <= 0) continue;
+    files.push({
+      absPath,
+      relPath: path.relative(rootDir, absPath) || entry.name,
+    });
+  }
+  return files;
+}
+
+async function weixinSendFileFailureNotice(
+  credentials: WeixinIlinkCredentials,
+  toUserId: string,
+  contextToken: string,
+  fileName: string,
+): Promise<void> {
+  try {
+    const { weixinSendTextMessage } = await import(
+      "@openloomi/integrations/weixin/ilink-client"
+    );
+    await weixinSendTextMessage({
+      credentials,
+      toUserId,
+      contextToken,
+      text: `File generated but failed to send: ${fileName}`,
+    });
+  } catch (noticeErr) {
+    weixinLogger.warn(
+      `Failed to send workDir file failure notice for ${fileName}`,
+      noticeErr,
+    );
   }
 }
 
@@ -266,8 +341,8 @@ async function processWeixinInboundMessage(
       );
     }
 
-    // Allocate independent workDir for this message to ensure precise scanning after Agent completes
-    const workDir = `${process.env.HOME ?? "~"}/${APP_DIR_NAME}/sessions/weixin-${params.messageId}`;
+    // Allocate independent workDir for this message to ensure precise scanning after Agent completes.
+    const workDir = createTaskSession(`weixin-${params.messageId}`);
 
     // Agent callback is "🤖" + optional variant selector + space + incremental body; do not use fixed slice(2), do not join multiple 🤖 segments
     const assembled = { value: "" };

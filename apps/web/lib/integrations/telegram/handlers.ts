@@ -13,6 +13,7 @@ export interface HandleAgentRuntimeOptions {
   userId?: string; // Add userId for direct Agent calls
   workDir?: string; // Working directory for file operations
   aiSoulPrompt?: string | null; // User-defined AI Soul prompt
+  loopIdForGuard?: string | null; // Optional loop policy context for chat/tool advisory guard
   modelConfig?: {
     // Model configuration for custom API endpoints
     apiKey?: string;
