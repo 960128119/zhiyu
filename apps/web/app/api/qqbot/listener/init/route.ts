@@ -1,13 +1,12 @@
 /**
  * QQ bot WebSocket listener initialization
  * Called by frontend after user successfully authorizes QQ, establishes long connections for all QQ accounts under this user
- * In Tauri, cloudAuthToken can be passed for authentication when calling AI with subsequent inbound messages
+ * Desktop/local web can pass cloudAuthToken for inbound AI calls.
  */
 import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { startQQListenersForUser } from "@/lib/integrations/qqbot/ws-listener";
 import { setCloudAuthToken } from "@/lib/auth/token-manager";
-import { isTauriMode } from "@/lib/env/constants";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("QQListenerInit");
@@ -20,17 +19,15 @@ export async function POST(request: Request) {
     }
 
     let authToken: string | undefined;
-    if (isTauriMode()) {
-      try {
-        const body = await request.json().catch(() => ({}));
-        authToken =
-          typeof body?.cloudAuthToken === "string"
-            ? body.cloudAuthToken.trim() || undefined
-            : undefined;
-        if (authToken) setCloudAuthToken(authToken);
-      } catch {
-        // Ignore when no body or not JSON
-      }
+    try {
+      const body = await request.json().catch(() => ({}));
+      authToken =
+        typeof body?.cloudAuthToken === "string"
+          ? body.cloudAuthToken.trim() || undefined
+          : undefined;
+      if (authToken) setCloudAuthToken(authToken);
+    } catch {
+      // Ignore when no body or not JSON
     }
 
     logger.info(`QQ listener init, userId=${session.user.id}`);

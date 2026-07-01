@@ -52,15 +52,15 @@ Once you have that, the system can do what great operators do instinctively: pic
 
 But there’s still one more step most products stop short of. Understanding isn’t enough. The system has to act.
 
-## Why We Say OpenLoomi “Plugs Into Your Computer”
+## Why We Say OpenZhiyu “Plugs Into Your Computer”
 
-When we say OpenLoomi plugs the context graph into your computer, we’re describing a structural design commitment: orchestration and execution must be grounded in a single, canonical source of contextual truth.
+When we say OpenZhiyu plugs the context graph into your computer, we’re describing a structural design commitment: orchestration and execution must be grounded in a single, canonical source of contextual truth.
 
 Without a unified context graph, there is no stable foundation for planning or action. Orchestration may appear rational in isolation, but it becomes fragile at the system level. Each execution is computed against a partial, discontinuous slice of context. In most systems, every time an agent or related VM starts, it begins from a narrow invocation context: the current user prompt as input plus an incomplete and non-persistent snapshot of state. The result is fragmentation: actions that don’t accumulate, plans that don’t compound, and outcomes that slowly drift out of alignment.
 
 In most AI Agent implementations, orchestration and execution operate episodically. An agent plans using whatever context is available at invocation time. An execution environment performs the task, but the result of that execution does not reliably fold back into a persistent, canonical graph. The next orchestration cycle begins from yet another incomplete snapshot. Over time, continuity erodes.
 
-OpenLoomi is built differently. Every orchestration decision and every execution step is anchored to the same single-source context graph. Agents plan against it. Execution environments operate with reference to it. And critically, execution results are written back into it, immediately and structurally. The graph is not passive memory. It is the living substrate of system state.
+OpenZhiyu is built differently. Every orchestration decision and every execution step is anchored to the same single-source context graph. Agents plan against it. Execution environments operate with reference to it. And critically, execution results are written back into it, immediately and structurally. The graph is not passive memory. It is the living substrate of system state.
 
 This distinction becomes decisive in long task chains. In extended workflows, consistency is not a UX detail, it is a systems property. If downstream tasks cannot perceive the state transitions created upstream, the integrity of the entire chain degrades. Dependencies become implicit. Assumptions diverge. Small inconsistencies compound. The final outcome becomes unreliable.
 

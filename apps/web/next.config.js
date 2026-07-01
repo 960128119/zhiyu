@@ -19,24 +19,26 @@ const nextConfig = {
   // in Next.js SWC compilation so we can directly import its CDN utility modules and protocol types
   transpilePackages: [
     "@tencent-weixin/openclaw-weixin",
-    "@openloomi/shared",
-    "@openloomi/indexeddb",
-    "@openloomi/sqlite",
-    "@openloomi/insights",
-    "@openloomi/ai",
-    "@openloomi/integrations",
-    "@openloomi/hooks",
-    "@openloomi/mcp",
-    "@openloomi/rss",
-    "@openloomi/search",
-    "@openloomi/search/brave",
-    "@openloomi/ai/agent/sandbox",
-    "@openloomi/ai/agent/sandbox/types",
-    "@openloomi/ai/agent/sandbox/plugin",
-    "@openloomi/ai/agent/sandbox/registry",
-    "@openloomi/ai/agent/sandbox/providers/native",
-    "@openloomi/ai/agent/sandbox/providers/claude",
-    "@openloomi/ai/agent/sandbox/providers/vercel",
+    "@openzhiyu/shared",
+    "@openzhiyu/indexeddb",
+    "@openzhiyu/sqlite",
+    "@openzhiyu/insights",
+    "@openzhiyu/ai",
+    "@openzhiyu/integrations",
+    "@openzhiyu/hooks",
+    "@openzhiyu/mcp",
+    "@openzhiyu/rss",
+    "@openzhiyu/runtime-api",
+    "@openzhiyu/runtime-worker",
+    "@openzhiyu/search",
+    "@openzhiyu/search/brave",
+    "@openzhiyu/ai/agent/sandbox",
+    "@openzhiyu/ai/agent/sandbox/types",
+    "@openzhiyu/ai/agent/sandbox/plugin",
+    "@openzhiyu/ai/agent/sandbox/registry",
+    "@openzhiyu/ai/agent/sandbox/providers/native",
+    "@openzhiyu/ai/agent/sandbox/providers/claude",
+    "@openzhiyu/ai/agent/sandbox/providers/vercel",
   ],
 
   // Output mode: Tauri production builds need standalone mode to support API routes
@@ -155,7 +157,6 @@ const nextConfig = {
       // Large SDKs - dynamic imports
       "stripe",
       "@anthropic-ai/sdk",
-      "googleapis",
       "recharts",
     ],
   },
@@ -194,8 +195,15 @@ const nextConfig = {
   },
 
   webpack: (config, { isServer }) => {
-    // Use memory cache instead of filesystem to avoid EPERM on protected Windows directories
-    config.cache = { type: "memory" };
+    // Keep the large dev compilation cache out of the Node heap. The cache
+    // directory is inside the workspace, so it avoids Windows profile EPERM
+    // issues while preventing next dev from ballooning to multi-GB memory use.
+    if (process.env.NODE_ENV === "development") {
+      config.cache = {
+        type: "filesystem",
+        cacheDirectory: path.resolve(__dirname, ".next/cache/webpack"),
+      };
+    }
 
     config.resolve = config.resolve ?? {};
     config.resolve.alias = {

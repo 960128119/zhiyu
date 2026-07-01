@@ -2,7 +2,7 @@ import { google } from "googleapis";
 import { NextResponse } from "next/server";
 
 import { auth } from "@/app/(auth)/auth";
-import { decryptToken } from "@openloomi/security/token-encryption";
+import { decryptToken } from "@openzhiyu/security/token-encryption";
 import { getApplicationBaseUrl } from "@/lib/env";
 import {
   getIntegrationAccountByPlatform,
@@ -10,7 +10,7 @@ import {
   upsertIntegrationAccount,
   createBot,
 } from "@/lib/db/queries";
-import type { GoogleDocsStoredCredentials } from "@openloomi/integrations/google-docs";
+import type { GoogleDocsStoredCredentials } from "@openzhiyu/integrations/google-docs";
 
 type DocsStatePayload = {
   userId: string;

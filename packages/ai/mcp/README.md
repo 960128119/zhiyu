@@ -1,22 +1,22 @@
-# @openloomi/mcp
+# @openzhiyu/mcp
 
 Model Context Protocol (MCP) server configuration types and loader.
 
 ## Installation
 
 ```sh
-pnpm add @openloomi/mcp
+pnpm add @openzhiyu/mcp
 ```
 
 ## Usage
 
 ```ts
-import { loadMcpServers, getMcpConfigPath } from "@openloomi/mcp";
+import { loadMcpServers, getMcpConfigPath } from "@openzhiyu/mcp";
 
-// Load MCP servers from ~/.openloomi/mcp.json
+// Load MCP servers from ~/.openzhiyu/mcp.json
 const servers = await loadMcpServers();
 ```
 
 ## Configuration
 
-By default, reads from `~/.openloomi/mcp.json`. Override with `OPENLOOMI_MCP_CONFIG_PATH` environment variable.
+By default, reads from `~/.openzhiyu/mcp.json`. Override with `OPENZHIYU_MCP_CONFIG_PATH` environment variable.

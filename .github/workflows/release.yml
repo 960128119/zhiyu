@@ -22,7 +22,7 @@ jobs:
     env:
       SKIP_SIGNING: 'false'
     steps:
-      - name: Checkout openloomi source code
+      - name: Checkout openzhiyu source code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -143,28 +143,28 @@ jobs:
           APPLE_SIGNING_IDENTITY: "${{ secrets.ED_APPLE_SIGNING_IDENTITY }}"
         run: |
           set -e
-          APP_BUNDLE="./apps/web/src-tauri/target/release/bundle/macos/openloomi.app"
+          APP_BUNDLE="./apps/web/src-tauri/target/release/bundle/macos/openzhiyu.app"
           echo "Signing app bundle: $APP_BUNDLE"
 
           codesign --force --sign "$APPLE_SIGNING_IDENTITY" --options runtime --timestamp "$APP_BUNDLE"
-          codesign --force --sign "$APPLE_SIGNING_IDENTITY" --options runtime --timestamp "$APP_BUNDLE/Contents/MacOS/openloomi"
+          codesign --force --sign "$APPLE_SIGNING_IDENTITY" --options runtime --timestamp "$APP_BUNDLE/Contents/MacOS/openzhiyu"
 
           echo "✅ App bundle signed"
 
       - name: Create DMG
         run: |
           mkdir -p ./apps/web/src-tauri/target/release/bundle/dmg
-          rm -f ./apps/web/src-tauri/target/release/bundle/dmg/openloomi*.dmg
+          rm -f ./apps/web/src-tauri/target/release/bundle/dmg/openzhiyu*.dmg
 
-          APP_BUNDLE="./apps/web/src-tauri/target/release/bundle/macos/openloomi.app"
+          APP_BUNDLE="./apps/web/src-tauri/target/release/bundle/macos/openzhiyu.app"
           COMMIT_SHA=$(git rev-parse --short HEAD)
-          DMG_PATH="./apps/web/src-tauri/target/release/bundle/dmg/openloomi_${COMMIT_SHA}_aarch64.dmg"
+          DMG_PATH="./apps/web/src-tauri/target/release/bundle/dmg/openzhiyu_${COMMIT_SHA}_aarch64.dmg"
 
           TEMP_DMG_DIR=$(mktemp -d)
           cp -R "$APP_BUNDLE" "$TEMP_DMG_DIR/"
           ln -s /Applications "$TEMP_DMG_DIR/Applications"
 
-          hdiutil create -volname "openloomi" \
+          hdiutil create -volname "openzhiyu" \
             -fs HFS+ \
             -srcfolder "$TEMP_DMG_DIR" \
             -format UDZO \
@@ -178,7 +178,7 @@ jobs:
         if: env.SKIP_SIGNING != 'true'
         timeout-minutes: 360
         run: |
-          DMG_PATH=$(ls ./apps/web/src-tauri/target/release/bundle/dmg/openloomi*.dmg)
+          DMG_PATH=$(ls ./apps/web/src-tauri/target/release/bundle/dmg/openzhiyu*.dmg)
           echo "Notarizing: $DMG_PATH"
 
           codesign -dv "$DMG_PATH" 2>&1 | head -5
@@ -216,7 +216,7 @@ jobs:
         if: env.SKIP_SIGNING != 'true'
         continue-on-error: true
         run: |
-          DMG_PATH=$(ls ./apps/web/src-tauri/target/release/bundle/dmg/openloomi*.dmg)
+          DMG_PATH=$(ls ./apps/web/src-tauri/target/release/bundle/dmg/openzhiyu*.dmg)
           echo "Stapling: $DMG_PATH"
 
           STAPLED=false
@@ -246,8 +246,8 @@ jobs:
       - name: Upload ARM64 DMG
         uses: actions/upload-artifact@v4
         with:
-          name: openloomi-dmg-aarch64
-          path: ${{ github.workspace }}/apps/web/src-tauri/target/release/bundle/dmg/openloomi*.dmg
+          name: openzhiyu-dmg-aarch64
+          path: ${{ github.workspace }}/apps/web/src-tauri/target/release/bundle/dmg/openzhiyu*.dmg
 
   # ─── macOS Intel CI ─────────────────────────────────────────────────────────
   release-macos-intel:
@@ -255,7 +255,7 @@ jobs:
     env:
       SKIP_SIGNING: 'false'
     steps:
-      - name: Checkout openloomi source code
+      - name: Checkout openzhiyu source code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -385,28 +385,28 @@ jobs:
           APPLE_SIGNING_IDENTITY: "${{ secrets.ED_APPLE_SIGNING_IDENTITY }}"
         run: |
           set -e
-          APP_BUNDLE="./apps/web/src-tauri/target/release/bundle/macos/openloomi.app"
+          APP_BUNDLE="./apps/web/src-tauri/target/release/bundle/macos/openzhiyu.app"
           echo "Signing app bundle: $APP_BUNDLE"
 
           codesign --force --sign "$APPLE_SIGNING_IDENTITY" --options runtime --timestamp "$APP_BUNDLE"
-          codesign --force --sign "$APPLE_SIGNING_IDENTITY" --options runtime --timestamp "$APP_BUNDLE/Contents/MacOS/openloomi"
+          codesign --force --sign "$APPLE_SIGNING_IDENTITY" --options runtime --timestamp "$APP_BUNDLE/Contents/MacOS/openzhiyu"
 
           echo "✅ App bundle signed"
 
       - name: Create DMG
         run: |
           mkdir -p ./apps/web/src-tauri/target/release/bundle/dmg
-          rm -f ./apps/web/src-tauri/target/release/bundle/dmg/openloomi*.dmg
+          rm -f ./apps/web/src-tauri/target/release/bundle/dmg/openzhiyu*.dmg
 
-          APP_BUNDLE="./apps/web/src-tauri/target/release/bundle/macos/openloomi.app"
+          APP_BUNDLE="./apps/web/src-tauri/target/release/bundle/macos/openzhiyu.app"
           COMMIT_SHA=$(git rev-parse --short HEAD)
-          DMG_PATH="./apps/web/src-tauri/target/release/bundle/dmg/openloomi_${COMMIT_SHA}_x64.dmg"
+          DMG_PATH="./apps/web/src-tauri/target/release/bundle/dmg/openzhiyu_${COMMIT_SHA}_x64.dmg"
 
           TEMP_DMG_DIR=$(mktemp -d)
           cp -R "$APP_BUNDLE" "$TEMP_DMG_DIR/"
           ln -s /Applications "$TEMP_DMG_DIR/Applications"
 
-          hdiutil create -volname "openloomi" \
+          hdiutil create -volname "openzhiyu" \
             -fs HFS+ \
             -srcfolder "$TEMP_DMG_DIR" \
             -format UDZO \
@@ -420,7 +420,7 @@ jobs:
         if: env.SKIP_SIGNING != 'true'
         timeout-minutes: 60
         run: |
-          DMG_PATH=$(ls ./apps/web/src-tauri/target/release/bundle/dmg/openloomi*.dmg)
+          DMG_PATH=$(ls ./apps/web/src-tauri/target/release/bundle/dmg/openzhiyu*.dmg)
           echo "Notarizing: $DMG_PATH"
 
           codesign -dv "$DMG_PATH" 2>&1 | head -5
@@ -458,7 +458,7 @@ jobs:
         if: env.SKIP_SIGNING != 'true'
         continue-on-error: true
         run: |
-          DMG_PATH=$(ls ./apps/web/src-tauri/target/release/bundle/dmg/openloomi*.dmg)
+          DMG_PATH=$(ls ./apps/web/src-tauri/target/release/bundle/dmg/openzhiyu*.dmg)
           echo "Stapling: $DMG_PATH"
 
           STAPLED=false
@@ -488,14 +488,14 @@ jobs:
       - name: Upload Intel DMG
         uses: actions/upload-artifact@v4
         with:
-          name: openloomi-dmg-x64
-          path: ${{ github.workspace }}/apps/web/src-tauri/target/release/bundle/dmg/openloomi*.dmg
+          name: openzhiyu-dmg-x64
+          path: ${{ github.workspace }}/apps/web/src-tauri/target/release/bundle/dmg/openzhiyu*.dmg
 
   # ─── Linux AMD64 CI ──────────────────────────────────────────────────────────
   release-linux-amd64:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout openloomi source code
+      - name: Checkout openzhiyu source code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -606,14 +606,14 @@ jobs:
       - name: Upload Linux AMD64 deb
         uses: actions/upload-artifact@v4
         with:
-          name: openloomi-linux-amd64
+          name: openzhiyu-linux-amd64
           path: ${{ github.workspace }}/apps/web/src-tauri/target/release/bundle/deb/*.deb
 
   # ─── Windows CI ──────────────────────────────────────────────────────────────
   release-windows:
     runs-on: windows-2022
     steps:
-      - name: Checkout openloomi source code
+      - name: Checkout openzhiyu source code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -725,14 +725,14 @@ jobs:
       - name: Upload Windows NSIS installer
         uses: actions/upload-artifact@v4
         with:
-          name: openloomi-windows-nsis
+          name: openzhiyu-windows-nsis
           path: ${{ github.workspace }}/apps/web/src-tauri/target/release/bundle/nsis/*.exe
 
   # ─── Linux ARM64 CI ──────────────────────────────────────────────────────────
   release-linux-arm64:
     runs-on: ubuntu-22.04-arm
     steps:
-      - name: Checkout openloomi source code
+      - name: Checkout openzhiyu source code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -839,7 +839,7 @@ jobs:
       - name: Upload Linux ARM64 deb
         uses: actions/upload-artifact@v4
         with:
-          name: openloomi-linux-arm64
+          name: openzhiyu-linux-arm64
           path: ${{ github.workspace }}/apps/web/src-tauri/target/release/bundle/deb/*.deb
 
   # ─── Create Release ─────────────────────────────────────────────────────────
@@ -869,12 +869,12 @@ jobs:
       - name: Rename artifacts
         run: |
           cd artifacts
-          mv openloomi-dmg-aarch64/*.dmg "openloomi_${VERSION}_aarch64.dmg"
-          mv openloomi-dmg-x64/*.dmg "openloomi_${VERSION}_amd64.dmg"
-          mv openloomi-linux-amd64/*.deb "openloomi_${VERSION}_amd64.deb"
-          mv openloomi-linux-arm64/*.deb "openloomi_${VERSION}_arm64.deb"
-          mv openloomi-windows-nsis/*.exe "openloomi_${VERSION}_amd64.exe"
-          rm -rf openloomi-dmg-aarch64 openloomi-dmg-x64 openloomi-linux-amd64 openloomi-linux-arm64 openloomi-windows-nsis
+          mv openzhiyu-dmg-aarch64/*.dmg "openzhiyu_${VERSION}_aarch64.dmg"
+          mv openzhiyu-dmg-x64/*.dmg "openzhiyu_${VERSION}_amd64.dmg"
+          mv openzhiyu-linux-amd64/*.deb "openzhiyu_${VERSION}_amd64.deb"
+          mv openzhiyu-linux-arm64/*.deb "openzhiyu_${VERSION}_arm64.deb"
+          mv openzhiyu-windows-nsis/*.exe "openzhiyu_${VERSION}_amd64.exe"
+          rm -rf openzhiyu-dmg-aarch64 openzhiyu-dmg-x64 openzhiyu-linux-amd64 openzhiyu-linux-arm64 openzhiyu-windows-nsis
           ls -la
 
       - name: Create Release
@@ -886,10 +886,10 @@ jobs:
           overwrite_files: true
           generate_release_notes: true
           files: |
-            artifacts/openloomi_${{ steps.version.outputs.version }}_aarch64.dmg
-            artifacts/openloomi_${{ steps.version.outputs.version }}_amd64.dmg
-            artifacts/openloomi_${{ steps.version.outputs.version }}_amd64.deb
-            artifacts/openloomi_${{ steps.version.outputs.version }}_arm64.deb
-            artifacts/openloomi_${{ steps.version.outputs.version }}_amd64.exe
+            artifacts/openzhiyu_${{ steps.version.outputs.version }}_aarch64.dmg
+            artifacts/openzhiyu_${{ steps.version.outputs.version }}_amd64.dmg
+            artifacts/openzhiyu_${{ steps.version.outputs.version }}_amd64.deb
+            artifacts/openzhiyu_${{ steps.version.outputs.version }}_arm64.deb
+            artifacts/openzhiyu_${{ steps.version.outputs.version }}_amd64.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

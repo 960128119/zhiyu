@@ -4,14 +4,34 @@ import { z } from "zod";
 import { auth } from "@/app/(auth)/auth";
 import {
   createBot,
-  getIntegrationAccountsByUserId,
-  upsertIntegrationAccount,
   updateBot,
   weixinBotHasValidContextToken,
+} from "@/lib/db/bot-queries";
+import {
+  getIntegrationAccountsByUserId,
+  upsertIntegrationAccount,
   type IntegrationAccountWithBot,
-} from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+} from "@/lib/db/integration-queries";
+import { startFeishuListenersForUser } from "@/lib/integrations/feishu/ws-listener";
+import { AppError } from "@openzhiyu/shared/errors";
 import { IntegrationAccountPayloadSchema } from "./schema";
+
+const feishuListenerWarmups = new Map<string, number>();
+const FEISHU_LISTENER_WARMUP_INTERVAL_MS = 30_000;
+
+function warmFeishuListenersForUser(userId: string) {
+  const now = Date.now();
+  const previous = feishuListenerWarmups.get(userId) ?? 0;
+  if (now - previous < FEISHU_LISTENER_WARMUP_INTERVAL_MS) return;
+  feishuListenerWarmups.set(userId, now);
+
+  startFeishuListenersForUser(userId).catch((error) => {
+    console.error(
+      "[IntegrationAccounts] Failed to warm Feishu listeners",
+      error,
+    );
+  });
+}
 
 export async function GET() {
   const session = await auth();
@@ -23,6 +43,9 @@ export async function GET() {
     const accounts = await getIntegrationAccountsByUserId({
       userId: session.user.id,
     });
+    if (accounts.some((account) => account.platform === "feishu")) {
+      warmFeishuListenersForUser(session.user.id);
+    }
 
     // For WeChat accounts, check if they have valid context tokens
     const enhancedAccounts = await Promise.all(

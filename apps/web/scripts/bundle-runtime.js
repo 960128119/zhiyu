@@ -8,8 +8,8 @@ import * as tar from "tar";
 
 const TARGET_DIR = process.argv[2] || "./cli-bundle";
 const CACHE_DIR =
-  process.env.openloomi_BUNDLE_CACHE ||
-  path.join(os.homedir(), ".cache/openloomi-bundle");
+  process.env.openzhiyu_BUNDLE_CACHE ||
+  path.join(os.homedir(), ".cache/openzhiyu-bundle");
 const CACHE_EXPIRE_DAYS = 0;
 const CLAUDE_VERSION = "2.1.71";
 
@@ -43,7 +43,7 @@ console.log("");
 fs.mkdirSync(TARGET_DIR, { recursive: true });
 fs.mkdirSync(`${CACHE_DIR}/claude-code`, { recursive: true });
 
-const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "openloomi-bundle-"));
+const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "openzhiyu-bundle-"));
 
 function cleanup() {
   try {

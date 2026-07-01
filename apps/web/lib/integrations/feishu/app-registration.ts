@@ -6,4 +6,4 @@ export {
   type BeginRegistrationResult,
   type FeishuAccountsDomain,
   type PollRegistrationOnceResult,
-} from "@openloomi/integrations/feishu/app-registration";
+} from "@openzhiyu/integrations/feishu/app-registration";

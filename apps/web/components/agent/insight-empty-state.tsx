@@ -274,9 +274,9 @@ export function InsightRefreshingState({
   const { t } = useTranslation();
 
   /**
-   * Gets the assistant name, defaults to "openloomi"
+   * Gets the assistant name, defaults to "openzhiyu"
    */
-  const name = assistantName || "openloomi";
+  const name = assistantName || "openzhiyu";
 
   /**
    * Checks if there are sessions with messages being fetched

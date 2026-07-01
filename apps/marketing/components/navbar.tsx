@@ -61,7 +61,7 @@ export function Navbar({
     if (onSignInClick) {
       onSignInClick();
     } else {
-      window.open("https://github.com/melandlabs/openloomi", "_blank");
+      window.open("https://github.com/melandlabs/openzhiyu", "_blank");
     }
   };
 
@@ -69,7 +69,7 @@ export function Navbar({
     if (onGetStartedClick) {
       onGetStartedClick();
     } else {
-      window.open("https://github.com/melandlabs/openloomi", "_blank");
+      window.open("https://github.com/melandlabs/openzhiyu", "_blank");
     }
   };
 
@@ -83,7 +83,7 @@ export function Navbar({
     return { backgroundColor: "var(--color-background)" };
   };
 
-  const githubUrl = "https://github.com/melandlabs/openloomi";
+  const githubUrl = "https://github.com/melandlabs/openzhiyu";
 
   // Nav padding tuned to match the design preview.
   // Move: <md shows Logo.svg only; Desktop: shows logo-text.
@@ -122,7 +122,7 @@ export function Navbar({
           <Image
             // Desktop shows full logo; mobile uses monochrome logo for visibility.
             src="/img/logo-full-light.png"
-            alt="OpenLoomi"
+            alt="OpenZhiyu"
             className="hidden md:block object-contain"
             width={127}
             height={28}
@@ -130,7 +130,7 @@ export function Navbar({
           />
           <Image
             src="/img/logo-full-light.png"
-            alt="OpenLoomi"
+            alt="OpenZhiyu"
             className="block md:hidden object-contain"
             width={109}
             height={24}
@@ -250,7 +250,7 @@ export function Navbar({
               href={githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="OpenLoomi GitHub repository"
+              aria-label="OpenZhiyu GitHub repository"
               style={{
                 width: "40px",
                 height: "40px",
@@ -277,7 +277,7 @@ export function Navbar({
             href={githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="OpenLoomi GitHub repository"
+            aria-label="OpenZhiyu GitHub repository"
             style={{
               width: "48px",
               height: "48px",

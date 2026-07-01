@@ -9,20 +9,13 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  Input,
   Label,
   PageSectionHeader,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Switch,
   Textarea,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { Spinner } from "@/components/spinner";
 import { toast } from "@/components/toast";
@@ -50,6 +43,32 @@ interface LoopRunSummary {
   denied: boolean;
   modelCheckerEnabled: boolean;
   modelCheckerReason: string | null;
+  executionTrace: {
+    events: Array<{
+      type: string;
+      title: string;
+      detail: string | null;
+      toolName: string | null;
+      status: string | null;
+      timestamp: string | null;
+    }>;
+    toolCallCount: number;
+    failedToolCallCount: number;
+    permissionDecisionCount: number;
+    durationMs: number | null;
+  };
+}
+
+interface LoopSpaceSummary {
+  triggerLabel: string;
+  contextLabel: string;
+  deliveryLabel: string | null;
+  plannerAgent: string;
+  executorAgent: string;
+  verifierAgent: string;
+  harness: string;
+  externalWriteMode: "auto" | "manual_approval" | "none";
+  permissionLabel: string;
 }
 
 interface LoopSummary {
@@ -68,6 +87,7 @@ interface LoopSummary {
   nextScheduledRunAt: string | null;
   lastScheduledRunAt: string | null;
   schedulerStatus: string | null;
+  spaceSummary: LoopSpaceSummary;
   latestRun: LoopRunSummary | null;
   updatedAt: string;
   createdAt: string;
@@ -86,16 +106,6 @@ interface LoopDetail extends LoopSummary {
 interface LoopDashboardResponse {
   loops: LoopSummary[];
   counts: Record<LoopDashboardStatus, number>;
-}
-
-interface LoopTemplatesResponse {
-  templates: Array<{
-    id: string;
-    name: string;
-    description: string;
-    defaultCronExpression: string;
-    requiredInputFields: string[];
-  }>;
 }
 
 interface LoopApprovalInboxResponse {
@@ -130,16 +140,24 @@ interface LoopApprovalInboxResponse {
   };
 }
 
-interface LoopTemplateFormState {
-  templateId: string;
-  projectName: string;
-  meetingTopic: string;
-  contactGroup: string;
-  cronExpression: string;
-  timezone: string;
+interface NaturalLanguageLoopDraft {
+  name: string;
   description: string;
-  modelCheckerEnabled: boolean;
-  modelCheckerMaxInputChars: string;
+  spec: Record<string, unknown>;
+  planner?: {
+    agent: "natural-language-planner";
+    model: string;
+    parser: "local_llm_api" | "local_rules";
+  };
+  extracted: {
+    scheduleLabel: string;
+    timezone: string;
+    recipientName?: string;
+    city?: string;
+    deliveryPlatform?: "wechat_desktop";
+    externalWriteMode: "manual_approval" | "loop_approved";
+    missingFields: string[];
+  };
 }
 
 const STATUS_COPY: Record<LoopDashboardStatus, { label: string; className: string }> = {
@@ -156,7 +174,7 @@ const STATUS_COPY: Record<LoopDashboardStatus, { label: string; className: strin
     className: "border-amber-200 bg-amber-50 text-amber-700",
   },
   needs_approval: {
-    label: "待审批",
+    label: "待确认",
     className: "border-sky-200 bg-sky-50 text-sky-700",
   },
   error: {
@@ -171,21 +189,23 @@ const STATUS_COPY: Record<LoopDashboardStatus, { label: string; className: strin
 
 const APPROVAL_STATUS_LABELS: Record<string, string> = {
   pending: "待处理",
-  approved: "已批准",
+  approved: "已通过",
   rejected: "已拒绝",
-  superseded: "已替代",
+  superseded: "已替换",
   consumed: "已消费",
   denied: "已拒绝",
 };
 
 const RUN_STATUS_LABELS: Record<string, string> = {
   completed: "已完成",
+  success: "已完成",
   failed: "失败",
+  error: "错误",
   blocked: "已阻塞",
   running: "运行中",
   pending: "待处理",
+  needs_approval: "待确认",
 };
-
 function defaultTimezone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -206,14 +226,10 @@ function formatDate(value: string | null | undefined): string {
   }).format(date);
 }
 
-function getTriggerLabel(triggerConfig: Record<string, unknown>): string {
-  const type = triggerConfig.type;
-  if (type === "cron") return `Cron ${triggerConfig.expression ?? ""}`.trim();
-  if (type === "interval") return `每 ${triggerConfig.minutes ?? "?"} 分钟`;
-  if (type === "once") return `单次 ${triggerConfig.at ?? ""}`.trim();
-  if (type === "manual") return "手动";
-  if (type === "scheduled_job") return "旧版定时任务";
-  return "原生循环";
+function formatDuration(value: number | null | undefined): string {
+  if (!value || value < 0) return "未知耗时";
+  if (value < 1000) return `${value}ms`;
+  return `${(value / 1000).toFixed(value < 10_000 ? 1 : 0)}s`;
 }
 
 function labelFromMap(map: Record<string, string>, value: string | null | undefined) {
@@ -230,21 +246,6 @@ function StatusBadge({ status }: { status: LoopDashboardStatus }) {
   );
 }
 
-function buildInitialForm(templates: LoopTemplatesResponse["templates"]): LoopTemplateFormState {
-  const template = templates[0];
-  return {
-    templateId: template?.id ?? "",
-    projectName: "",
-    meetingTopic: "",
-    contactGroup: "",
-    cronExpression: template?.defaultCronExpression ?? "",
-    timezone: defaultTimezone(),
-    description: "",
-    modelCheckerEnabled: false,
-    modelCheckerMaxInputChars: "12000",
-  };
-}
-
 function readError(data: unknown, fallback: string): string {
   if (data && typeof data === "object" && "error" in data) {
     const error = (data as { error?: unknown }).error;
@@ -257,33 +258,38 @@ export default function LoopsPage() {
   const router = useRouter();
   const { data: dashboard, error: dashboardError, mutate: refreshDashboard } =
     useSWR<LoopDashboardResponse>("/api/loops", fetcher);
-  const { data: templatesData } = useSWR<LoopTemplatesResponse>(
-    "/api/loops/templates",
-    fetcher,
-  );
   const { data: approvalsData, mutate: refreshApprovals } =
     useSWR<LoopApprovalInboxResponse>("/api/loops/approvals", fetcher);
-
   const loops = dashboard?.loops ?? [];
-  const templates = templatesData?.templates ?? [];
   const [selectedLoopId, setSelectedLoopId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
-  const [form, setForm] = useState<LoopTemplateFormState>(() =>
-    buildInitialForm([]),
+  const [naturalIntent, setNaturalIntent] = useState(
+    "每天早上 9 点给文件传输助手发送北京当日天气预报。",
   );
-  const [creating, setCreating] = useState(false);
-  const [dryRunId, setDryRunId] = useState<string | null>(null);
-  const [agentRunId, setAgentRunId] = useState<string | null>(null);
+  const [naturalDraft, setNaturalDraft] =
+    useState<NaturalLanguageLoopDraft | null>(null);
+  const [naturalExternalWriteMode, setNaturalExternalWriteMode] = useState<
+    "manual_approval" | "loop_approved"
+  >("loop_approved");
+  const [draftingNaturalLoop, setDraftingNaturalLoop] = useState(false);
+  const [creatingNaturalLoop, setCreatingNaturalLoop] = useState(false);
+  const [deletingLoopId, setDeletingLoopId] = useState<string | null>(null);
   const [resolvingApprovalId, setResolvingApprovalId] = useState<string | null>(
     null,
   );
 
-  const selectedLoopKey = selectedLoopId ? `/api/loops/${selectedLoopId}` : null;
+  const selectedLoopExists = selectedLoopId
+    ? loops.some((loop) => loop.id === selectedLoopId)
+    : false;
+  const selectedLoopKey =
+    selectedLoopId && selectedLoopExists ? `/api/loops/${selectedLoopId}` : null;
   const { data: detailData, mutate: refreshDetail } = useSWR<{ loop: LoopDetail }>(
     selectedLoopKey,
     fetcher,
   );
-  const selectedLoop = detailData?.loop ?? loops.find((loop) => loop.id === selectedLoopId) ?? null;
+  const selectedLoop = selectedLoopExists
+    ? detailData?.loop ?? loops.find((loop) => loop.id === selectedLoopId) ?? null
+    : null;
 
   const pendingApprovals = useMemo(
     () => (approvalsData?.items ?? []).filter((item) => item.status === "pending"),
@@ -291,20 +297,15 @@ export default function LoopsPage() {
   );
 
   useEffect(() => {
-    if (!selectedLoopId && loops.length > 0) {
+    if (loops.length === 0) {
+      if (selectedLoopId) setSelectedLoopId(null);
+      return;
+    }
+
+    if (!selectedLoopId || !loops.some((loop) => loop.id === selectedLoopId)) {
       setSelectedLoopId(loops[0].id);
     }
   }, [loops, selectedLoopId]);
-
-  useEffect(() => {
-    if (templates.length > 0 && !form.templateId) {
-      setForm(buildInitialForm(templates));
-    }
-  }, [form.templateId, templates]);
-
-  function updateForm(updates: Partial<LoopTemplateFormState>) {
-    setForm((current) => ({ ...current, ...updates }));
-  }
 
   function openGuardedChat(loop: LoopSummary) {
     const params = new URLSearchParams({
@@ -314,73 +315,95 @@ export default function LoopsPage() {
     router.push(`/chat?${params.toString()}`);
   }
 
-  async function createLoop() {
-    if (!form.templateId) return;
-    setCreating(true);
+  async function draftNaturalLoop() {
+    if (!naturalIntent.trim()) return;
+    setDraftingNaturalLoop(true);
     try {
-      const response = await fetch("/api/loops/templates", {
+      const response = await fetch("/api/loops/natural-language", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          templateId: form.templateId,
-          projectName: form.projectName || undefined,
-          meetingTopic: form.meetingTopic || undefined,
-          contactGroup: form.contactGroup || undefined,
-          cronExpression: form.cronExpression || undefined,
-          timezone: form.timezone || undefined,
-          description: form.description || undefined,
-          modelChecker: {
-            enabled: form.modelCheckerEnabled,
-            maxInputChars: Number(form.modelCheckerMaxInputChars) || 12000,
-          },
+          intent: naturalIntent,
+          timezone: defaultTimezone(),
+          externalWriteMode: naturalExternalWriteMode,
         }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(readError(data, "创建循环失败"));
+      if (!response.ok) throw new Error(readError(data, "生成任务草稿失败"));
+      const draft = (data as { draft?: NaturalLanguageLoopDraft }).draft;
+      if (!draft) throw new Error("生成任务草稿失败");
+      setNaturalDraft(draft);
+    } catch (error) {
+      toast({
+        type: "error",
+        description: error instanceof Error ? error.message : "生成任务草稿失败",
+      });
+    } finally {
+      setDraftingNaturalLoop(false);
+    }
+  }
+
+  async function createNaturalLoop() {
+    if (!naturalIntent.trim()) return;
+    setCreatingNaturalLoop(true);
+    try {
+      const response = await fetch("/api/loops/natural-language", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          intent: naturalIntent,
+          timezone: defaultTimezone(),
+          externalWriteMode: naturalExternalWriteMode,
+          create: true,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(readError(data, "创建自动任务失败"));
       const loop = (data as { loop?: LoopSummary }).loop;
-      toast({ type: "success", description: "循环已创建" });
+      toast({ type: "success", description: "自动任务已创建" });
       setCreateOpen(false);
-      setForm(buildInitialForm(templates));
+      setNaturalDraft(null);
       await refreshDashboard();
       if (loop?.id) setSelectedLoopId(loop.id);
     } catch (error) {
       toast({
         type: "error",
-        description: error instanceof Error ? error.message : "创建循环失败",
+        description: error instanceof Error ? error.message : "创建自动任务失败",
       });
     } finally {
-      setCreating(false);
+      setCreatingNaturalLoop(false);
     }
   }
 
-  async function executeLoop(loopId: string, dryRun: boolean) {
-    if (dryRun) setDryRunId(loopId);
-    else setAgentRunId(loopId);
+  async function deleteSelectedLoop(loop: LoopSummary) {
+    const confirmed = window.confirm(
+      `删除自动任务 "${loop.name}"？这会同时删除它的运行记录和审批记录。`,
+    );
+    if (!confirmed) return;
+
+    setDeletingLoopId(loop.id);
     try {
-      const response = await fetch(`/api/loops/${loopId}/execute`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dryRun }),
-      });
+      const response = await fetch(`/api/loops/${loop.id}`, { method: "DELETE" });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(readError(data, "执行循环失败"));
-      toast({
-        type: "success",
-        description: dryRun ? "循环试运行完成" : "循环运行完成",
-      });
-      await Promise.all([refreshDashboard(), refreshDetail(), refreshApprovals()]);
+      if (!response.ok) throw new Error(readError(data, "删除自动任务失败"));
+      toast({ type: "success", description: "自动任务已删除" });
+      const nextLoop = loops.find((item) => item.id !== loop.id) ?? null;
+      setSelectedLoopId(nextLoop?.id ?? null);
+      await Promise.all([refreshDashboard(), refreshApprovals()]);
     } catch (error) {
       toast({
         type: "error",
-        description: error instanceof Error ? error.message : "执行循环失败",
+        description: error instanceof Error ? error.message : "删除自动任务失败",
       });
     } finally {
-      if (dryRun) setDryRunId(null);
-      else setAgentRunId(null);
+      setDeletingLoopId(null);
     }
   }
 
-  async function resolveApproval(approvalId: string, status: "approved" | "rejected") {
+  async function resolveApproval(
+    approvalId: string,
+    status: "approved" | "rejected",
+  ) {
     setResolvingApprovalId(approvalId);
     try {
       const response = await fetch(`/api/loops/approvals/${approvalId}`, {
@@ -389,16 +412,16 @@ export default function LoopsPage() {
         body: JSON.stringify({ status }),
       });
       const data = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(readError(data, "更新审批失败"));
+      if (!response.ok) throw new Error(readError(data, "更新确认状态失败"));
       toast({
         type: "success",
-        description: status === "approved" ? "审批已通过" : "审批已拒绝",
+        description: status === "approved" ? "已通过" : "已拒绝",
       });
       await Promise.all([refreshDashboard(), refreshDetail(), refreshApprovals()]);
     } catch (error) {
       toast({
         type: "error",
-        description: error instanceof Error ? error.message : "更新审批失败",
+        description: error instanceof Error ? error.message : "更新确认状态失败",
       });
     } finally {
       setResolvingApprovalId(null);
@@ -410,8 +433,8 @@ export default function LoopsPage() {
   return (
     <main className="flex min-h-screen flex-col bg-background">
       <PageSectionHeader
-        title="Loop Engineering"
-        description="管理持续运行的原生循环、审批队列和运行状态。"
+        title="自动任务"
+        description="用自然语言创建可在后台持续运行的任务。OpenZhiyu 会按计划执行、记录过程，并在需要时请求你确认。"
       >
         <Button variant="outline" onClick={() => refreshDashboard()}>
           <RemixIcon name="refresh" size="size-4" />
@@ -419,15 +442,19 @@ export default function LoopsPage() {
         </Button>
         <Button onClick={() => setCreateOpen(true)}>
           <RemixIcon name="add" size="size-4" />
-          新建循环
+          创建自动任务
         </Button>
       </PageSectionHeader>
 
       <section className="grid gap-3 px-6 py-4 sm:grid-cols-2 lg:grid-cols-6">
         {(Object.keys(STATUS_COPY) as LoopDashboardStatus[]).map((status) => (
           <div key={status} className="rounded-md border border-border p-3">
-            <div className="text-xs text-muted-foreground">{STATUS_COPY[status].label}</div>
-            <div className="mt-1 text-2xl font-semibold">{dashboard?.counts?.[status] ?? 0}</div>
+            <div className="text-xs text-muted-foreground">
+              {STATUS_COPY[status].label}
+            </div>
+            <div className="mt-1 text-2xl font-semibold">
+              {dashboard?.counts?.[status] ?? 0}
+            </div>
           </div>
         ))}
       </section>
@@ -438,16 +465,20 @@ export default function LoopsPage() {
         </div>
       ) : dashboardError ? (
         <div className="border-y border-border px-6 py-16 text-center">
-          <h2 className="text-base font-medium">循环不可用</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{String(dashboardError)}</p>
+          <h2 className="text-base font-medium">自动任务暂时不可用</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {String(dashboardError)}
+          </p>
         </div>
       ) : loops.length === 0 ? (
         <div className="border-y border-border px-6 py-16 text-center">
-          <h2 className="text-base font-medium">还没有循环</h2>
-          <p className="mt-1 text-sm text-muted-foreground">从模板创建一个循环后，就可以在这里试运行、守护聊天和查看审批。</p>
+          <h2 className="text-base font-medium">还没有自动任务</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            直接描述你想让 OpenZhiyu 定期或持续完成的事，它会生成可后台运行的任务。
+          </p>
           <Button className="mt-4" onClick={() => setCreateOpen(true)}>
             <RemixIcon name="add" size="size-4" />
-            新建循环
+            创建自动任务
           </Button>
         </div>
       ) : (
@@ -461,7 +492,9 @@ export default function LoopsPage() {
                   onClick={() => setSelectedLoopId(loop.id)}
                   className={cn(
                     "w-full rounded-md border p-3 text-left transition-colors hover:bg-muted/60",
-                    selectedLoopId === loop.id ? "border-primary bg-muted" : "border-border",
+                    selectedLoopId === loop.id
+                      ? "border-primary bg-muted"
+                      : "border-border",
                   )}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -474,10 +507,10 @@ export default function LoopsPage() {
                     <StatusBadge status={loop.dashboardStatus} />
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                    <span>触发: {getTriggerLabel(loop.triggerConfig)}</span>
-                    <span>下次: {formatDate(loop.nextScheduledRunAt)}</span>
-                    <span>阶段: {loop.currentPhase ?? "idle"}</span>
-                    <span>调度: {loop.schedulerStatus ?? "idle"}</span>
+                    <span>触发：{loop.spaceSummary.triggerLabel}</span>
+                    <span>下次：{formatDate(loop.nextScheduledRunAt)}</span>
+                    <span>发送：{loop.spaceSummary.deliveryLabel ?? "无"}</span>
+                    <span>权限：{loop.spaceSummary.permissionLabel}</span>
                   </div>
                 </button>
               ))}
@@ -500,22 +533,19 @@ export default function LoopsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Button variant="outline" onClick={() => openGuardedChat(selectedLoop)}>
                       <RemixIcon name="message-3" size="size-4" />
-                      守护聊天
+                      和这个任务对话
                     </Button>
                     <Button
                       variant="outline"
-                      disabled={dryRunId === selectedLoop.id}
-                      onClick={() => executeLoop(selectedLoop.id, true)}
+                      disabled={deletingLoopId === selectedLoop.id}
+                      onClick={() => deleteSelectedLoop(selectedLoop)}
                     >
-                      {dryRunId === selectedLoop.id ? <Spinner /> : <RemixIcon name="play" size="size-4" />}
-                      试运行
-                    </Button>
-                    <Button
-                      disabled={agentRunId === selectedLoop.id}
-                      onClick={() => executeLoop(selectedLoop.id, false)}
-                    >
-                      {agentRunId === selectedLoop.id ? <Spinner /> : <RemixIcon name="rocket" size="size-4" />}
-                      真实运行
+                      {deletingLoopId === selectedLoop.id ? (
+                        <Spinner />
+                      ) : (
+                        <RemixIcon name="delete-bin" size="size-4" />
+                      )}
+                      删除
                     </Button>
                   </div>
                 </div>
@@ -523,20 +553,30 @@ export default function LoopsPage() {
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="rounded-md border border-border p-3">
                     <div className="text-xs text-muted-foreground">上次运行</div>
-                    <div className="mt-1 text-sm font-medium">{formatDate(selectedLoop.latestRun?.startedAt)}</div>
+                    <div className="mt-1 text-sm font-medium">
+                      {formatDate(selectedLoop.latestRun?.startedAt)}
+                    </div>
                     <div className="mt-1 text-xs text-muted-foreground">
                       {labelFromMap(RUN_STATUS_LABELS, selectedLoop.latestRun?.status)}
                     </div>
                   </div>
                   <div className="rounded-md border border-border p-3">
                     <div className="text-xs text-muted-foreground">下次调度</div>
-                    <div className="mt-1 text-sm font-medium">{formatDate(selectedLoop.nextScheduledRunAt)}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{getTriggerLabel(selectedLoop.triggerConfig)}</div>
+                    <div className="mt-1 text-sm font-medium">
+                      {formatDate(selectedLoop.nextScheduledRunAt)}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {selectedLoop.spaceSummary.triggerLabel}
+                    </div>
                   </div>
                   <div className="rounded-md border border-border p-3">
                     <div className="text-xs text-muted-foreground">下一步</div>
-                    <div className="mt-1 text-sm font-medium">{selectedLoop.nextAction ?? "等待触发"}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{selectedLoop.blockedReason ?? selectedLoop.lastObservation ?? "无阻塞"}</div>
+                    <div className="mt-1 text-sm font-medium">
+                      {selectedLoop.nextAction ?? "等待触发"}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {selectedLoop.blockedReason ?? selectedLoop.lastObservation ?? "无阻塞"}
+                    </div>
                   </div>
                 </div>
 
@@ -548,17 +588,30 @@ export default function LoopsPage() {
                     ) : (
                       <div className="divide-y divide-border">
                         {(detailData?.loop.runs ?? []).slice(0, 8).map((run) => (
-                          <div key={run.id} className="grid gap-2 p-3 text-sm md:grid-cols-[140px_1fr_160px]">
-                            <Badge variant="outline" className="w-fit rounded-md">
-                              {labelFromMap(RUN_STATUS_LABELS, run.status)}
-                            </Badge>
-                            <div className="min-w-0 text-muted-foreground">
-                              <div className="truncate">{run.outputSummary ?? run.error ?? "无摘要"}</div>
-                              {run.modelCheckerReason ? (
-                                <div className="mt-1 truncate text-xs">模型检查: {run.modelCheckerReason}</div>
-                              ) : null}
+                          <div key={run.id} className="p-3 text-sm">
+                            <div className="grid gap-2 md:grid-cols-[140px_1fr_220px]">
+                              <Badge variant="outline" className="w-fit rounded-md">
+                                {labelFromMap(RUN_STATUS_LABELS, run.status)}
+                              </Badge>
+                              <div className="min-w-0 text-muted-foreground">
+                                <div className="truncate">{run.outputSummary ?? run.error ?? "无摘要"}</div>
+                                {run.modelCheckerReason ? (
+                                  <div className="mt-1 truncate text-xs">模型检查：{run.modelCheckerReason}</div>
+                                ) : null}
+                              </div>
+                              <div className="text-xs text-muted-foreground md:text-right">
+                                <div>{formatDate(run.startedAt)}</div>
+                                <div>
+                                  {formatDuration(run.executionTrace.durationMs)} · 工具 {run.executionTrace.toolCallCount}
+                                  {run.executionTrace.failedToolCallCount > 0
+                                    ? ` · 失败 ${run.executionTrace.failedToolCallCount}`
+                                    : ""}
+                                  {run.executionTrace.permissionDecisionCount > 0
+                                    ? ` · 权限 ${run.executionTrace.permissionDecisionCount}`
+                                    : ""}
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-xs text-muted-foreground md:text-right">{formatDate(run.startedAt)}</div>
                           </div>
                         ))}
                       </div>
@@ -567,10 +620,10 @@ export default function LoopsPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-medium">审批队列</h3>
+                  <h3 className="text-sm font-medium">待确认动作</h3>
                   <div className="mt-2 overflow-hidden rounded-md border border-border">
                     {pendingApprovals.filter((item) => item.loopId === selectedLoop.id).length === 0 ? (
-                      <div className="p-4 text-sm text-muted-foreground">当前循环没有待审批动作</div>
+                      <div className="p-4 text-sm text-muted-foreground">当前任务没有待确认动作</div>
                     ) : (
                       <div className="divide-y divide-border">
                         {pendingApprovals
@@ -579,25 +632,14 @@ export default function LoopsPage() {
                             <div key={item.id} className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
                               <div>
                                 <div className="text-sm font-medium">{item.actionName}</div>
-                                <div className="mt-1 text-xs text-muted-foreground">{item.reason ?? item.message ?? "等待人工确认"}</div>
+                                <div className="mt-1 text-xs text-muted-foreground">
+                                  {item.reason ?? item.message ?? "等待人工确认"}
+                                </div>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline">{APPROVAL_STATUS_LABELS[item.status]}</Badge>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={resolvingApprovalId === item.id}
-                                  onClick={() => resolveApproval(item.id, "rejected")}
-                                >
-                                  拒绝
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  disabled={resolvingApprovalId === item.id}
-                                  onClick={() => resolveApproval(item.id, "approved")}
-                                >
-                                  通过
-                                </Button>
+                                <Button size="sm" variant="outline" disabled={resolvingApprovalId === item.id} onClick={() => resolveApproval(item.id, "rejected")}>拒绝</Button>
+                                <Button size="sm" disabled={resolvingApprovalId === item.id} onClick={() => resolveApproval(item.id, "approved")}>通过</Button>
                               </div>
                             </div>
                           ))}
@@ -607,7 +649,7 @@ export default function LoopsPage() {
                 </div>
               </div>
             ) : (
-              <div className="py-16 text-center text-sm text-muted-foreground">选择一个循环查看详情</div>
+              <div className="py-16 text-center text-sm text-muted-foreground">选择一个自动任务查看详情</div>
             )}
           </section>
         </section>
@@ -616,89 +658,81 @@ export default function LoopsPage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>新建循环</DialogTitle>
-            <DialogDescription>从内置模板创建可调度、可审批、可守护聊天的 Loop Engineering 循环。</DialogDescription>
+            <DialogTitle>创建自动任务</DialogTitle>
+            <DialogDescription>用一句自然语言描述你希望 OpenZhiyu 在后台持续完成的事。</DialogDescription>
           </DialogHeader>
+
           <div className="grid gap-4 py-2">
             <div className="grid gap-2">
-              <Label>模板</Label>
-              <Select
-                value={form.templateId}
-                onValueChange={(templateId) => {
-                  const template = templates.find((item) => item.id === templateId);
-                  updateForm({
-                    templateId,
-                    cronExpression: template?.defaultCronExpression ?? form.cronExpression,
-                  });
+              <Label>任务描述</Label>
+              <Textarea
+                value={naturalIntent}
+                onChange={(event) => {
+                  setNaturalIntent(event.target.value);
+                  setNaturalDraft(null);
                 }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择模板" />
-                </SelectTrigger>
-                <SelectContent>
-                  {templates.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                className="min-h-28"
+                placeholder="例如：每天早上 9 点给文件传输助手发送北京当日天气预报。"
+              />
+              <p className="text-xs text-muted-foreground">
+                OpenZhiyu 会识别时间、目标、上下文来源、执行动作和验收条件，生成可后台运行的任务。
+              </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <Label>项目名称</Label>
-                <Input value={form.projectName} onChange={(event) => updateForm({ projectName: event.target.value })} />
-              </div>
-              <div className="grid gap-2">
-                <Label>会议主题</Label>
-                <Input value={form.meetingTopic} onChange={(event) => updateForm({ meetingTopic: event.target.value })} />
-              </div>
-              <div className="grid gap-2">
-                <Label>联系人群组</Label>
-                <Input value={form.contactGroup} onChange={(event) => updateForm({ contactGroup: event.target.value })} />
-              </div>
-              <div className="grid gap-2">
-                <Label>Cron</Label>
-                <Input value={form.cronExpression} onChange={(event) => updateForm({ cronExpression: event.target.value })} />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label>时区</Label>
-              <Input value={form.timezone} onChange={(event) => updateForm({ timezone: event.target.value })} />
-            </div>
-            <div className="grid gap-2">
-              <Label>描述</Label>
-              <Textarea value={form.description} onChange={(event) => updateForm({ description: event.target.value })} />
-            </div>
-            <div className="flex items-center justify-between rounded-md border border-border p-3">
+
+            <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
               <div>
-                <Label>模型检查器</Label>
-                <div className="text-xs text-muted-foreground">运行完成后追加 LLM 质量检查。</div>
+                <Label>允许任务自动对外执行</Label>
+                <div className="text-xs text-muted-foreground">开启后，这个任务可按任务策略自动发送微信等外部动作；对话页仍需要按钮确认。</div>
               </div>
               <Switch
-                checked={form.modelCheckerEnabled}
-                onCheckedChange={(checked) => updateForm({ modelCheckerEnabled: checked })}
+                checked={naturalExternalWriteMode === "loop_approved"}
+                onCheckedChange={(checked) =>
+                  setNaturalExternalWriteMode(checked ? "loop_approved" : "manual_approval")
+                }
               />
             </div>
-            {form.modelCheckerEnabled ? (
-              <div className="grid gap-2">
-                <Label>最大输入字符</Label>
-                <Input
-                  value={form.modelCheckerMaxInputChars}
-                  onChange={(event) => updateForm({ modelCheckerMaxInputChars: event.target.value })}
-                />
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button variant="outline" disabled={!naturalIntent.trim() || draftingNaturalLoop} onClick={draftNaturalLoop}>
+                {draftingNaturalLoop ? <Spinner /> : <RemixIcon name="sparkling" size="size-4" />}
+                生成任务草稿
+              </Button>
+              <Button
+                disabled={!naturalDraft || naturalDraft.extracted.missingFields.length > 0 || creatingNaturalLoop}
+                onClick={createNaturalLoop}
+              >
+                {creatingNaturalLoop ? <Spinner /> : <RemixIcon name="add" size="size-4" />}
+                创建并后台运行
+              </Button>
+            </div>
+
+            {naturalDraft ? (
+              <div className="rounded-md border border-border bg-background p-3 text-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="font-medium">{naturalDraft.name}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{naturalDraft.description}</div>
+                  </div>
+                  <Badge variant="outline" className="rounded-md">
+                    {naturalDraft.extracted.externalWriteMode === "loop_approved" ? "自动执行" : "执行前确认"}
+                  </Badge>
+                </div>
+                <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+                  <div>时间：{naturalDraft.extracted.scheduleLabel}</div>
+                  <div>时区：{naturalDraft.extracted.timezone}</div>
+                  <div>收件人：{naturalDraft.extracted.recipientName ?? "未识别"}</div>
+                  <div>城市：{naturalDraft.extracted.city ?? "未识别"}</div>
+                  <div>执行策略：{naturalDraft.extracted.externalWriteMode === "loop_approved" ? "任务内自动执行" : "执行前人工确认"}</div>
+                  <div>识别模型：{naturalDraft.planner?.model ?? "本地大模型"}</div>
+                </div>
+                {naturalDraft.extracted.missingFields.length > 0 ? (
+                  <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-700">
+                    还缺少参数：{naturalDraft.extracted.missingFields.join(", ")}
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              取消
-            </Button>
-            <Button disabled={!form.templateId || creating} onClick={createLoop}>
-              {creating ? <Spinner /> : <RemixIcon name="add" size="size-4" />}
-              创建循环
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </main>

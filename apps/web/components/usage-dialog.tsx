@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { useDailyUsage } from "@/hooks/use-daily-usage";
 import { useBillingLedger } from "@/hooks/use-billing-ledger";
 import { cn } from "@/lib/utils";

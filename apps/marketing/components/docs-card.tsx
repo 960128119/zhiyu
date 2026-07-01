@@ -54,12 +54,12 @@ export const DocsCard = ({ items, basePath }: DocsCardProps): JSX.Element => {
   );
 };
 
-// Default export pre-configured OpenLoomi doc card component
-export const OpenLoomiDocsCards = (): JSX.Element => {
+// Default export pre-configured OpenZhiyu doc card component
+export const OpenZhiyuDocsCards = (): JSX.Element => {
   const docsItems: DocItem[] = [
     {
-      id: "what-is-openloomi",
-      title: "What is OpenLoomi?",
+      id: "what-is-openzhiyu",
+      title: "What is OpenZhiyu?",
       description: "Open-source AI workspace that understands your intent",
     },
     {
@@ -80,7 +80,7 @@ export const OpenLoomiDocsCards = (): JSX.Element => {
     {
       id: "messaging-apps",
       title: "Messaging Apps",
-      description: "Use OpenLoomi directly inside Telegram, WhatsApp, and more",
+      description: "Use OpenZhiyu directly inside Telegram, WhatsApp, and more",
     },
     {
       id: "automation",
@@ -120,7 +120,7 @@ export const OpenLoomiDocsCards = (): JSX.Element => {
     {
       id: "use-cases",
       title: "Use Cases",
-      description: "Discover what you can do with OpenLoomi",
+      description: "Discover what you can do with OpenZhiyu",
     },
   ];
 

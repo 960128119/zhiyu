@@ -1,12 +1,11 @@
 /**
  * DingTalk Stream listener initialization: Called by frontend after user completes authorization, establishes long connections for all DingTalk integrations under this user
- * In Tauri, cloudAuthToken can be passed for inbound messages to use cloud AI (consistent with Feishu)
+ * Desktop/local web can pass cloudAuthToken for inbound messages to use cloud AI.
  */
 import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { startDingTalkListenersForUser } from "@/lib/integrations/dingtalk/ws-listener";
 import { setCloudAuthToken } from "@/lib/auth/token-manager";
-import { isTauriMode } from "@/lib/env/constants";
 
 export async function POST(request: Request) {
   try {
@@ -16,17 +15,15 @@ export async function POST(request: Request) {
     }
 
     let authToken: string | undefined;
-    if (isTauriMode()) {
-      try {
-        const body = await request.json().catch(() => ({}));
-        authToken =
-          typeof body?.cloudAuthToken === "string"
-            ? body.cloudAuthToken.trim() || undefined
-            : undefined;
-        if (authToken) setCloudAuthToken(authToken);
-      } catch {
-        // Ignore when no body
-      }
+    try {
+      const body = await request.json().catch(() => ({}));
+      authToken =
+        typeof body?.cloudAuthToken === "string"
+          ? body.cloudAuthToken.trim() || undefined
+          : undefined;
+      if (authToken) setCloudAuthToken(authToken);
+    } catch {
+      // Ignore when no body or not JSON
     }
 
     await startDingTalkListenersForUser(session.user.id, authToken);

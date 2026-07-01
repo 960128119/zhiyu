@@ -7,7 +7,7 @@
  */
 
 import type { NextRequest } from "next/server";
-import { getUserById, updateUserProfile } from "@/lib/db/queries";
+import { getUserById, updateUserProfile } from "@/lib/db/user-queries";
 import {
   verifyToken,
   extractToken,

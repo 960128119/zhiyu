@@ -12,7 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   Button,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { Spinner } from "@/components/spinner";
 import { toast } from "@/components/toast";
 import {

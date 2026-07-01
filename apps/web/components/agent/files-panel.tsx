@@ -1,15 +1,15 @@
 "use client";
 
 import { toast } from "@/components/toast";
-import { Button, Input, Label } from "@openloomi/ui";
+import { Button, Input, Label } from "@openzhiyu/ui";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
-import { useIsMobile } from "@openloomi/hooks/use-is-mobile";
+} from "@openzhiyu/ui";
+import { useIsMobile } from "@openzhiyu/hooks/use-is-mobile";
 import {
   type KnowledgeFileDetail,
   useKnowledgeFiles,

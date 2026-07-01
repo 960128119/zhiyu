@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/app/(auth)/auth";
-import { upsertIntegrationAccount } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
-import { decryptToken } from "@openloomi/security/token-encryption";
+import { upsertIntegrationAccount } from "@/lib/db/integration-queries";
+import { AppError } from "@openzhiyu/shared/errors";
+import { decryptToken } from "@openzhiyu/security/token-encryption";
 import { getApplicationBaseUrl } from "@/lib/env";
 import type { IntegrationId } from "@/hooks/use-integrations";
 

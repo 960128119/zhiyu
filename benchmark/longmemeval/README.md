@@ -1,6 +1,6 @@
 # LongMemEval Benchmark
 
-Benchmark suite for evaluating OpenLoomi's long-term memory retrieval system using the dataset.
+Benchmark suite for evaluating OpenZhiyu's long-term memory retrieval system using the dataset.
 
 ## Overview
 
@@ -77,7 +77,7 @@ pnpm benchmark -- --dataset dataset/longmemeval_s_cleaned.json --output results.
 | `--quick`     | `-q`  | Limit to first 5 entries            | false              |
 | `--output`    | `-o`  | Save results JSON to path           | None               |
 | `--port`      | `-p`  | API port for agent                  | Auto-discover      |
-| `--token`     | `-t`  | Path to auth token                  | ~/.openloomi/token |
+| `--token`     | `-t`  | Path to auth token                  | ~/.openzhiyu/token |
 | `--resume`    |       | Resume from checkpoints             | true               |
 | `--no-resume` |       | Start fresh (don't resume)          | false              |
 
@@ -115,5 +115,5 @@ src/
 
 - Node.js 18+
 - pnpm
-- OpenLoomi API running on localhost (port auto-discovery or specify with `--port`)
+- OpenZhiyu API running on localhost (port auto-discovery or specify with `--port`)
 - OpenRouter API key (for LLM judge evaluation)

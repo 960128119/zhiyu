@@ -1,11 +1,11 @@
-# @openloomi/rss
+# @openzhiyu/rss
 
 RSS feed parsing, OPML support, and tagging utilities.
 
 ## Installation
 
 ```sh
-pnpm add @openloomi/rss
+pnpm add @openzhiyu/rss
 ```
 
 ## Exports

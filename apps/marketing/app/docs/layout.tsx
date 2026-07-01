@@ -8,7 +8,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background-card">
       <MarketingNavbar backgroundVariant="backgroundCard" />
-      <div className="openloomi-docs-shell pt-24">
+      <div className="openzhiyu-docs-shell pt-24">
         <DocsLayout
           tree={getDocsPageTree()}
           nav={{

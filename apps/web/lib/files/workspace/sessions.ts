@@ -64,12 +64,12 @@ export const TASKS_DIR_NAME = "tasks";
 
 /**
  * Get application data directory
- * macOS/Linux: ~/.openloomi
- * Windows: %USERPROFILE%\.openloomi
+ * macOS/Linux: ~/.openzhiyu
+ * Windows: %USERPROFILE%\.openzhiyu
  */
 export function getAppDataDir(): string {
   const home = homedir();
-  return join(home, ".openloomi");
+  return join(home, ".openzhiyu");
 }
 
 /**

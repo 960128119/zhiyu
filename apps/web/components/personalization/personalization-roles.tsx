@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 
 type RoleAssignment = {
   role: string;

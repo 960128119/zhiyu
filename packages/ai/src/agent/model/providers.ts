@@ -1,7 +1,7 @@
 import { customProvider } from "ai";
 import type { LanguageModel } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { DEV_PORT, PROD_PORT } from "@openloomi/shared";
+import { DEV_PORT, PROD_PORT } from "@openzhiyu/shared";
 
 /**
  * User type - application-specific, defaults to "free" for package consumers.

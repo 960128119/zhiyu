@@ -13,20 +13,20 @@ import useSWR from "swr";
 import { useTranslation } from "react-i18next";
 import { cn, fetcher } from "@/lib/utils";
 import { toast } from "sonner";
-import { buildRefMarker } from "@openloomi/shared/ref";
+import { buildRefMarker } from "@openzhiyu/shared/ref";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { Node as TiptapNode } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import type { Insight } from "@/lib/db/schema";
-import { Button, Input } from "@openloomi/ui";
+import { Button, Input } from "@openzhiyu/ui";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { Spinner } from "@/components/spinner";
 import {

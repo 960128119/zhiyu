@@ -53,7 +53,7 @@ i18n
     },
     lng: "en-US", // Initial language always English, ensures server and client consistency
     fallbackLng: "en-US",
-    debug: process.env.NODE_ENV === "development",
+    debug: process.env.NEXT_PUBLIC_I18N_DEBUG === "true",
     interpolation: {
       escapeValue: false, // React already escapes values
     },

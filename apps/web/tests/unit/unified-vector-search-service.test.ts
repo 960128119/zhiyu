@@ -180,6 +180,17 @@ describe("UnifiedVectorSearchService", () => {
       dimensions: 0,
       backend: "custom",
       embeddingModel: "test/local-model",
+      capabilities: {
+        backend: "custom",
+        nativeMetadataFilters: false,
+        nativeUserFilter: false,
+        nativeTimeRangeFilter: false,
+        includeEmbeddings: false,
+        deleteOlderThan: false,
+        stats: false,
+        multiDimensions: false,
+        persistent: false,
+      },
     });
   });
 });

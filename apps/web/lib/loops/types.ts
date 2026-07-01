@@ -174,5 +174,11 @@ export interface RunNativeLoopInput {
     loop: Loop;
     previousState: LoopState | null;
     loopRun: LoopRun;
+    attemptContext?: {
+      attemptNumber: number;
+      maxAttempts: number;
+      previousFeedback?: string | null;
+      previousResult?: LoopJson | null;
+    };
   }) => Promise<JobExecutionResult>;
 }

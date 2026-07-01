@@ -13,7 +13,7 @@ import {
   normalizeBasicOption,
   dedupeOptions,
   normalizePlatformKey,
-} from "@openloomi/insights";
+} from "@openzhiyu/insights";
 
 describe("insights-option-normalizers", () => {
   describe("normalizeImportanceOption", () => {

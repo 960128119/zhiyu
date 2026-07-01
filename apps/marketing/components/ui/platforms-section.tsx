@@ -53,7 +53,7 @@ export const PlatformsSection: React.FC<PlatformsSectionProps> = ({
         <div className="flex flex-col gap-1 flex-1 min-w-0 overflow-hidden p-6 pr-0">
           {/* Title: Supported Platforms */}
           <a
-            href="https://openloomi.ai/docs/connectors"
+            href="https://openzhiyu.ai/docs/connectors"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-base font-normal text-foreground mb-2 px-0 text-left hover:opacity-80 transition-opacity"
@@ -99,7 +99,7 @@ export const PlatformsSection: React.FC<PlatformsSectionProps> = ({
         <div className="w-full lg:w-fit lg:min-w-[360px] shrink-0">
           <Image
             src="/img/pic/IM.png"
-            alt="OpenLoomi integrated messaging preview"
+            alt="OpenZhiyu integrated messaging preview"
             width={1024}
             height={640}
             className="w-full lg:w-[360px] h-auto object-cover"

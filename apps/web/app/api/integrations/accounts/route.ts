@@ -11,7 +11,8 @@ import type { NextRequest } from "next/server";
 import { isTauriMode } from "@/lib/env/constants";
 import { authenticateCloudRequest } from "@/lib/auth/cloud-auth";
 import { withRateLimit, RateLimitPresets } from "@/lib/rate-limit/middleware";
-import { db, createBot, weixinBotHasValidContextToken } from "@/lib/db/queries";
+import { db } from "@/lib/db/client";
+import { createBot, weixinBotHasValidContextToken } from "@/lib/db/bot-queries";
 import { integrationAccounts, bot } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 
@@ -507,6 +508,6 @@ function getCloudUrl(): string {
   return (
     process.env.CLOUD_API_URL ||
     process.env.NEXT_PUBLIC_CLOUD_API_URL ||
-    "https://app.openloomi.ai"
+    "https://app.openzhiyu.ai"
   );
 }

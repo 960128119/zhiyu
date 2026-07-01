@@ -1,5 +1,5 @@
 {
-  "name": "@openloomi/integrations-channels",
+  "name": "@openzhiyu/integrations-channels",
   "version": "0.5.1",
   "private": true,
   "type": "module",
@@ -19,11 +19,11 @@
     "./sources/types": "./src/sources/types.ts"
   },
   "dependencies": {
-    "@openloomi/shared": "workspace:*",
+    "@openzhiyu/shared": "workspace:*",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@openloomi/config": "workspace:*",
+    "@openzhiyu/config": "workspace:*",
     "typescript": "^5.6.3"
   },
   "scripts": {

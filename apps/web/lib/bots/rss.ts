@@ -1,11 +1,11 @@
 import { ensureRssBot, type InsightInsertInput } from "../db/queries";
 import type { RssSubscription } from "../db/schema";
-import type { InsertRssItem } from "@openloomi/rss";
+import type { InsertRssItem } from "@openzhiyu/rss";
 import RSSParser from "rss-parser";
-import { extractRssTags } from "@openloomi/rss";
+import { extractRssTags } from "@openzhiyu/rss";
 
 const REQUEST_TIMEOUT_MS = 15_000;
-const USER_AGENT = "openloomiRSSFetcher/1.0 (+https://openloomi.ai)";
+const USER_AGENT = "openzhiyuRSSFetcher/1.0 (+https://openzhiyu.ai)";
 
 const parser = new RSSParser({
   customFields: {

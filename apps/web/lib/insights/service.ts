@@ -1,11 +1,13 @@
 import { maxChunkSummaryCount } from "@/lib/env/constants";
 import {
-  getBotsByUserId,
   getStoredInsightsByBotIds,
+} from "@/lib/db/queries";
+import { getBotsByUserId } from "@/lib/db/bot-queries";
+import {
   getUserInsightSettings,
   updateUserInsightSettings,
-  normalizeInsight,
-} from "@/lib/db/queries";
+} from "@/lib/db/insight-queries";
+import { normalizeInsight } from "@/lib/db/serialization";
 import type { Insight, InsightSettings } from "@/lib/db/schema";
 import { getInsightsSession, type InsightSession } from "@/lib/session/context";
 import { clampActivityTier as clampActivityTierInternal } from "@/lib/insights/tier";

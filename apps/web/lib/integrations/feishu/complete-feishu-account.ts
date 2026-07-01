@@ -4,10 +4,12 @@
 
 import {
   createBot,
-  getIntegrationAccountsByUserId,
   updateBot,
+} from "@/lib/db/bot-queries";
+import {
+  getIntegrationAccountsByUserId,
   upsertIntegrationAccount,
-} from "@/lib/db/queries";
+} from "@/lib/db/integration-queries";
 
 export async function upsertFeishuBotIntegration(params: {
   userId: string;

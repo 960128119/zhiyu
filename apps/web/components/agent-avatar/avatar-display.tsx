@@ -299,7 +299,7 @@ export function AvatarDisplay({
     }
 
     const link = document.createElement("a");
-    link.download = "openloomi-avatar.png";
+    link.download = "openzhiyu-avatar.png";
     link.href = canvas.toDataURL();
     link.click();
   }, [

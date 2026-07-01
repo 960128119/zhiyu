@@ -16,10 +16,15 @@ export function ScheduledJobsInit() {
       return;
     }
 
-    // Check if running in Tauri environment
+    // Check if running in Tauri environment or local web development.
     const isTauri = !!(window as any).__TAURI__;
-    if (!isTauri) {
-      return; // Non-Tauri environment, skip initialization
+    const isLocalDev =
+      process.env.NODE_ENV === "development" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1");
+
+    if (!isTauri && !isLocalDev) {
+      return;
     }
 
     // Delay execution to ensure app is fully loaded

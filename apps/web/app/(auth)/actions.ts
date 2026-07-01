@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { createUser, getUser, db } from "@/lib/db/queries";
+import { db } from "@/lib/db/client";
+import { createUser, getUser } from "@/lib/db/user-queries";
 import { authFormSchema } from "@/lib/auth/validation";
 import { signIn } from "./auth";
 import {
@@ -158,7 +159,7 @@ export const login = async (
         process.env.CLOUD_API_URL ||
         process.env.NEXT_PUBLIC_CLOUD_API_URL ||
         getCloudApiBaseUrl() ||
-        "https://app.openloomi.ai";
+        "https://app.openzhiyu.ai";
 
       if (!cloudUrl) {
         console.error("[RemoteAuth] Cloud API URL not configured");
@@ -293,7 +294,7 @@ export const register = async (
         process.env.CLOUD_API_URL ||
         process.env.NEXT_PUBLIC_CLOUD_API_URL ||
         getCloudApiBaseUrl() ||
-        "https://app.openloomi.ai";
+        "https://app.openzhiyu.ai";
 
       if (!cloudUrl) {
         return { status: "failed", error: "Cloud API URL not configured" };

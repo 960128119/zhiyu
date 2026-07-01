@@ -3,7 +3,7 @@ import {
   getInsightUsageAnalytics,
   type InsightAnalyticsInsight,
 } from "@/lib/insights/analytics";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import type { NextRequest } from "next/server";
 
 export const dynamic = "force-dynamic";

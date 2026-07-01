@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import { getLoopDashboardDetail, runNativeLoopOnce } from "@/lib/loops";
+import { getLoopDashboardDetail } from "@/lib/loops";
+import { runLoopHarness } from "@/lib/loops/harness";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 800;
 
-async function readJsonBody(request: Request): Promise<Record<string, unknown>> {
+async function readJsonBody(
+  request: Request,
+): Promise<Record<string, unknown>> {
   try {
     const body = await request.json();
     return body && typeof body === "object" && !Array.isArray(body) ? body : {};
@@ -28,31 +31,23 @@ export async function POST(
     const body = await readJsonBody(request);
     const dryRun = body.dryRun !== false;
 
-    const result = await runNativeLoopOnce({
+    const execution = await runLoopHarness({
       userId: session.user.id,
       loopId: id,
+      mode: dryRun ? "dry_run" : "native_agent",
       triggeredBy: "manual",
       reason: {
         api: "/api/loops/[id]/execute",
         dryRun,
       },
-      execute: dryRun
-        ? undefined
-        : async ({ loop, previousState, loopRun }) => {
-            const { executeNativeLoopAgent } = await import(
-              "@/lib/loops/native-executor"
-            );
-            return executeNativeLoopAgent({
-              userId: session.user.id,
-              loop,
-              previousState,
-              runId: loopRun.id,
-            });
-          },
     });
     const loop = await getLoopDashboardDetail(session.user.id, id);
 
-    return NextResponse.json({ result, loop });
+    return NextResponse.json({
+      result: execution.result,
+      harness: execution.harness,
+      loop,
+    });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Failed to execute loop";

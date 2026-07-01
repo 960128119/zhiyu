@@ -8,7 +8,7 @@
 
 import type { NextRequest } from "next/server";
 import { compare } from "bcrypt-ts";
-import { getUser, getUserTypeForService } from "@/lib/db/queries";
+import { getUser, getUserTypeForService } from "@/lib/db/user-queries";
 import { DUMMY_PASSWORD } from "@/lib/env/constants";
 import {
   generateToken,

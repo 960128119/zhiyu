@@ -1,5 +1,5 @@
 import { auth } from "@/app/(auth)/auth";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import type { NextRequest } from "next/server";
 import { timelineHistoryService } from "@/lib/insights/timeline-history";
 import { eq } from "drizzle-orm";
@@ -44,7 +44,7 @@ export async function GET(
     const insightRecord = insights[0];
 
     // Verify ownership through the bot
-    const { getBotById } = await import("@/lib/db/queries");
+    const { getBotById } = await import("@/lib/db/bot-queries");
     const bot = await getBotById({ id: insightRecord.botId });
     if (!bot || bot.userId !== session.user.id) {
       return new AppError("forbidden:insight").toResponse();

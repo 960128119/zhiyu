@@ -5,15 +5,11 @@ import {
   buildInsightEmbeddingDocument,
   type InsightEmbeddingTextInput,
 } from "@/lib/insights/embedding";
-import {
-  isInsightChromaEnabled,
-  type ChromaInsightVectorInput,
-  upsertInsightsToChroma,
-} from "@/lib/memory/chroma-memory-index";
+import type { ChromaInsightVectorInput } from "@/lib/memory/chroma-memory-index";
 import {
   getConfiguredEmbeddingModelName,
   getEmbeddingProviderType,
-} from "@openloomi/rag";
+} from "@openzhiyu/rag/embedding-provider";
 import {
   isInsightSQLiteVecEnabled,
   upsertInsightsToSQLiteVec,
@@ -89,6 +85,24 @@ function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function isInsightChromaBackendEnabled(): boolean {
+  const keys = [
+    "INSIGHT_VECTOR_STORE_BACKEND",
+    "MEMORY_VECTOR_STORE_BACKEND",
+    "VECTOR_STORE_BACKEND",
+  ];
+  return keys.some((key) => process.env[key]?.trim().toLowerCase() === "chroma");
+}
+
+async function upsertChromaInsightVectors(
+  insights: ChromaInsightVectorInput[],
+): Promise<number> {
+  const { upsertInsightsToChroma } = await import(
+    "@/lib/memory/chroma-memory-index"
+  );
+  return upsertInsightsToChroma(insights);
+}
+
 function parseEmbeddingVector(value: string): number[] | null {
   try {
     const parsed = JSON.parse(value);
@@ -115,7 +129,7 @@ export async function syncInsightEmbeddingsToChroma({
   limit?: number;
   includeArchived?: boolean;
 }): Promise<SyncInsightEmbeddingsToChromaResult> {
-  if (!isInsightChromaEnabled()) {
+  if (!isInsightChromaBackendEnabled()) {
     return { scanned: 0, synced: 0 };
   }
 
@@ -156,7 +170,7 @@ export async function syncInsightEmbeddingsToChroma({
     .orderBy(desc(insightEmbeddings.updatedAt))
     .limit(Math.min(1_000, Math.max(1, Math.floor(limit))));
 
-  const synced = await upsertInsightsToChroma(
+  const synced = await upsertChromaInsightVectors(
     rows
       .map((row: any) => ({
         ...row,
@@ -346,7 +360,7 @@ export async function upsertInsightEmbeddingsForCandidates({
     }
 
     const { UniversalEmbeddings } =
-      await import("@openloomi/rag/universal-embeddings");
+      await import("@openzhiyu/rag/universal-embeddings");
     const embeddings = new UniversalEmbeddings(options.authToken);
     const embeddingVectors = await embeddings.embedDocuments(
       changedDocuments.map((document) => document.content),
@@ -393,7 +407,7 @@ export async function upsertInsightEmbeddingsForCandidates({
       });
 
     try {
-      await upsertInsightsToChroma(
+      await upsertChromaInsightVectors(
         changedDocuments.map((document, index) => {
           const embedding = embeddingVectors[index];
           return {

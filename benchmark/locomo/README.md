@@ -1,6 +1,6 @@
 # LoCoMo Benchmark
 
-Benchmark suite for evaluating OpenLoomi's long-term memory retrieval system using the [LoCoMo](https://github.com/StonyBrookUniversity/LoCoMo) dataset.
+Benchmark suite for evaluating OpenZhiyu's long-term memory retrieval system using the [LoCoMo](https://github.com/StonyBrookUniversity/LoCoMo) dataset.
 
 ## Overview
 
@@ -74,7 +74,7 @@ pnpm benchmark -- --dataset dataset/locomo10.json --mode observation --output re
 | `--quick`   | `-q`  | Limit to first 5 questions per sample               | false              |
 | `--output`  | `-o`  | Save results JSON to path                           | None               |
 | `--port`    | `-p`  | API port for agent                                  | Auto-discover      |
-| `--token`   | `-t`  | Path to auth token                                  | ~/.openloomi/token |
+| `--token`   | `-t`  | Path to auth token                                  | ~/.openzhiyu/token |
 
 ## Output
 
@@ -111,5 +111,5 @@ src/
 
 - Node.js 18+
 - pnpm
-- OpenLoomi API running on localhost (port auto-discovery or specify with `--port`)
+- OpenZhiyu API running on localhost (port auto-discovery or specify with `--port`)
 - OpenRouter API key (for LLM judge evaluation)

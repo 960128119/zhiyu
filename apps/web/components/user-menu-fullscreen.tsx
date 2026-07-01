@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { Session } from "next-auth";
 import { RemixIcon } from "@/components/remix-icon";
-import { Button, ScrollArea } from "@openloomi/ui";
+import { Button, ScrollArea } from "@openzhiyu/ui";
 import { cn } from "@/lib/utils";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import { useIsMobile } from "@openloomi/hooks/use-is-mobile";
+import { useIsMobile } from "@openzhiyu/hooks/use-is-mobile";
 import { UserMenuContent } from "@/components/user-menu-content";
 
 /**

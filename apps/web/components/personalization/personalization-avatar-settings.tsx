@@ -31,7 +31,7 @@ export function PersonalizationAvatarSettings({
   /**
    * Agent name
    */
-  const displayName = "openloomi";
+  const displayName = "openzhiyu";
 
   return (
     <div className="w-full h-full flex flex-col gap-4 sm:gap-6 md:gap-8">
@@ -58,7 +58,7 @@ export function PersonalizationAvatarSettings({
         <p className="text-sm text-muted-foreground text-center">
           {t(
             "settings.avatarStateDescription",
-            "openloomi's appearance automatically changes based on different states",
+            "openzhiyu's appearance automatically changes based on different states",
           )}
         </p>
       </div>

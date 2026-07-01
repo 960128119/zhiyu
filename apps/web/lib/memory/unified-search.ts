@@ -4,11 +4,6 @@ import {
   getRawMessageManager,
   isRawMessageStorageAvailable,
 } from "@/lib/memory/raw-message-store";
-import {
-  isRawMessageChromaEnabled,
-  searchRawMessagesWithChroma,
-} from "@/lib/memory/chroma-memory-index";
-import { getEmbeddingProviderType } from "@openloomi/rag";
 
 export type UnifiedMemorySearchSource = "memory" | "insights" | "knowledge";
 
@@ -130,8 +125,30 @@ function toKnowledgeResult(result: {
   };
 }
 
+function isRawMessageChromaBackendEnabled(): boolean {
+  const keys = [
+    "RAW_MESSAGE_VECTOR_STORE_BACKEND",
+    "MEMORY_VECTOR_STORE_BACKEND",
+    "VECTOR_STORE_BACKEND",
+  ];
+  return keys.some((key) => process.env[key]?.trim().toLowerCase() === "chroma");
+}
+
+async function searchRawMessagesWithChromaBackend(input: {
+  userId: string;
+  queryEmbedding: number[];
+  limit: number;
+  threshold: number;
+  botId?: string;
+}) {
+  const { searchRawMessagesWithChroma } = await import(
+    "@/lib/memory/chroma-memory-index"
+  );
+  return searchRawMessagesWithChroma(input);
+}
+
 function hasEmbeddingProviderConfig(authToken?: string): boolean {
-  if (getEmbeddingProviderType() === "local") {
+  if (process.env.EMBEDDING_PROVIDER?.trim().toLowerCase() === "local") {
     return true;
   }
   return Boolean(
@@ -151,7 +168,7 @@ async function embedQuery(
   }
 
   const { UniversalEmbeddings } =
-    await import("@openloomi/rag/universal-embeddings");
+    await import("@openzhiyu/rag/universal-embeddings");
   const embeddings = new UniversalEmbeddings(authToken);
   return embeddings.embedQuery(query);
 }
@@ -193,6 +210,7 @@ function isRawMemorySemanticResult(result: unknown): result is {
 async function searchRawMemorySemantically(input: {
   userId: string;
   query: string;
+  queryEmbedding?: number[];
   authToken?: string;
   botIds?: string[];
   limit: number;
@@ -207,15 +225,16 @@ async function searchRawMemorySemantically(input: {
   let semanticResults: UnifiedMemorySearchResult[] = [];
   let semanticBackendHandled = false;
   if (hasEmbeddingProviderConfig(input.authToken)) {
-    const queryEmbedding = await embedQuery(input.query, input.authToken);
+    const queryEmbedding =
+      input.queryEmbedding ?? (await embedQuery(input.query, input.authToken));
     if (queryEmbedding.length > 0) {
-      if (isRawMessageChromaEnabled()) {
+      if (isRawMessageChromaBackendEnabled()) {
         try {
           semanticResults = (
             await Promise.all(
               filters.map((filter) => {
                 const botId = "botId" in filter ? filter.botId : undefined;
-                return searchRawMessagesWithChroma({
+                return searchRawMessagesWithChromaBackend({
                   userId: input.userId,
                   queryEmbedding,
                   limit: input.limit,
@@ -277,6 +296,7 @@ export async function searchUnifiedMemory(
   const threshold = clampUnifiedMemorySearchThreshold(input.threshold);
   const warnings: UnifiedMemorySearchWarning[] = [];
   const results: UnifiedMemorySearchResult[] = [];
+  let queryEmbeddingPromise: Promise<number[]> | undefined;
 
   if (!query) {
     return {
@@ -288,17 +308,27 @@ export async function searchUnifiedMemory(
     };
   }
 
+  const getQueryEmbedding = () => {
+    queryEmbeddingPromise ??= embedQuery(query, input.authToken);
+    return queryEmbeddingPromise;
+  };
+
+  const searchTasks: Array<Promise<UnifiedMemorySearchResult[]>> = [];
+
   if (sources.includes("memory")) {
     if (isRawMessageStorageAvailable()) {
-      const memoryResults = await searchRawMemorySemantically({
-        userId: input.userId,
-        query,
-        authToken: input.authToken,
-        botIds: input.botIds,
-        limit,
-        threshold,
-      });
-      results.push(...memoryResults);
+      searchTasks.push(
+        (async () =>
+          searchRawMemorySemantically({
+            userId: input.userId,
+            query,
+            queryEmbedding: await getQueryEmbedding(),
+            authToken: input.authToken,
+            botIds: input.botIds,
+            limit,
+            threshold,
+          }))(),
+      );
     } else {
       warnings.push({
         source: "memory",
@@ -309,31 +339,44 @@ export async function searchUnifiedMemory(
   }
 
   if (sources.includes("insights")) {
-    const insightResults = await searchInsightsSemantically({
-      userId: input.userId,
-      query,
-      limit,
-      threshold,
-      botIds: input.botIds,
-      includeArchived: input.includeArchivedInsights,
-      authToken: input.authToken,
-    });
-    results.push(...insightResults);
+    searchTasks.push(
+      (async () => {
+        const insightResults = await searchInsightsSemantically({
+          userId: input.userId,
+          query,
+          queryEmbedding: await getQueryEmbedding(),
+          limit,
+          threshold,
+          botIds: input.botIds,
+          includeArchived: input.includeArchivedInsights,
+          authToken: input.authToken,
+        });
+        return insightResults;
+      })(),
+    );
   }
 
   if (sources.includes("knowledge")) {
-    const knowledgeResults = await searchSimilarChunks(
-      input.userId,
-      query,
-      {
-        limit,
-        threshold,
-        documentIds: input.documentIds,
-      },
-      input.authToken,
+    searchTasks.push(
+      (async () => {
+        const knowledgeResults = await searchSimilarChunks(
+          input.userId,
+          query,
+          {
+            limit,
+            threshold,
+            documentIds: input.documentIds,
+            queryEmbedding: await getQueryEmbedding(),
+          },
+          input.authToken,
+        );
+        return knowledgeResults.map(toKnowledgeResult);
+      })(),
     );
-    results.push(...knowledgeResults.map(toKnowledgeResult));
   }
+
+  const sourceResults = await Promise.all(searchTasks);
+  results.push(...sourceResults.flat());
 
   const merged = mergeUnifiedMemorySearchResults(results, limit);
   return {

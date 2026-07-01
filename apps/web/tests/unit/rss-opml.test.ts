@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { parseOpmlFeeds } from "@openloomi/rss";
+import { parseOpmlFeeds } from "@openzhiyu/rss";
 
 describe("rss-opml", () => {
   describe("parseOpmlFeeds", () => {

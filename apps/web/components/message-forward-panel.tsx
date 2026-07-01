@@ -2,9 +2,9 @@
 
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
-import type { ChatMessage } from "@openloomi/shared";
+import type { ChatMessage } from "@openzhiyu/shared";
 import { useIntegrations } from "@/hooks/use-integrations";
 import { toast } from "sonner";
 import { AccountSelector } from "@/components/account-selector";

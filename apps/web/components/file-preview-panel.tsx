@@ -676,13 +676,13 @@ export function FilePreviewPanel({
       // Only for truly relative paths (or LLM output like /output/xxx),
       // use taskId to construct path
       if (taskId && file.path) {
-        // Construct: ~/.openloomi/sessions/{taskId}/{relativePath}
+        // Construct: ~/.openzhiyu/sessions/{taskId}/{relativePath}
         try {
           const { homeDirCustom } = await import("@/lib/tauri");
           const homePath = await homeDirCustom();
           if (homePath) {
             setFullArtifactPath(
-              `${homePath}/.openloomi/sessions/${taskId}/${file.path}`,
+              `${homePath}/.openzhiyu/sessions/${taskId}/${file.path}`,
             );
             return;
           }

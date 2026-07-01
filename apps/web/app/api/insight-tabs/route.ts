@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import { getUserInsightTabs, createInsightTab } from "@/lib/db/queries";
+import { getUserInsightTabs, createInsightTab } from "@/lib/db/insight-queries";
 
 export async function GET(request: NextRequest) {
   const session = await auth();

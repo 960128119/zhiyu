@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useSession } from "next-auth/react";
-import { autoCleanupOldMessages } from "@openloomi/indexeddb/client";
+import { autoCleanupOldMessages } from "@openzhiyu/indexeddb/client";
 import { getAuthToken } from "@/lib/auth/token-manager";
 
 /**
@@ -47,7 +47,7 @@ interface AutoRefreshOptions {
 
 /**
  * Custom hook for Insight refresh related functionality
- * @param assistantName - Assistant name, used to replace "openloomi" in copy
+ * @param assistantName - Assistant name, used to replace "openzhiyu" in copy
  * @param isFirstLanding - Whether it's the first visit (no Insight events)
  * @param initialRefresh - Whether to execute refresh once on Hook initialization, defaults to true
  * @param autoRefreshOptions - Auto refresh configuration, defaults to enabled
@@ -81,7 +81,7 @@ export function useInsightRefresh(
   }, [isRefreshing]);
 
   // Assistant name
-  const name = assistantName || "openloomi";
+  const name = assistantName || "openzhiyu";
 
   /**
    * Convert API errors to friendly error messages
@@ -502,7 +502,7 @@ export function useInsightRefresh(
       ) {
         try {
           const { storeRawMessagesFromInsight } =
-            await import("@openloomi/indexeddb/client");
+            await import("@openzhiyu/indexeddb/client");
           const userId = session?.user?.id;
           if (userId) {
             const result = await storeRawMessagesFromInsight(

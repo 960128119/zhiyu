@@ -14,7 +14,7 @@ import {
 } from "@/lib/seo";
 
 export const metadata = {
-  metadataBase: new URL("https://openloomi.ai"),
+  metadataBase: new URL("https://openzhiyu.ai"),
   title: {
     default: siteMetadata.title,
     template: `%s | ${siteMetadata.name}`,
@@ -42,7 +42,7 @@ export const metadata = {
         url: `${siteMetadata.siteUrl}/images/home/intelligence-hero.png`,
         width: 1024,
         height: 1024,
-        alt: "OpenLoomi — Your proactive AI workspace. Always one step ahead.",
+        alt: "OpenZhiyu — Your proactive AI workspace. Always one step ahead.",
       },
     ],
   },
@@ -124,21 +124,21 @@ export default function RootLayout({ children }) {
           rel="stylesheet"
         />
         <Script
-          id="openloomi-website-jsonld"
+          id="openzhiyu-website-jsonld"
           type="application/ld+json"
           strategy="beforeInteractive"
         >
           {JSON.stringify(webSiteJsonLd)}
         </Script>
         <Script
-          id="openloomi-organization-jsonld"
+          id="openzhiyu-organization-jsonld"
           type="application/ld+json"
           strategy="beforeInteractive"
         >
           {JSON.stringify(organizationJsonLd)}
         </Script>
         <Script
-          id="openloomi-software-jsonld"
+          id="openzhiyu-software-jsonld"
           type="application/ld+json"
           strategy="beforeInteractive"
         >

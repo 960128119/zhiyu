@@ -7,17 +7,13 @@ import { tmpdir } from "node:os";
 import { parseFile } from "@/lib/files/parsers";
 import { randomUUID } from "node:crypto";
 import {
-  processDocument,
-  getUserRAGStats,
-  shouldSkipRAGEmbeddings,
-} from "@/lib/ai/rag/langchain-service";
-import {
   SUPPORTED_RAG_MIME_TYPES,
   getMimeTypeFromExtension,
 } from "@/lib/files/config";
 import { uploadFile } from "@/lib/storage";
+import { runRagIndexDocumentJob } from "@/lib/runtime-worker/rag-indexing";
 
-const UPLOAD_TEMP_DIR = path.join(tmpdir(), "openloomi-uploads");
+const UPLOAD_TEMP_DIR = path.join(tmpdir(), "openzhiyu-uploads");
 
 /**
  * Complete chunked upload - Merge all chunks and process document
@@ -169,29 +165,21 @@ export async function POST(request: Request) {
       // Continue processing, doesn't affect RAG functionality
     }
 
-    // Process document (vectorization and storage), pass blobPath
-    // Use processDocument instead of processDocumentFromFile to avoid calling parseFile again
-    const result = await processDocument(
+    // Run RAG indexing through the worker contract. This adapter is synchronous
+    // today, but the route no longer owns the indexing implementation.
+    const result = await runRagIndexDocumentJob({
       userId,
       userType,
       fileName,
-      finalContentType,
-      content, // Use already parsed content
-      {
-        chunkSize: 1000,
-        chunkOverlap: 200,
-        blobPath, // Pass original file path
-        skipEmbeddings: shouldSkipRAGEmbeddings(),
-      },
-      cloudAuthToken || undefined,
-    );
+      contentType: finalContentType,
+      content,
+      blobPath,
+      authToken: cloudAuthToken || undefined,
+    });
 
     console.log(
       `[Upload Complete] Document processed, chunks: ${result.chunksCount}`,
     );
-
-    // Get updated statistics
-    const stats = await getUserRAGStats(userId);
 
     return NextResponse.json({
       success: true,
@@ -207,8 +195,8 @@ export async function POST(request: Request) {
         creditCost: result.totalCreditCost,
       },
       stats: {
-        totalDocuments: stats.totalDocuments,
-        totalChunks: stats.totalChunks,
+        totalDocuments: result.stats.totalDocuments,
+        totalChunks: result.stats.totalChunks,
       },
     });
   } catch (error) {

@@ -19,3 +19,4 @@ export * from "./approval-final-send";
 export * from "./action-guard";
 export * from "./chat-loop-guard";
 export * from "./native-agent-guard";
+export * from "./natural-language";

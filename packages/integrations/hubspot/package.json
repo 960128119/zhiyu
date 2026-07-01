@@ -1,5 +1,5 @@
 {
-  "name": "@openloomi/integrations-hubspot",
+  "name": "@openzhiyu/integrations-hubspot",
   "version": "0.5.1",
   "private": true,
   "type": "module",
@@ -8,10 +8,10 @@
     "./client": "./src/client.ts"
   },
   "dependencies": {
-    "@openloomi/shared": "workspace:*"
+    "@openzhiyu/shared": "workspace:*"
   },
   "devDependencies": {
-    "@openloomi/config": "workspace:*",
+    "@openzhiyu/config": "workspace:*",
     "typescript": "^5.6.3"
   },
   "scripts": {

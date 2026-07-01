@@ -1,7 +1,7 @@
 import { auth } from "@/app/(auth)/auth";
 import { getUserLlmProviderConfig } from "@/lib/ai/user-llm-api-settings";
 import { isTauriMode } from "@/lib/env/constants";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 
 export const runtime = "nodejs";
 
@@ -75,7 +75,7 @@ function buildProviderHeaders(config: ProviderConfig) {
   if (config.baseUrl.includes("openrouter.ai")) {
     headers["HTTP-Referer"] =
       process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3515";
-    headers["X-Title"] = "OpenLoomi";
+    headers["X-Title"] = "OpenZhiyu";
   }
 
   return headers;

@@ -72,7 +72,7 @@ async function callLocalModel(
   const { streamText, createUIMessageStream, JsonToSseTransformStream } =
     await import("ai");
 
-  const { generateUUID } = await import("@openloomi/shared");
+  const { generateUUID } = await import("@openzhiyu/shared");
 
   const model = options.model
     ? getModelProvider(isNativeModel).languageModel(options.model)

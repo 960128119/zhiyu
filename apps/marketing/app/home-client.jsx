@@ -20,25 +20,25 @@ const data = {
   downloadLinks: {
     macOS: {
       arm64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_macOS_aarch64.dmg",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_macOS_aarch64.dmg",
       amd64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_macOS_amd64.dmg",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_macOS_amd64.dmg",
     },
     linux: {
       amd64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_linux_amd64.deb",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_linux_amd64.deb",
       arm64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_linux_aarch64.deb",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_linux_aarch64.deb",
     },
     windows: {
       amd64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_windows_amd64.exe",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_windows_amd64.exe",
       arm64: null,
     },
-    github: "https://github.com/melandlabs/openloomi/releases",
+    github: "https://github.com/melandlabs/openzhiyu/releases",
   },
   hero: {
-    title: "You focus on what matters. OpenLoomi closes the loop.",
+    title: "You focus on what matters. OpenZhiyu closes the loop.",
     subtitle:
       "Your proactive AI workspace. <br/>Nothing falls through the cracks.",
     cta: { primary: "Get Started" },
@@ -47,41 +47,41 @@ const data = {
     {
       title: "Proactive Awareness — Before You Ask",
       description:
-        "OpenLoomi continuously monitors signals across platforms—Slack, Email, Calendar, Documents—alerting you to important events proactively. Anomaly detection 10 minutes early, critical opportunities never missed.",
-      videoUrl: "/img/openloomi/openloomi-event.gif",
+        "OpenZhiyu continuously monitors signals across platforms—Slack, Email, Calendar, Documents—alerting you to important events proactively. Anomaly detection 10 minutes early, critical opportunities never missed.",
+      videoUrl: "/img/openzhiyu/openzhiyu-event.gif",
     },
     {
       title: "95% Noise Filtering — Focus on What Matters",
       description:
-        "Hundreds of daily messages refined into one focused panel. OpenLoomi tells you what you should act on—not drowning you in information overload.",
-      videoUrl: "/img/openloomi/openloomi-filter.gif",
+        "Hundreds of daily messages refined into one focused panel. OpenZhiyu tells you what you should act on—not drowning you in information overload.",
+      videoUrl: "/img/openzhiyu/openzhiyu-filter.gif",
     },
     {
       title: "Long-Term Memory — Context Across Connectors",
       description:
-        "OpenLoomi builds persistent knowledge graphs of people, projects, and decisions. Six months later, it still remembers your commitments and context. No more repeating yourself, no more context loss.",
-      videoUrl: "/img/openloomi/openloomi-connectors.gif",
+        "OpenZhiyu builds persistent knowledge graphs of people, projects, and decisions. Six months later, it still remembers your commitments and context. No more repeating yourself, no more context loss.",
+      videoUrl: "/img/openzhiyu/openzhiyu-connectors.gif",
     },
     {
       title: "Autonomous Execution — Complete the Loop",
       description:
-        "Not just telling you what to do—OpenLoomi does it. Drafts replies, schedules meetings, generates reports, tracks and validates results end-to-end.",
-      videoUrl: "/img/openloomi/openloomi-actions.gif",
+        "Not just telling you what to do—OpenZhiyu does it. Drafts replies, schedules meetings, generates reports, tracks and validates results end-to-end.",
+      videoUrl: "/img/openzhiyu/openzhiyu-actions.gif",
     },
     {
       title: "Builtin Skills — Rich Execution Capabilities",
       description:
-        "From code generation to PDF creation, data analysis to browser automation—OpenLoomi's Skills ecosystem covers every work scenario and keeps expanding.",
-      videoUrl: "/img/openloomi/openloomi-skills.gif",
+        "From code generation to PDF creation, data analysis to browser automation—OpenZhiyu's Skills ecosystem covers every work scenario and keeps expanding.",
+      videoUrl: "/img/openzhiyu/openzhiyu-skills.gif",
     },
   ],
   support: {
-    title: "How People Use OpenLoomi",
+    title: "How People Use OpenZhiyu",
     items: [
       {
         title: "Never Miss a Critical Signal",
         description:
-          "For leaders navigating cross-departmental complexity. OpenLoomi acts as your executive twin—tracking milestones across the organization and turning scattered signals into a unified strategic path.",
+          "For leaders navigating cross-departmental complexity. OpenZhiyu acts as your executive twin—tracking milestones across the organization and turning scattered signals into a unified strategic path.",
         role: "For Global Managers",
         image: "/img/People/Global Leaders.png",
       },
@@ -95,7 +95,7 @@ const data = {
       {
         title: "One Person Does the Work of Many",
         description:
-          "For founders and sales professionals. OpenLoomi learns your communication style, automatically maintains hundreds of client relationships, generates personalized proposals—never burns out.",
+          "For founders and sales professionals. OpenZhiyu learns your communication style, automatically maintains hundreds of client relationships, generates personalized proposals—never burns out.",
         role: "For Founders & Sales",
         image: "/img/People/Creators Sales.png",
       },
@@ -104,12 +104,12 @@ const data = {
   sovereignty: {
     title: "Your Data, Your Sovereignty",
     subtitle:
-      "OpenLoomi puts privacy and control first—you never need to trade data sovereignty for intelligence.",
+      "OpenZhiyu puts privacy and control first—you never need to trade data sovereignty for intelligence.",
     items: [
       {
         title: "Local-First Architecture",
         description:
-          "Your raw messages and files stay on your device. OpenLoomi accesses only what's needed—no unnecessary uploads.",
+          "Your raw messages and files stay on your device. OpenZhiyu accesses only what's needed—no unnecessary uploads.",
         image: "/img/Privacy/Property 1=Local-First.png",
         icon: "database-2",
       },
@@ -139,12 +139,12 @@ const data = {
   signals: {
     title: "Strategy and Execution. In Sync.",
     subtitle:
-      "OpenLoomi turns scattered information into a proactive digital twin—aligning your world so you can move forward, not just react.",
+      "OpenZhiyu turns scattered information into a proactive digital twin—aligning your world so you can move forward, not just react.",
     heroCard: {
       icon: "/img/Icon/graph.svg",
       title: "Transform Your Communication Workflow",
       description:
-        "OpenLoomi reimagines how you interact with information. Instead of drowning in messages, you work with meaningful signals that drive decisions and actions. Our intelligent system filters, connects, and prioritizes what truly matters.",
+        "OpenZhiyu reimagines how you interact with information. Instead of drowning in messages, you work with meaningful signals that drive decisions and actions. Our intelligent system filters, connects, and prioritizes what truly matters.",
     },
     cards: [
       {
@@ -163,7 +163,7 @@ const data = {
         icon: "/img/Icon/suggestion.svg",
         title: "Active Momentum",
         description:
-          "Move beyond suggestions. OpenLoomi orchestrates the tools you need to turn intent into action.",
+          "Move beyond suggestions. OpenZhiyu orchestrates the tools you need to turn intent into action.",
       },
     ],
   },
@@ -238,7 +238,7 @@ data.platforms = [
 const supportSectionWrapper =
   "w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 pb-3 sm:pb-20 md:pb-20 mb-0";
 
-// Support Section ("How People Use OpenLoomi") is hidden per requirements
+// Support Section ("How People Use OpenZhiyu") is hidden per requirements
 const showSupportSection = false;
 const sectionHeading =
   "text-2xl sm:text-3xl md:text-5xl w-full font-serif font-semibold tracking-tight text-foreground text-left mb-4";
@@ -351,7 +351,7 @@ const MarketingPage = () => {
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
-                  href="https://github.com/melandlabs/openloomi"
+                  href="https://github.com/melandlabs/openzhiyu"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="bg-primary-gradient text-primary-foreground px-8 py-4 rounded-lg shadow-sm font-medium transition-all transform flex items-center gap-2 relative z-20 hover:brightness-95"
@@ -377,7 +377,7 @@ const MarketingPage = () => {
                       <a
                         href={data.downloadLinks.macOS.arm64}
                         className="bg-primary-gradient text-primary-foreground px-8 py-4 rounded-lg shadow-sm font-medium transition-all transform flex items-center gap-2 relative z-20 hover:brightness-95 min-w-[220px] justify-center"
-                        aria-label={`Download openloomi for ${t("hero.macosAppleSilicon")}`}
+                        aria-label={`Download openzhiyu for ${t("hero.macosAppleSilicon")}`}
                       >
                         <RemixIcon name="download" size="size-5" />
                         {t("hero.macosAppleSilicon")}
@@ -387,7 +387,7 @@ const MarketingPage = () => {
                       <a
                         href={data.downloadLinks.macOS.amd64}
                         className="bg-primary-gradient text-primary-foreground px-8 py-4 rounded-lg shadow-sm font-medium transition-all transform flex items-center gap-2 relative z-20 hover:brightness-95 min-w-[220px] justify-center"
-                        aria-label={`Download openloomi for ${t("hero.macosIntel")}`}
+                        aria-label={`Download openzhiyu for ${t("hero.macosIntel")}`}
                       >
                         <RemixIcon name="download" size="size-5" />
                         {t("hero.macosIntel")}
@@ -401,7 +401,7 @@ const MarketingPage = () => {
                       <a
                         href={data.downloadLinks.linux.amd64}
                         className="bg-primary-gradient text-primary-foreground px-8 py-4 rounded-lg shadow-sm font-medium transition-all transform flex items-center gap-2 relative z-20 hover:brightness-95 min-w-[220px] justify-center"
-                        aria-label={`Download openloomi for ${t("hero.linuxX86_64")}`}
+                        aria-label={`Download openzhiyu for ${t("hero.linuxX86_64")}`}
                       >
                         <RemixIcon name="download" size="size-5" />
                         {t("hero.linuxX86_64")}
@@ -411,7 +411,7 @@ const MarketingPage = () => {
                       <a
                         href={data.downloadLinks.linux.arm64}
                         className="bg-primary-gradient text-primary-foreground px-8 py-4 rounded-lg shadow-sm font-medium transition-all transform flex items-center gap-2 relative z-20 hover:brightness-95 min-w-[220px] justify-center"
-                        aria-label={`Download openloomi for ${t("hero.linuxARM64")}`}
+                        aria-label={`Download openzhiyu for ${t("hero.linuxARM64")}`}
                       >
                         <RemixIcon name="download" size="size-5" />
                         {t("hero.linuxARM64")}
@@ -437,17 +437,17 @@ const MarketingPage = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-primary-gradient text-primary-foreground px-8 py-4 rounded-lg shadow-sm font-medium transition-all transform flex items-center gap-2 relative z-20 hover:brightness-95"
-                    aria-label={t("hero.downloadopenloomi")}
+                    aria-label={t("hero.downloadopenzhiyu")}
                   >
                     <RemixIcon name="download" size="size-5" />
-                    {t("hero.downloadopenloomi")}
+                    {t("hero.downloadopenzhiyu")}
                   </a>
                 )}
               </div> */}
               <div className="w-full mt-8">
                 <Image
                   src="/img/pic/index.png"
-                  alt="OpenLoomi main workspace preview"
+                  alt="OpenZhiyu main workspace preview"
                   className="w-full h-auto rounded-3xl"
                   width={1440}
                   height={900}
@@ -533,7 +533,7 @@ const MarketingPage = () => {
             </div>
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <a
-                href="https://github.com/melandlabs/openloomi"
+                href="https://github.com/melandlabs/openzhiyu"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-primary-gradient text-primary-foreground px-8 py-4 rounded-lg shadow-sm font-medium transition-all transform flex items-center gap-2 hover:brightness-95"
@@ -594,7 +594,7 @@ const MarketingPage = () => {
                 {t("sovereignty.subtitle")}
               </p>
               <Link
-                href="https://app.openloomi.ai/privacy"
+                href="https://app.openzhiyu.ai/privacy"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex w-fit items-center bg-transparent border border-border-primary text-foreground px-8 py-4 rounded-lg font-medium transition-all transform relative z-20 hover:bg-background-secondary"

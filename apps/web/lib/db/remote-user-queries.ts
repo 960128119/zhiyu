@@ -1,4 +1,4 @@
-import { db } from "./queries";
+import { db } from "./client";
 import { user as userTable } from "./schema";
 import type { User } from "./schema";
 import { eq } from "drizzle-orm";

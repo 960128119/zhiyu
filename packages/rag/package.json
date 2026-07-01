@@ -1,7 +1,7 @@
 {
-  "name": "@openloomi/rag",
+  "name": "@openzhiyu/rag-legacy",
   "version": "0.4.1",
-  "private": false,
+  "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -19,7 +19,7 @@
     "@langchain/core": "^1.1.8",
     "@langchain/textsplitters": "^1.0.1",
     "zod": "^4.3.6",
-    "@openloomi/shared": "workspace:*",
+    "@openzhiyu/shared": "workspace:*",
     "pdfjs-dist": "^4.9.155",
     "jszip": "^3.10.1",
     "better-sqlite3": "^11.7.0",
@@ -28,7 +28,7 @@
     "openai": "^4.85.2"
   },
   "devDependencies": {
-    "@openloomi/config": "workspace:*",
+    "@openzhiyu/config": "workspace:*",
     "typescript": "^5.6.3"
   },
   "scripts": {

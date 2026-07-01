@@ -10,8 +10,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
-import { Button, Input, Label } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { Button, Input, Label } from "@openzhiyu/ui";
 import { toast } from "@/components/toast";
 import { openUrl, isTauri } from "@/lib/tauri";
 import { getStoredAuthToken } from "@/lib/auth/remote-client";

@@ -29,7 +29,7 @@ function Badge({ children, style }) {
 
 /**
  * MDX component config
- * Merges Fumadocs UI defaults with OpenLoomi-specific components.
+ * Merges Fumadocs UI defaults with OpenZhiyu-specific components.
  */
 export const getMDXComponents = (components = {}) => ({
   ...defaultMdxComponents,

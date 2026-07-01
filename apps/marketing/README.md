@@ -1,4 +1,4 @@
-# OpenLoomi Marketing
+# OpenZhiyu Marketing
 
 The Marketing app uses Fumadocs for both product documentation and blog content.
 

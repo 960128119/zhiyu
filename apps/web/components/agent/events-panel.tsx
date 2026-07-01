@@ -42,22 +42,22 @@ import {
   type OutlookAuthSubmission,
 } from "@/components/outlook-auth";
 import { TelegramTokenForm } from "@/components/telegram-token-form";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { toast } from "@/components/toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@openloomi/ui";
-import { HorizontalScrollContainer } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { HorizontalScrollContainer } from "@openzhiyu/ui";
 import {
   WhatsAppAuthForm,
   type WhatsAppUserInfo,
@@ -72,8 +72,8 @@ import { useInsightUnread } from "@/hooks/use-insight-unread";
 import { useInsightWeights } from "@/hooks/use-insight-weights";
 import { useIntegrations } from "@/hooks/use-integrations";
 import type { IntegrationId } from "@/hooks/use-integrations";
-import { useIsMobile } from "@openloomi/hooks/use-is-mobile";
-import { AppError } from "@openloomi/shared/errors";
+import { useIsMobile } from "@openzhiyu/hooks/use-is-mobile";
+import { AppError } from "@openzhiyu/shared/errors";
 import { sortInsightsByEventRank } from "@/lib/insights/event-rank";
 import { insightMatchesFilter } from "@/lib/insights/filter-utils";
 import {
@@ -104,7 +104,7 @@ import {
   InsightRefreshingState,
 } from "./insight-empty-state";
 import { AgentSectionHeader } from "./section-header";
-import { useLocalStorage } from "@openloomi/hooks/use-local-storage";
+import { useLocalStorage } from "@openzhiyu/hooks/use-local-storage";
 
 /**
  * Event panel component for Agent workspace
@@ -450,7 +450,7 @@ export function AgentEventsPanel({
   // Component state and basic functionality
   // Read last selected tab from localStorage, only timeline: all or custom tab id, default to "all"
   const [selectedValue, setSelectedValue] = useLocalStorage<ViewOptionValue>(
-    "openloomi_selectedTab",
+    "openzhiyu_selectedTab",
     "all",
   );
 
@@ -469,12 +469,12 @@ export function AgentEventsPanel({
   // Timeline read/unread filter state
   const [sharedReadStatus, setSharedReadStatus] = useLocalStorage<
     "unread" | "read" | "all"
-  >("openloomi_focusReadStatus", "all");
+  >("openzhiyu_focusReadStatus", "all");
 
   // Timeline time filter state
   const [sharedTimeFilter, setSharedTimeFilter] = useLocalStorage<
     "all" | "24h" | "today"
-  >("openloomi_focusTimeFilter", "today");
+  >("openzhiyu_focusTimeFilter", "today");
 
   const allReadStatus = sharedReadStatus;
   const allTimeFilter = sharedTimeFilter;
@@ -493,7 +493,7 @@ export function AgentEventsPanel({
 
   const preferenceStorageKey = useMemo(() => {
     const userId = data?.user?.id ?? data?.user?.email ?? "guest";
-    return `openloomi:insight:prefs:${userId}`;
+    return `openzhiyu:insight:prefs:${userId}`;
   }, [data?.user?.email, data?.user?.id]);
 
   useEffect(() => {
@@ -1337,10 +1337,10 @@ export function AgentEventsPanel({
 
     // Only update and dispatch event when categoryStats actually changes
     if (statsStr !== lastStatsStr) {
-      safeLocalStorageSetItem("openloomi_categoryStats", statsStr);
+      safeLocalStorageSetItem("openzhiyu_categoryStats", statsStr);
       // Trigger custom event to notify AppSidebar
       window.dispatchEvent(
-        new CustomEvent("openloomi:categoryStatsUpdate", {
+        new CustomEvent("openzhiyu:categoryStatsUpdate", {
           detail: categoryStats,
         }),
       );
@@ -1349,9 +1349,9 @@ export function AgentEventsPanel({
 
     // Also sync totalCategoryStats (total count not affected by filters)
     if (totalStatsStr !== lastTotalStatsStr) {
-      safeLocalStorageSetItem("openloomi_totalCategoryStats", totalStatsStr);
+      safeLocalStorageSetItem("openzhiyu_totalCategoryStats", totalStatsStr);
       window.dispatchEvent(
-        new CustomEvent("openloomi:totalCategoryStatsUpdate", {
+        new CustomEvent("openzhiyu:totalCategoryStatsUpdate", {
           detail: totalCategoryStats,
         }),
       );

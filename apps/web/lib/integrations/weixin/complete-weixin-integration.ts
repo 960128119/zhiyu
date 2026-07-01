@@ -2,11 +2,13 @@
  * Write integration account + bot after QR scan success (aligned with POST /api/integrations behavior)
  */
 import {
-  upsertIntegrationAccount,
   createBot,
   updateBot,
+} from "@/lib/db/bot-queries";
+import {
   getIntegrationAccountsByUserId,
-} from "@/lib/db/queries";
+  upsertIntegrationAccount,
+} from "@/lib/db/integration-queries";
 
 export async function completeWeixinIntegrationAfterQr(params: {
   userId: string;
@@ -40,7 +42,7 @@ export async function completeWeixinIntegrationAfterQr(params: {
     status: "active",
   });
 
-  const botDescription = "Chat with openloomi via Weixin (iLink)";
+  const botDescription = "Chat with openzhiyu via Weixin (iLink)";
 
   const existingAccounts = await getIntegrationAccountsByUserId({
     userId: params.userId,

@@ -1,5 +1,5 @@
 import { startTelegramUserListener } from "./user-listener";
-import { getIntegrationAccountsByUserId } from "@/lib/db/queries";
+import { getIntegrationAccountsByUserId } from "@/lib/db/integration-queries";
 
 /**
  * Initialize Telegram User Listener (listens to Saved Messages)

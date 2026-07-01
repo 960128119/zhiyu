@@ -4,7 +4,7 @@ import { type ReactNode, useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 
 import { RemixIcon } from "@/components/remix-icon";
 import { getAuthToken } from "@/lib/auth/token-manager";
@@ -132,7 +132,7 @@ export function ConversationApiOnboardingGuard({
               <p className="mt-1 text-sm text-muted-foreground">
                 {t(
                   "settings.aiSettingsMissingBannerDescription",
-                  "Configure an Anthropic-compatible provider before starting a conversation.",
+                  "Configure an OpenAI-compatible or Anthropic-compatible provider before starting a conversation.",
                 )}
               </p>
             </div>

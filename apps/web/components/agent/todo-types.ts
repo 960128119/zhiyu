@@ -2,7 +2,7 @@
 
 import type { Insight, InsightTaskStatus } from "@/lib/db/schema";
 import type { InsightTaskItem } from "@/lib/ai/subagents/insights";
-import { coerceDate } from "@openloomi/shared";
+import { coerceDate } from "@openzhiyu/shared";
 import { format } from "date-fns";
 
 export type TaskType =

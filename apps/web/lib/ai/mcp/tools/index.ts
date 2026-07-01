@@ -22,10 +22,12 @@ import { createSearchKnowledgeTools } from "./search-knowledge";
 import { createRawMessagesTools } from "./raw-messages";
 import { createUnifiedMemorySearchTool } from "./unified-memory";
 import { createMemoryPathTool } from "./memory-path";
-import { createSchedulerTools } from "./scheduler";
+import { createLoopTaskTools } from "./loop-tasks";
+import { createWechatDesktopTools } from "./wechat-desktop";
 
 export type BusinessToolsMcpOptions = {
   excludeTools?: string[];
+  enableWechatDesktopSend?: boolean;
 };
 
 /**
@@ -81,8 +83,14 @@ export function createBusinessToolsMcpServer(
     // Memory path tool
     createMemoryPathTool(session),
 
-    // Scheduler tools
-    ...createSchedulerTools(session, embeddingsAuthToken),
+    // Native Loop task tools. Legacy scheduled_jobs tools are intentionally
+    // not exposed to agents; all new timed/background tasks should be loops.
+    ...createLoopTaskTools(session),
+
+    // Local desktop WeChat tools
+    ...createWechatDesktopTools({
+      includeSendTool: options?.enableWechatDesktopSend,
+    }),
   ];
 
   const excludeSet = new Set(options?.excludeTools ?? []);

@@ -5,7 +5,7 @@ const now = new Date("2026-06-16T00:00:00.000Z");
 
 const stateByLoopId = vi.hoisted(() => new Map<string, LoopState>());
 const loops = vi.hoisted(() => [] as Loop[]);
-const runNativeLoopOnceMock = vi.hoisted(() => vi.fn());
+const runLoopHarnessMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/loops/service", () => ({
   getLoopState: vi.fn(async (loopId: string) => stateByLoopId.get(loopId) ?? null),
@@ -26,8 +26,8 @@ vi.mock("@/lib/loops/service", () => ({
   }),
 }));
 
-vi.mock("@/lib/loops/runtime", () => ({
-  runNativeLoopOnce: runNativeLoopOnceMock,
+vi.mock("@/lib/loops/harness", () => ({
+  runLoopHarness: runLoopHarnessMock,
 }));
 
 import { listDueNativeLoops, runDueNativeLoops } from "@/lib/loops/native-scheduler";
@@ -72,7 +72,7 @@ describe("native loop scheduler", () => {
   beforeEach(() => {
     stateByLoopId.clear();
     loops.length = 0;
-    runNativeLoopOnceMock.mockReset();
+    runLoopHarnessMock.mockReset();
   });
 
   it("lists due loops from persisted nextScheduledRunAt", async () => {
@@ -108,11 +108,14 @@ describe("native loop scheduler", () => {
         },
       }),
     );
-    runNativeLoopOnceMock.mockResolvedValue({
-      status: "success",
-      output: "ok",
-      duration: 0,
-      result: {},
+    runLoopHarnessMock.mockResolvedValue({
+      result: {
+        status: "success",
+        output: "ok",
+        duration: 0,
+        result: {},
+      },
+      harness: { name: "loop-run-harness", mode: "dry_run" },
     });
 
     const result = await runDueNativeLoops({
@@ -123,12 +126,12 @@ describe("native loop scheduler", () => {
     });
 
     expect(result).toEqual({ launched: 1, skipped: 0 });
-    expect(runNativeLoopOnceMock).toHaveBeenCalledWith(
+    expect(runLoopHarnessMock).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: "user-1",
         loopId: dueLoop.id,
+        mode: "dry_run",
         triggeredBy: "scheduler",
-        execute: undefined,
       }),
     );
     expect(stateByLoopId.get(dueLoop.id)?.stateJson).toMatchObject({
@@ -150,7 +153,7 @@ describe("native loop scheduler", () => {
         },
       }),
     );
-    runNativeLoopOnceMock.mockImplementation(async () => {
+    runLoopHarnessMock.mockImplementation(async () => {
       const current = stateByLoopId.get(dueLoop.id) ?? state(dueLoop.id);
       stateByLoopId.set(dueLoop.id, {
         ...current,

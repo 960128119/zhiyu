@@ -22,24 +22,24 @@ import {
 } from "@whiskeysockets/baileys";
 import { downloadMediaMessage } from "@whiskeysockets/baileys/lib/Utils/messages";
 import pino from "pino";
-import { MessagePlatformAdapter } from "@openloomi/integrations/channels";
+import { MessagePlatformAdapter } from "@openzhiyu/integrations/channels";
 import type {
   MessageEvent,
   MessageTarget,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 import type {
-  Image as openloomiImage,
-  Message as openloomiMessage,
-  File as openloomiFile,
+  Image as openzhiyuImage,
+  Message as openzhiyuMessage,
+  File as openzhiyuFile,
   Messages,
-} from "@openloomi/integrations/channels";
-import type { ExtractedMessageInfo } from "@openloomi/integrations/channels/sources/types";
+} from "@openzhiyu/integrations/channels";
+import type { ExtractedMessageInfo } from "@openzhiyu/integrations/channels/sources/types";
 import type {
   BaileysAuthStateProvider,
   ClientRegistry,
   FileIngester,
   ConfigProvider,
-} from "@openloomi/integrations/core";
+} from "@openzhiyu/integrations/core";
 
 const DEBUG = process.env.DEBUG_WHATSAPP === "true";
 
@@ -76,13 +76,13 @@ type LoginDeferred = {
   rejectLogin: (error: Error) => void;
 };
 
-function isImageMessage(message: openloomiMessage): message is openloomiImage {
+function isImageMessage(message: openzhiyuMessage): message is openzhiyuImage {
   if (typeof message !== "object" || message === null) return false;
   if (!("url" in message) && !("base64" in message)) return false;
   return !isFileMessage(message);
 }
 
-function isFileMessage(message: openloomiMessage): message is openloomiFile {
+function isFileMessage(message: openzhiyuMessage): message is openzhiyuFile {
   if (typeof message !== "object" || message === null) return false;
   return "url" in message && "name" in message;
 }
@@ -276,7 +276,7 @@ export class WhatsAppAdapter extends MessagePlatformAdapter {
       auth,
       logger,
       printQRInTerminal: false,
-      browser: ["openloomi", "Desktop", "0.3.0"],
+      browser: ["openzhiyu", "Desktop", "0.3.0"],
       generateHighQualityLinkPreview: false,
       connectTimeoutMs: 30_000,
       syncFullHistory: true,
@@ -1512,7 +1512,7 @@ export class WhatsAppAdapter extends MessagePlatformAdapter {
   }
 
   private async prepareMediaMessage(
-    image: openloomiImage,
+    image: openzhiyuImage,
   ): Promise<{ image: Buffer } | null> {
     try {
       let buffer: Buffer;
@@ -1537,7 +1537,7 @@ export class WhatsAppAdapter extends MessagePlatformAdapter {
     }
   }
 
-  private async prepareFileMessage(file: openloomiFile): Promise<{
+  private async prepareFileMessage(file: openzhiyuFile): Promise<{
     document: Buffer;
     mimetype: string;
     fileName: string;

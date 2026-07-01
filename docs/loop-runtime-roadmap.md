@@ -1,6 +1,6 @@
 # Loop Runtime Roadmap
 
-This document is the persistent implementation contract for turning OpenLoomi
+This document is the persistent implementation contract for turning OpenZhiyu
 from an AI workspace into a loop-first agent runtime.
 
 Every implementation session should start by reading this file and end by
@@ -9,7 +9,7 @@ truth for this migration.
 
 ## North Star
 
-OpenLoomi should treat a long-running loop as a first-class runtime object:
+OpenZhiyu should treat a long-running loop as a first-class runtime object:
 
 ```text
 Loop = goal + trigger + context + allowed actions + verification + state + approval
@@ -883,7 +883,7 @@ The first Loop Spec should be JSON-compatible and safe to store in SQLite:
 - Verification: `pnpm.cmd --filter web tsc --noEmit` passes after Phase 37.
 - Phase 38 wired chat/tool advisory guard context through integration runtime
   entrypoints.
-- Phase 38 extended `AIHandlerOptions` in `@openloomi/integrations` with
+- Phase 38 extended `AIHandlerOptions` in `@openzhiyu/integrations` with
   optional `loopIdForGuard`.
 - Phase 38 updated `WebAIHandler` to pass `loopIdForGuard` into the shared
   agent runtime.
@@ -1183,6 +1183,21 @@ The first Loop Spec should be JSON-compatible and safe to store in SQLite:
   `pnpm.cmd --filter web exec vitest run tests/unit/loop-approval-adapters-route.test.ts tests/unit/loop-approval-final-send.test.ts tests/unit/loop-approval-replay.test.ts`
   passes after Phase 58.
 - Verification: `pnpm.cmd --filter web tsc --noEmit` passes after Phase 58.
+- Phase 59 surfaced approval adapter registry status in the `/loops` product
+  surface.
+- Phase 59 updated `apps/web/app/(chat)/loops/page.tsx` to fetch
+  `/api/loops/approvals/adapters` alongside the approval inbox and show replay
+  and final-send adapter counts in a read-only Adapter registry panel.
+- Final-send remains intentionally blocked when the registry is empty; the UI
+  now makes that operational state visible instead of requiring direct API
+  inspection.
+- Phase 59 added `apps/web/tests/unit/loop-page-adapter-registry.test.ts` to
+  lock the product page to the adapter registry API and visible replay/final-send
+  status copy.
+- Verification blocked in this sandbox: PATH has no `node` or `pnpm.cmd`, and
+  direct Node 22 smoke execution fails because `node_modules/tsx` and
+  `node_modules/better-sqlite3` are not installed in this workspace.
+
 ## Next Step
 
 The initial Loop Engineering migration is now complete at the service/API

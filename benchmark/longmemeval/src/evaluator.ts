@@ -1,7 +1,7 @@
 /**
  * LongMemEval Evaluator for Memory System.
  *
- * Uses OpenLoomi's MemoryStorageAdapter interface with in-memory implementation
+ * Uses OpenZhiyu's MemoryStorageAdapter interface with in-memory implementation
  * for benchmarking the memory system. Now uses /api/native/agent for answering questions.
  */
 
@@ -38,7 +38,7 @@ function parseTimestamp(ts: string): number | undefined {
 }
 
 /**
- * Write memory records to ~/.openloomi/data/memory/bench/ folder.
+ * Write memory records to ~/.openzhiyu/data/memory/bench/ folder.
  * Each session becomes a memory file.
  */
 async function writeMemoryFiles(
@@ -47,7 +47,7 @@ async function writeMemoryFiles(
 ): Promise<void> {
   const memoryDir = join(
     homedir(),
-    ".openloomi",
+    ".openzhiyu",
     "data",
     "memory",
     "bench",
@@ -125,7 +125,7 @@ function createMemoryRecordsFromEntry(entry: LongMemEvalEntry): MemoryRecord[] {
 }
 
 /**
- * Evaluator for LongMemEval benchmark using OpenLoomi Memory API.
+ * Evaluator for LongMemEval benchmark using OpenZhiyu Memory API.
  */
 export { findAvailablePort, DEFAULT_PORTS };
 
@@ -150,7 +150,7 @@ export class LongMemEvalEvaluator {
     this.resume = resume;
     this.checkpointDir = join(
       homedir(),
-      ".openloomi",
+      ".openzhiyu",
       "data",
       "memory",
       "bench",
@@ -319,7 +319,7 @@ export class LongMemEvalEvaluator {
    * Query memory using the agent API.
    */
   private async queryMemory(entry: LongMemEvalEntry): Promise<string> {
-    const memoryPath = `~/.openloomi/data/memory/bench/longmemeval_${entry.question_id}/`;
+    const memoryPath = `~/.openzhiyu/data/memory/bench/longmemeval_${entry.question_id}/`;
 
     // Build date context for temporal reasoning
     const dateRange =

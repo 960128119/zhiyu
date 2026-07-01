@@ -190,6 +190,7 @@ export function buildCheckerVerificationPayload(input: {
   approval?: LoopApprovalEvaluation;
   actionGuard?: LoopActionGuardResult;
   toolGate?: LoopToolGateEvaluation;
+  executionTrace?: LoopJson;
   modelChecker?: LoopJson;
 }): LoopJson {
   return {
@@ -199,6 +200,7 @@ export function buildCheckerVerificationPayload(input: {
     approval: input.approval,
     actionGuard: input.actionGuard,
     toolGate: input.toolGate,
+    executionTrace: input.executionTrace,
     modelChecker: input.modelChecker,
     passed: input.decision.action === "complete",
   };

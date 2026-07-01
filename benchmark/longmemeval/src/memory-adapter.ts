@@ -23,12 +23,12 @@ import type {
 } from "./contracts";
 
 /**
- * Default ports to check for the OpenLoomi API server.
+ * Default ports to check for the OpenZhiyu API server.
  */
 export const DEFAULT_PORTS = [3515];
 
 /**
- * Find an available port where the OpenLoomi API server is running.
+ * Find an available port where the OpenZhiyu API server is running.
  */
 export async function findAvailablePort(): Promise<number> {
   for (const port of DEFAULT_PORTS) {
@@ -38,7 +38,7 @@ export async function findAvailablePort(): Promise<number> {
     }
   }
   throw new Error(
-    `No OpenLoomi API server found on ports ${DEFAULT_PORTS.join(", ")}. Please start the server first.`,
+    `No OpenZhiyu API server found on ports ${DEFAULT_PORTS.join(", ")}. Please start the server first.`,
   );
 }
 
@@ -66,10 +66,10 @@ function checkPortAvailable(port: number): Promise<boolean> {
 
 /**
  * Read auth token from a file.
- * Defaults to ~/.openloomi/token
+ * Defaults to ~/.openzhiyu/token
  */
 export function readAuthToken(tokenPath?: string): string | undefined {
-  const filePath = tokenPath ?? join(homedir(), ".openloomi", "token");
+  const filePath = tokenPath ?? join(homedir(), ".openzhiyu", "token");
   try {
     const token = readFileSync(filePath, "utf-8").trim();
     return token || undefined;
@@ -79,7 +79,7 @@ export function readAuthToken(tokenPath?: string): string | undefined {
 }
 
 /**
- * Call the OpenLoomi agent API with a prompt.
+ * Call the OpenZhiyu agent API with a prompt.
  */
 export async function callAgentApi(
   prompt: string,

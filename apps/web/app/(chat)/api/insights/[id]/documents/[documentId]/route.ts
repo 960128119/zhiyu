@@ -1,5 +1,5 @@
 import { auth } from "@/app/(auth)/auth";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import { db } from "@/lib/db/queries";
 import {
   insight,
@@ -54,7 +54,7 @@ export async function DELETE(
     }
 
     // Verify user permission: validate through bot
-    const { botExists } = await import("@/lib/db/queries");
+    const { botExists } = await import("@/lib/db/bot-queries");
     const botRecord = await botExists({
       id: insightResult[0].botId,
       userId: session.user.id,

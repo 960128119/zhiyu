@@ -10,17 +10,17 @@ export const en = {
   hero: {
     title: "Your AI Mates that Remembers All Work Details",
     subtitle:
-      "OpenLoomi connects your tools, remembers your work, and keeps your AI in context — across every channel, every day.",
+      "OpenZhiyu connects your tools, remembers your work, and keeps your AI in context — across every channel, every day.",
     cta: "Get Started",
     installOnDesktop: "Please install on desktop",
     installDesktopDesc:
-      "OpenLoomi supports macOS, Linux and Windows. Please visit on a desktop device to download.",
+      "OpenZhiyu supports macOS, Linux and Windows. Please visit on a desktop device to download.",
     downloadForWindows: "Download for Windows",
     downloadForMacAppleSilicon: "Download for macOS (Apple Silicon)",
     downloadForMacIntel: "Download for macOS (Intel)",
     downloadForLinuxX86_64: "Download for Linux (x86_64)",
     downloadForLinuxARM64: "Download for Linux (ARM64)",
-    downloadopenloomi: "Download OpenLoomi",
+    downloadopenzhiyu: "Download OpenZhiyu",
     macosAppleSilicon: "macOS Apple Silicon",
     macosIntel: "macOS Intel",
     linuxX86_64: "Linux x86_64",
@@ -43,7 +43,7 @@ export const en = {
     eyebrow: "02 — How It Works",
     heading: "Your AI finally sees the full picture.",
     description:
-      "OpenLoomi connects across Slack, email, calendar, docs, and more — not to archive, but to understand. It builds a living picture of your work: who matters, what's at stake, and what needs to move forward.",
+      "OpenZhiyu connects across Slack, email, calendar, docs, and more — not to archive, but to understand. It builds a living picture of your work: who matters, what's at stake, and what needs to move forward.",
     quote: "Not because you asked. Because it already knows.",
     statsAvg: "Average contexts indexed in first 30 days",
     platformMarquee: "Works seamlessly with tools you already use",
@@ -59,7 +59,7 @@ export const en = {
     heading: "It picks up where you left off.",
     headingAccent: "And follows through until it's done.",
     description:
-      "With persistent memory and cross-channel context, OpenLoomi doesn't just suggest — it drafts replies, schedules follow-ups, tracks commitments, and closes the loop. You approve, it executes.",
+      "With persistent memory and cross-channel context, OpenZhiyu doesn't just suggest — it drafts replies, schedules follow-ups, tracks commitments, and closes the loop. You approve, it executes.",
     steps: [
       "Draft a reply.",
       "Schedule a follow-up.",
@@ -68,7 +68,7 @@ export const en = {
       "Close a ticket.",
     ],
     approve: "Approve",
-    footer: "You approve. OpenLoomi executes — every step of the way.",
+    footer: "You approve. OpenZhiyu executes — every step of the way.",
   },
   capabilities: {
     eyebrow: "Capabilities",
@@ -79,12 +79,12 @@ export const en = {
       {
         title: "Context",
         description:
-          "OpenLoomi understands your work across people, projects, and decisions — not just keywords, but relationships and history.",
+          "OpenZhiyu understands your work across people, projects, and decisions — not just keywords, but relationships and history.",
       },
       {
         title: "Memory",
         description:
-          "Yesterday's discussion, last week's decision, the project's evolution — OpenLoomi remembers it all, across sessions and across days.",
+          "Yesterday's discussion, last week's decision, the project's evolution — OpenZhiyu remembers it all, across sessions and across days.",
       },
       {
         title: "Builtin Professional Skills",
@@ -94,7 +94,7 @@ export const en = {
       {
         title: "You Approve, It Executes",
         description:
-          "Full control. No surprises. OpenLoomi acts on your behalf, with your approval, every step of the way.",
+          "Full control. No surprises. OpenZhiyu acts on your behalf, with your approval, every step of the way.",
       },
       {
         title: "Relentless Follow-Through",
@@ -107,13 +107,13 @@ export const en = {
     eyebrow: "Privacy",
     title: "Your data. Your control.",
     subtitle:
-      "OpenLoomi prioritizes privacy and control — no need to trade data sovereignty for intelligence.",
+      "OpenZhiyu prioritizes privacy and control — no need to trade data sovereignty for intelligence.",
     readPrivacyPolicy: "Read our privacy policy",
     items: [
       {
         title: "Local-First Architecture",
         description:
-          "Your raw messages and files stay on your device. OpenLoomi only accesses what it needs — no gratuitous uploads.",
+          "Your raw messages and files stay on your device. OpenZhiyu only accesses what it needs — no gratuitous uploads.",
         icon: "database-2",
       },
       {
@@ -140,8 +140,8 @@ export const en = {
     eyebrow: "Open Source",
     title: "Open-source. Local-first. Yours.",
     subtitle:
-      "OpenLoomi is open-source under Apache 2.0. Self-host on your machine — your data never leaves. Clone, build, and run in under 5 minutes.",
-    cloneCommand: "git clone https://github.com/melandlabs/openloomi.git",
+      "OpenZhiyu is open-source under Apache 2.0. Self-host on your machine — your data never leaves. Clone, build, and run in under 5 minutes.",
+    cloneCommand: "git clone https://github.com/melandlabs/openzhiyu.git",
     cta: "GitHub",
     community: "Join the community on Discord",
   },
@@ -149,31 +149,31 @@ export const en = {
     {
       title: "Persistent memory — context that never resets",
       description:
-        "OpenLoomi builds a persistent knowledge graph of people, projects, and decisions. Six months later, it still remembers your commitments and context. No more repetition, no more lost context.",
+        "OpenZhiyu builds a persistent knowledge graph of people, projects, and decisions. Six months later, it still remembers your commitments and context. No more repetition, no more lost context.",
     },
     {
       title: "Deep context — AI that knows your work",
       description:
-        "Not just keywords, but understanding. OpenLoomi knows who matters, what's at stake, and how things connect — across every platform, every conversation, every document.",
+        "Not just keywords, but understanding. OpenZhiyu knows who matters, what's at stake, and how things connect — across every platform, every conversation, every document.",
     },
     {
       title: "Autonomous execution — close the loop",
       description:
-        "Not just telling you what to do — OpenLoomi does it. Draft replies, schedule meetings, generate reports, track and verify results, end-to-end.",
+        "Not just telling you what to do — OpenZhiyu does it. Draft replies, schedule meetings, generate reports, track and verify results, end-to-end.",
     },
     {
       title: "Builtin skills — rich execution capabilities",
       description:
-        "From code generation to PDF creation, data analysis to browser automation — OpenLoomi's skill ecosystem covers every work scenario, and keeps expanding.",
+        "From code generation to PDF creation, data analysis to browser automation — OpenZhiyu's skill ecosystem covers every work scenario, and keeps expanding.",
     },
   ],
   support: {
-    title: "How people use OpenLoomi",
+    title: "How people use OpenZhiyu",
     items: [
       {
         title: "Never miss a critical signal",
         description:
-          "For leaders managing cross-department coordination. OpenLoomi acts as your execution twin — tracking milestones across the organization, transforming scattered signals into a unified strategic path.",
+          "For leaders managing cross-department coordination. OpenZhiyu acts as your execution twin — tracking milestones across the organization, transforming scattered signals into a unified strategic path.",
         role: "For global managers",
       },
       {
@@ -185,7 +185,7 @@ export const en = {
       {
         title: "One person doing the work of many",
         description:
-          "For founders and sales. OpenLoomi learns your communication style, automatically maintaining hundreds of client relationships, generating personalized proposals — without burnout.",
+          "For founders and sales. OpenZhiyu learns your communication style, automatically maintaining hundreds of client relationships, generating personalized proposals — without burnout.",
         role: "For founders and sales",
       },
     ],
@@ -193,11 +193,11 @@ export const en = {
   signals: {
     title: "Strategy and execution, in sync.",
     subtitle:
-      "OpenLoomi turns scattered information into a proactive digital twin — aligning your world so you can move forward, not just react.",
+      "OpenZhiyu turns scattered information into a proactive digital twin — aligning your world so you can move forward, not just react.",
     heroCard: {
       title: "Redefine how you work with communication",
       description:
-        "OpenLoomi redefines how you interact with information. No longer buried in messages, but working with the meaningful signals that drive decisions and actions. Our intelligent system filters, connects, and prioritizes what truly matters.",
+        "OpenZhiyu redefines how you interact with information. No longer buried in messages, but working with the meaningful signals that drive decisions and actions. Our intelligent system filters, connects, and prioritizes what truly matters.",
     },
     cards: [
       {
@@ -213,7 +213,7 @@ export const en = {
       {
         title: "Active momentum",
         description:
-          "Beyond suggestions. OpenLoomi orchestrates the tools you need, turning intent into action.",
+          "Beyond suggestions. OpenZhiyu orchestrates the tools you need, turning intent into action.",
       },
     ],
   },
@@ -221,12 +221,12 @@ export const en = {
     badge: "Open-source & ready to run",
     heading: "Clone it. Run it. Make it yours.",
     description:
-      "OpenLoomi is open-source under Apache 2.0. Self-host on your machine and make it your own.",
+      "OpenZhiyu is open-source under Apache 2.0. Self-host on your machine and make it your own.",
     button: "Get Started →",
     openSourceCta: "GitHub",
     subtext: "Open source · Local-first · Works seamlessly with your tools",
     mobileDesc:
-      "OpenLoomi supports macOS, Linux and Windows. Please visit on a desktop device to download.",
+      "OpenZhiyu supports macOS, Linux and Windows. Please visit on a desktop device to download.",
   },
   footer: {
     tagline: "Your proactive AI workspace.",
@@ -247,7 +247,7 @@ export const en = {
   blogs: {
     title: "Latest Articles",
     description:
-      "Insights and field notes on calm communication, AI workflow assistance, and the people who rely on OpenLoomi every day.",
+      "Insights and field notes on calm communication, AI workflow assistance, and the people who rely on OpenZhiyu every day.",
   },
 
   // ─── Testimonials ───────────────────────────────────────────────────────────
@@ -255,7 +255,7 @@ export const en = {
   blogsPage: {
     title: "Latest Posts",
     description:
-      "Understandings and field notes on calm communication, AI-assisted workflow, and the humans who rely on OpenLoomi every day.",
+      "Understandings and field notes on calm communication, AI-assisted workflow, and the humans who rely on OpenZhiyu every day.",
   },
 
   testimonials: {
@@ -266,31 +266,31 @@ export const en = {
         name: "Sarah Bennett",
         role: "Founder & CEO",
         content:
-          "OpenLoomi turns scattered messages into clear briefs with timelines, decisions, and next actions. After approval, it can execute directly — saving me at least 1 day/week to focus on strategy.",
+          "OpenZhiyu turns scattered messages into clear briefs with timelines, decisions, and next actions. After approval, it can execute directly — saving me at least 1 day/week to focus on strategy.",
       },
       {
         name: "Mia Zhang",
         role: "CEO",
         content:
-          "I no longer dig through chats, emails, and docs to understand what's going on. OpenLoomi gives me one-click weekly reports with sources, status, and next steps, so I always have the full picture.",
+          "I no longer dig through chats, emails, and docs to understand what's going on. OpenZhiyu gives me one-click weekly reports with sources, status, and next steps, so I always have the full picture.",
       },
       {
         name: "Amina Hassan",
         role: "Founder",
         content:
-          "Slack, Telegram, and email finally feel connected. OpenLoomi lets me get answers across platforms without switching or searching.",
+          "Slack, Telegram, and email finally feel connected. OpenZhiyu lets me get answers across platforms without switching or searching.",
       },
       {
         name: "Rachel Kim",
         role: "Chief of Staff",
         content:
-          "OpenLoomi keeps track of participants, commitments, progress, and timelines for each event. I can stop reconstructing context and move straight to the next action.",
+          "OpenZhiyu keeps track of participants, commitments, progress, and timelines for each event. I can stop reconstructing context and move straight to the next action.",
       },
       {
         name: "Hannah Brooks",
         role: "GM / Business Lead",
         content:
-          "OpenLoomi helps me avoid misses by clearly surfacing what needs attention or action. Deadlines, follow-ups, and gaps are recalled without constant interruptions.",
+          "OpenZhiyu helps me avoid misses by clearly surfacing what needs attention or action. Deadlines, follow-ups, and gaps are recalled without constant interruptions.",
       },
       {
         name: "Arun Patel",
@@ -302,25 +302,25 @@ export const en = {
         name: "Maya Rosen",
         role: "Investor",
         content:
-          "I can ask OpenLoomi questions and get clear answers with original source citations. It helps me judge accuracy quickly without worrying about AI hallucinations.",
+          "I can ask OpenZhiyu questions and get clear answers with original source citations. It helps me judge accuracy quickly without worrying about AI hallucinations.",
       },
       {
         name: "Jason Lee",
         role: "Team Lead",
         content:
-          "With the volume of daily messages and documents, OpenLoomi has become essential. It helps me stay in control of the whole picture with minimal effort.",
+          "With the volume of daily messages and documents, OpenZhiyu has become essential. It helps me stay in control of the whole picture with minimal effort.",
       },
       {
         name: "Kevin Huang",
         role: "Team Member",
         content:
-          "OpenLoomi filters out most of the noise and shows me only what needs my attention. I can focus on my actual work instead of messages.",
+          "OpenZhiyu filters out most of the noise and shows me only what needs my attention. I can focus on my actual work instead of messages.",
       },
       {
         name: "Ryan O'Connor",
         role: "Global Sales",
         content:
-          "OpenLoomi connects contacts across platforms and summarizes key client interactions. Relationship insights that used to take time now take one click.",
+          "OpenZhiyu connects contacts across platforms and summarizes key client interactions. Relationship insights that used to take time now take one click.",
       },
     ],
   },

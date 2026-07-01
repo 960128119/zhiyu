@@ -27,10 +27,10 @@ import {
   parsePlanningResponse,
   PLANNING_INSTRUCTION,
   type SandboxOptions,
-} from "@openloomi/ai/agent";
+} from "@openzhiyu/ai/agent";
 // Import plugin definition helpers
-import { CLAUDE_METADATA, defineAgentPlugin } from "@openloomi/ai/agent/plugin";
-import type { AgentPlugin } from "@openloomi/ai/agent/plugin";
+import { CLAUDE_METADATA, defineAgentPlugin } from "@openzhiyu/ai/agent/plugin";
+import type { AgentPlugin } from "@openzhiyu/ai/agent/plugin";
 import type {
   AgentConfig,
   AgentMessage,
@@ -43,7 +43,7 @@ import type {
   PDFAttachment,
   PlanOptions,
   SkillsConfig,
-} from "@openloomi/ai/agent/types";
+} from "@openzhiyu/ai/agent/types";
 import { MAX_CONVERSATION_HISTORY_TOKENS } from "@/lib/ai/runtime/shared";
 import {
   DEFAULT_API_HOST,
@@ -56,7 +56,7 @@ import {
   PDF_MAX_SIZE_MB,
   PREFER_NATIVE_PDF,
 } from "@/lib/files/config";
-import { filterToolCallText } from "@openloomi/shared";
+import { filterToolCallText } from "@openzhiyu/shared";
 import { generateUUID } from "@/lib/utils";
 import { estimateTokens } from "@/lib/ai";
 import {
@@ -65,10 +65,10 @@ import {
   type McpServerConfig,
 } from "@/lib/ai/mcp";
 
-// Skills are loaded directly by Claude SDK from ~/.openloomi/skills/ via settingSources: ['user']
+// Skills are loaded directly by Claude SDK from ~/.openzhiyu/skills/ via settingSources: ['user']
 // No custom loading needed
 // ============================================================================
-// Logging - uses shared logger (writes to ~/.openloomi/logs/openloomi.log)
+// Logging - uses shared logger (writes to ~/.openzhiyu/logs/openzhiyu.log)
 // ============================================================================
 import { createLogger, LOG_FILE_PATH } from "@/lib/utils/logger";
 
@@ -148,9 +148,9 @@ function spawnClaudeCodeProcess(options: {
     let nodeToUse: string;
     if (os === "win32") {
       // On Windows, the bundled node is a Linux ELF binary (not usable).
-      // Try the Rust-downloaded .openloomi\node\node.exe first, then system PATH.
-      const openloomiNode = join(homedir(), ".openloomi", "node", "node.exe");
-      nodeToUse = existsSync(openloomiNode) ? openloomiNode : "node";
+      // Try the Rust-downloaded .openzhiyu\node\node.exe first, then system PATH.
+      const openzhiyuNode = join(homedir(), ".openzhiyu", "node", "node.exe");
+      nodeToUse = existsSync(openzhiyuNode) ? openzhiyuNode : "node";
     } else {
       // Unix: use bundled node if it exists, otherwise system node
       const nodeBinPath = join(bundleDir, "node");
@@ -340,7 +340,7 @@ async function installClaudeCode(): Promise<boolean> {
       console.error("[Claude] Claude Code is not installed on your system.");
       console.error(getInstallationInstructions(os));
       console.error(
-        "[Claude] After installation, please restart openloomi to continue.",
+        "[Claude] After installation, please restart openzhiyu to continue.",
       );
       return false;
     }
@@ -403,8 +403,8 @@ function isPackagedApp(): boolean {
   const execPath = process.execPath;
   if (
     execPath.includes(".app/Contents/MacOS") ||
-    execPath.includes("\\openloomi\\") ||
-    execPath.includes("/openloomi/")
+    execPath.includes("\\openzhiyu\\") ||
+    execPath.includes("/openzhiyu/")
   ) {
     return true;
   }
@@ -462,7 +462,7 @@ function getSidecarClaudeCodePath(): string | undefined {
     join(process.cwd(), "apps", "web", "cli-bundle"),
     join(process.cwd(), "cli-bundle"),
     join(process.cwd(), "..", "web", "cli-bundle"),
-    // Same directory as openloomi-api
+    // Same directory as openzhiyu-api
     join(execDir, "cli-bundle"),
     // macOS: Tauri places resources in Resources
     join(execDir, "..", "Resources", "cli-bundle"),
@@ -475,7 +475,7 @@ function getSidecarClaudeCodePath(): string | undefined {
       execDir,
       "..",
       "lib",
-      "openloomi",
+      "openzhiyu",
       "_up_",
       "src-api",
       "dist",
@@ -485,7 +485,7 @@ function getSidecarClaudeCodePath(): string | undefined {
       execDir,
       "..",
       "lib",
-      "openloomi",
+      "openzhiyu",
       "_up_",
       "src-api",
       "dist",
@@ -514,7 +514,7 @@ function getSidecarClaudeCodePath(): string | undefined {
       if (!existsSync(wrapperScriptPath)) {
         if (os === "win32") {
           // Windows batch file
-          // Priority: bundled node.exe > .openloomi\node\node.exe (Rust-downloaded) > system node
+          // Priority: bundled node.exe > .openzhiyu\node\node.exe (Rust-downloaded) > system node
           const wrapperContent = `@echo off
 setlocal
 chcp 65001 >nul
@@ -523,8 +523,8 @@ set NODE_OPTIONS=--max-old-space-size=8192
 if exist "%~dp0\\node.exe" (
   "%~dp0\\node.exe" --max-old-space-size=8192 "%~dp0\\cli.js" %*
 ) else (
-  if exist "%USERPROFILE%\\.openloomi\\node\\node.exe" (
-    "%USERPROFILE%\\.openloomi\\node\\node.exe" --max-old-space-size=8192 "%~dp0\\cli.js" %*
+  if exist "%USERPROFILE%\\.openzhiyu\\node\\node.exe" (
+    "%USERPROFILE%\\.openzhiyu\\node\\node.exe" --max-old-space-size=8192 "%~dp0\\cli.js" %*
   ) else (
     node --max-old-space-size=8192 "%~dp0\\cli.js" %*
   )
@@ -767,7 +767,7 @@ function getClaudeCodePath(): string | undefined {
   if (os === "win32") {
     console.warn(getInstallationInstructions(os));
     console.warn(
-      "[Claude] After installing, restart openloomi for the changes to take effect.",
+      "[Claude] After installing, restart openzhiyu for the changes to take effect.",
     );
   } else {
     console.warn(
@@ -816,7 +816,7 @@ async function ensureClaudeCode(): Promise<string | undefined> {
           "[Claude] ✗ Installation completed but Claude Code still not found in PATH",
         );
         console.error(
-          "[Claude] Please restart openloomi after installation completes",
+          "[Claude] Please restart openzhiyu after installation completes",
         );
       }
     } else {
@@ -930,8 +930,8 @@ function getSessionWorkDir(
   }
 
   // Check if the workDir is already a session folder path from frontend
-  // Session paths from frontend look like: ~/.openloomi/sessions/{sessionId}/task-{xx}
-  // or: ~/.openloomi/sessions/{sessionId}
+  // Session paths from frontend look like: ~/.openzhiyu/sessions/{sessionId}/task-{xx}
+  // or: ~/.openzhiyu/sessions/{sessionId}
   // Support both Unix (/) and Windows (\) path separators (case-insensitive for Windows)
   const normalizedForCheck = os === "win32" ? safePath.toLowerCase() : safePath;
   const hasSessionsPath =
@@ -950,7 +950,7 @@ function getSessionWorkDir(
 
   let folderName: string;
   // PRIORITY: Always use taskId when available (it's the chatId from frontend)
-  // This ensures the workspace files are stored at ~/.openloomi/sessions/{chatId}/
+  // This ensures the workspace files are stored at ~/.openzhiyu/sessions/{chatId}/
   // which matches what WorkspacePanel expects
   if (taskId) {
     folderName = taskId;
@@ -1078,10 +1078,10 @@ async function saveFileAttachments(
  */
 function getBusinessToolsInstruction(excludeTools?: string[]): string {
   const excludeSet = new Set(excludeTools ?? []);
-  const createScheduledJobInstruction = excludeSet.has("createScheduledJob")
+  const createLoopTaskInstruction = excludeSet.has("createLoopTask")
     ? ""
     : `
-7. **createScheduledJob** - Use when user asks for RECURRING or SCHEDULED tasks:
+7. **createLoopTask** - Use when user asks for RECURRING, SCHEDULED, BACKGROUND, REMINDER, or MONITOR tasks:
    - "Do this every few hours..." / "Every few hours..."
    - "Remind me every morning..." / "Daily reminder..."
    - "Run this task every week..." / "Weekly task..."
@@ -1090,16 +1090,15 @@ function getBusinessToolsInstruction(excludeTools?: string[]): string {
    - "Every hour, daily, weekly..." / "Recurring schedule..."
    - "Every X time..." / "Custom interval..."
 
-   **Schedule types:**
-   - cron: Use cron expressions (e.g., '0 * * * *' for every hour, '0 9 * * *' for daily at 9am)
-   - interval: Simple interval in minutes (e.g., minutes: 60 for every hour)
-   - once: One-time execution at specific time
+   **CRITICAL: All new scheduled/background tasks must be native OpenZhiyu Loops.**
+   - Do NOT create legacy scheduled jobs.
+   - Pass the user's original request to createLoopTask.intent.
+   - Preserve platform, recipient, schedule, content, project, and delivery channel.
+   - For external writes explicitly requested by the user, use externalWriteMode='loop_approved' so the background loop can execute without a chat confirmation click.
 
-   **CRITICAL: The 'description' field MUST preserve the user's exact original request:**
-   - Keep the platform name (Telegram, Slack, Email, etc.)
-   - Keep the recipient identity (user says 'me', use 'me' NOT 'user')
-   - Keep the specific action/content
-   - Use user's original language and wording
+   **Examples:**
+   - User: "每天早上9点给文件传输助手发北京天气预报" -> createLoopTask({ intent: "每天早上9点给文件传输助手发北京天气预报", timezone: "Asia/Shanghai", externalWriteMode: "loop_approved" })
+   - User: "Every Friday summarize my project and send it to me on Feishu" -> createLoopTask({ intent: "Every Friday summarize my project and send it to me on Feishu", externalWriteMode: "loop_approved" })
 `;
 
   return `
@@ -1149,7 +1148,7 @@ When user asks questions about their tasks, schedule, or chat history, ALWAYS us
    - "Remember this" / "Note this"
    - "I want to track this" / "Track this"
    ⚠️ DO NOT use createInsight to update an existing tracking — use modifyInsight instead!
-${createScheduledJobInstruction}
+${createLoopTaskInstruction}
 
 8. **modifyInsight** - Use when:
    - User wants to **update an existing insight/tracking** (e.g., "update the progress", "add an update", "log a new event")
@@ -1159,15 +1158,14 @@ ${createScheduledJobInstruction}
    - ⚠️ Requires insightId of the focused/active insight — if no focused insight exists, ask the user which tracking to update
    - When updating, use the "timeline" field to record new progress/events
 
-9. **listScheduledJobs** - Use when:
-   - User asks "list my scheduled jobs" / "show my scheduled tasks"
-   - User wants to see all their scheduled jobs
-   - Before updating a job, use this to find the jobId
+9. **listLoopTasks** - Use when:
+   - User asks "list my scheduled jobs" / "show my scheduled tasks" / "show my loops"
+   - User wants to see all background loop tasks
+   - Before changing or deleting a loop task, use this to find the loopId
 
-10. **updateScheduledJob** - Use when:
-    - User wants to **update an existing scheduled job** (e.g., "update the description", "change the schedule")
-    - User says "update timer" or "modify scheduled job"
-    - ⚠️ Requires jobId — use listScheduledJobs first to find the job to update
+10. **setLoopTaskStatus / deleteLoopTask** - Use when:
+    - User wants to pause, resume, archive, or delete an existing scheduled/background loop task
+    - Requires loopId; use listLoopTasks first if the user did not provide it
 
 11. **sendReply** - Use when user says:
    - "Reply to him" / "Reply to her"
@@ -1192,7 +1190,16 @@ ${createScheduledJobInstruction}
    - DO NOT use sendReply to send files - the platform runtime handles file delivery automatically
    - Only use sendReply to send TEXT messages to OTHER contacts (not back to the current user)
 
-12. **getRawMessages / searchRawMessages** - Use for keyword-based querying of stored message history:
+12. **wechatDesktopHealth / wechatDesktopPreviewMessage / wechatDesktopSendMessage** - Use when the user specifically asks to send messages through the local Windows desktop WeChat client:
+   - First call wechatDesktopHealth if availability is unclear
+   - In ordinary chat turns, call wechatDesktopPreviewMessage with the exact WeChat recipient name and message
+   - In ordinary chat turns, show the preview to the user and tell them to click the confirmation button in the UI
+   - Never call wechatDesktopSendMessage in ordinary chat turns
+   - Only loop background execution may use wechatDesktopSendMessage, and only when the loop spec explicitly allows external writes
+   - Do not write a manual preview table or claim a preview exists unless wechatDesktopPreviewMessage has returned successfully
+   - Never skip the preview step in ordinary chat turns
+
+13. **getRawMessages / searchRawMessages** - Use for keyword-based querying of stored message history:
    - "Search my messages" / "Find messages about..."
    - "Show my chat history" / "What did I talk about..."
    - Querying historical messages from all platforms
@@ -1483,7 +1490,7 @@ export class ClaudeAgent extends BaseAgent {
    * Build settingSources for Claude SDK
    *
    * IMPORTANT: Claude SDK loads skills from ~/.claude/skills/ when 'user' source is enabled.
-   * We sync ~/.openloomi/skills/ to ~/.claude/skills/ on agent creation via syncSkillsToClaude().
+   * We sync ~/.openzhiyu/skills/ to ~/.claude/skills/ on agent creation via syncSkillsToClaude().
    *
    * IMPORTANT: When using custom API (baseUrl + apiKey configured), we MUST NOT use 'user'
    * source because SDK reads ~/.claude/settings.json which takes priority over environment variables.
@@ -1514,7 +1521,7 @@ export class ClaudeAgent extends BaseAgent {
     const env: Record<string, string | undefined> = { ...process.env };
 
     // IMPORTANT: Remove CLAUDECODE environment variable to allow nested sessions
-    // This is necessary when openloomi itself is running inside a Claude Code environment
+    // This is necessary when openzhiyu itself is running inside a Claude Code environment
     // Without this, the child Claude Code process will detect the nested session
     // and exit with error "Claude Code cannot be launched inside another Claude Code session"
     // Use delete operator to completely remove the key
@@ -1527,10 +1534,12 @@ export class ClaudeAgent extends BaseAgent {
     // over any config from ~/.claude/settings.json (which is read via settingSources: ['user'])
     // Delete env vars to prevent them from being overridden by ~/.claude/settings.json
     if (this.config.apiKey) {
-      // Use ANTHROPIC_AUTH_TOKEN for custom API key
+      // Third-party Anthropic-compatible providers usually expect API-key auth.
+      // Keep AUTH_TOKEN too for SDK/CLI versions that read it, but do not rely on
+      // it alone: Claude Code treats auth token as a different auth path in some
+      // versions and can fall back to "Not logged in".
       env.ANTHROPIC_AUTH_TOKEN = this.config.apiKey;
-      // Delete ANTHROPIC_API_KEY to ensure AUTH_TOKEN takes priority
-      env.ANTHROPIC_API_KEY = undefined;
+      env.ANTHROPIC_API_KEY = this.config.apiKey;
 
       // Handle base URL: set if configured, delete if not (to use default Anthropic API)
       if (this.config.baseUrl) {
@@ -1547,6 +1556,12 @@ export class ClaudeAgent extends BaseAgent {
       // Check if ANTHROPIC_AUTH_TOKEN or ANTHROPIC_API_KEY is set
       const envKey = env.ANTHROPIC_AUTH_TOKEN || env.ANTHROPIC_API_KEY;
       if (envKey) {
+        if (!env.ANTHROPIC_API_KEY && env.ANTHROPIC_AUTH_TOKEN) {
+          env.ANTHROPIC_API_KEY = env.ANTHROPIC_AUTH_TOKEN;
+        }
+        if (!env.ANTHROPIC_AUTH_TOKEN && env.ANTHROPIC_API_KEY) {
+          env.ANTHROPIC_AUTH_TOKEN = env.ANTHROPIC_API_KEY;
+        }
         logger.info(
           "[ClaudeAgent] Using API config from environment: key present",
         );
@@ -1631,6 +1646,9 @@ export class ClaudeAgent extends BaseAgent {
     }
     if (filteredEnv.ANTHROPIC_AUTH_TOKEN) {
       process.env.ANTHROPIC_AUTH_TOKEN = filteredEnv.ANTHROPIC_AUTH_TOKEN;
+    }
+    if (filteredEnv.ANTHROPIC_API_KEY) {
+      process.env.ANTHROPIC_API_KEY = filteredEnv.ANTHROPIC_API_KEY;
     }
     if (filteredEnv.ANTHROPIC_MODEL) {
       process.env.ANTHROPIC_MODEL = filteredEnv.ANTHROPIC_MODEL;
@@ -2002,7 +2020,7 @@ ${formattedMessages}${truncationNotice}\n\n---\n## Current Request\n`;
     // Use settingSources based on skillsConfig to control skill loading
     // - 'user' source loads from ~/.claude directory (User skills)
     // - 'project' source loads from project/.claude directory
-    // User's custom API settings from openloomi settings page are passed via env config
+    // User's custom API settings from openzhiyu settings page are passed via env config
     // which takes priority over ~/.claude/settings.json because we set ANTHROPIC_API_KEY directly
     const settingSources: ("user" | "project")[] = this.buildSettingSources(
       options?.skillsConfig,
@@ -2019,6 +2037,7 @@ ${formattedMessages}${truncationNotice}\n\n---\n## Current Request\n`;
         env: {
           ANTHROPIC_BASE_URL: this.config.baseUrl || "",
           ANTHROPIC_AUTH_TOKEN: this.config.apiKey || "",
+          ANTHROPIC_API_KEY: this.config.apiKey || "",
           ANTHROPIC_MODEL: this.config.model || "",
           ...(this.config.thinkingLevel === "disabled"
             ? { ANTHROPIC_THINKING_BUDGET: "" }
@@ -2154,6 +2173,8 @@ ${formattedMessages}${truncationNotice}\n\n---\n## Current Request\n`;
     // Add business tools MCP server if user session is provided
     if (options?.session) {
       try {
+        const enableWechatDesktopSend =
+          (options.session as { platform?: string }).platform === "loop";
         mcpServers["business-tools"] = createBusinessToolsMcpServer(
           options.session,
           options.authToken, // Pass cloud auth token for embeddings API
@@ -2161,6 +2182,7 @@ ${formattedMessages}${truncationNotice}\n\n---\n## Current Request\n`;
           options.sessionId, // Pass sessionId as chatId for insight association
           {
             excludeTools: options?.excludeTools,
+            enableWechatDesktopSend,
           },
         );
         // Add business tools to allowed tools
@@ -2170,12 +2192,10 @@ ${formattedMessages}${truncationNotice}\n\n---\n## Current Request\n`;
           "modifyInsight",
           "createInsight",
           "deleteInsight",
-          "createScheduledJob",
-          "listScheduledJobs",
-          "deleteScheduledJob",
-          "toggleScheduledJob",
-          "updateScheduledJob",
-          "executeScheduledJob",
+          "createLoopTask",
+          "listLoopTasks",
+          "setLoopTaskStatus",
+          "deleteLoopTask",
           "sendReply",
           "queryContacts",
           "queryIntegrations",
@@ -2188,6 +2208,9 @@ ${formattedMessages}${truncationNotice}\n\n---\n## Current Request\n`;
           "listKnowledgeBaseDocuments",
           "downloadInsightAttachment",
           "time",
+          "wechatDesktopHealth",
+          "wechatDesktopPreviewMessage",
+          ...(enableWechatDesktopSend ? ["wechatDesktopSendMessage"] : []),
         ];
       } catch (error) {
         logger.error(
@@ -2529,6 +2552,7 @@ If you need to create any files during planning, use this directory.
         env: {
           ANTHROPIC_BASE_URL: this.config.baseUrl || "",
           ANTHROPIC_AUTH_TOKEN: this.config.apiKey || "",
+          ANTHROPIC_API_KEY: this.config.apiKey || "",
           ANTHROPIC_MODEL: this.config.model || "",
           ...(this.config.thinkingLevel === "disabled"
             ? { ANTHROPIC_THINKING_BUDGET: "" }
@@ -2996,6 +3020,7 @@ If you need to create any files during planning, use this directory.
         env: {
           ANTHROPIC_BASE_URL: this.config.baseUrl || "",
           ANTHROPIC_AUTH_TOKEN: this.config.apiKey || "",
+          ANTHROPIC_API_KEY: this.config.apiKey || "",
           ANTHROPIC_MODEL: this.config.model || "",
           ...(this.config.thinkingLevel === "disabled"
             ? { ANTHROPIC_THINKING_BUDGET: "" }
@@ -3131,6 +3156,8 @@ If you need to create any files during planning, use this directory.
     // Add business tools MCP server if user session is provided
     if (options.session) {
       try {
+        const enableWechatDesktopSend =
+          (options.session as { platform?: string }).platform === "loop";
         mcpServers["business-tools"] = createBusinessToolsMcpServer(
           options.session,
           options.authToken,
@@ -3138,6 +3165,7 @@ If you need to create any files during planning, use this directory.
           options.sessionId, // Pass sessionId as chatId for insight association
           {
             excludeTools: options.excludeTools,
+            enableWechatDesktopSend,
           },
         );
         // Add business tools to allowed tools
@@ -3147,12 +3175,10 @@ If you need to create any files during planning, use this directory.
           "modifyInsight",
           "createInsight",
           "deleteInsight",
-          "createScheduledJob",
-          "listScheduledJobs",
-          "deleteScheduledJob",
-          "toggleScheduledJob",
-          "updateScheduledJob",
-          "executeScheduledJob",
+          "createLoopTask",
+          "listLoopTasks",
+          "setLoopTaskStatus",
+          "deleteLoopTask",
           "sendReply",
           "queryContacts",
           "queryIntegrations",
@@ -3165,6 +3191,9 @@ If you need to create any files during planning, use this directory.
           "listKnowledgeBaseDocuments",
           "downloadInsightAttachment",
           "time",
+          "wechatDesktopHealth",
+          "wechatDesktopPreviewMessage",
+          ...(enableWechatDesktopSend ? ["wechatDesktopSendMessage"] : []),
         ];
         logger.info(
           `[Claude ${session.id}] Execute: Business tools MCP server loaded with user session`,
@@ -3308,6 +3337,63 @@ If you need to create any files during planning, use this directory.
     }
 
     return sanitized;
+  }
+
+  private buildWechatDesktopPreviewConfirmation(output: string): string | null {
+    try {
+      const content = JSON.parse(output);
+      const textPayload =
+        Array.isArray(content) &&
+        content[0] &&
+        typeof content[0] === "object" &&
+        "text" in content[0] &&
+        typeof content[0].text === "string"
+          ? JSON.parse(content[0].text)
+          : typeof content === "object" && content !== null
+            ? content
+            : null;
+
+      const previewResult = textPayload?.preview;
+      if (
+        !textPayload?.success ||
+        !previewResult?.requiresConfirmation ||
+        !previewResult?.confirmToken
+      ) {
+        return null;
+      }
+
+      const preview = previewResult.preview;
+      const recipientName =
+        typeof preview?.recipientName === "string"
+          ? preview.recipientName
+          : "";
+      const message =
+        typeof preview?.message === "string" ? preview.message : "";
+
+      if (!recipientName || !message) {
+        return null;
+      }
+
+      return [
+        "微信消息已生成预览，还没有发送。",
+        "",
+        `收件人：${recipientName}`,
+        `内容：${message}`,
+        "",
+        "确认无误后，请点击预览卡片里的“确认发送”按钮。",
+      ].join("\n");
+
+      return [
+        "微信消息已生成预览，还没有发送。",
+        "",
+        `收件人：${recipientName}`,
+        `内容：${message}`,
+        "",
+        "确认无误后，请回复“确认发送”，我再调用桌面微信发送。",
+      ].join("\n");
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -3506,6 +3592,24 @@ If you need to create any files during planning, use this directory.
             isError,
             messageId: this.generateMessageId(),
           };
+
+          const output =
+            typeof block.content === "string"
+              ? block.content
+              : JSON.stringify(block.content);
+          const previewConfirmation =
+            this.buildWechatDesktopPreviewConfirmation(output);
+          if (previewConfirmation) {
+            const textHash = previewConfirmation.slice(0, 100);
+            if (!sentTextHashes.has(textHash)) {
+              sentTextHashes.add(textHash);
+              yield {
+                type: "text",
+                content: previewConfirmation,
+                messageId: this.generateMessageId(),
+              };
+            }
+          }
         }
       }
     }
@@ -3525,7 +3629,7 @@ If you need to create any files during planning, use this directory.
  * Factory function to create Claude agent
  */
 export function createClaudeAgent(config: AgentConfig): ClaudeAgent {
-  // Sync ~/.openloomi/skills/ to project .claude/skills/ for Claude SDK to load them
+  // Sync ~/.openzhiyu/skills/ to project .claude/skills/ for Claude SDK to load them
   // When using custom API, we use 'project' source which reads from .claude/skills/ in the working directory
   try {
     const { syncSkillsToClaude } = require("@/lib/ai/skills/loader");

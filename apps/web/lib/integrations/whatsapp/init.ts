@@ -2,7 +2,7 @@ import {
   startWhatsAppSelfMessageListener,
   stopWhatsAppSelfMessageListener,
 } from "./self-message-listener";
-import { getIntegrationAccountsByUserId } from "@/lib/db/queries";
+import { getIntegrationAccountsByUserId } from "@/lib/db/integration-queries";
 
 /**
  * Initialize WhatsApp Self Message Listener for a user

@@ -1,14 +1,14 @@
 export const siteMetadata = {
-  name: "OpenLoomi",
-  title: "OpenLoomi | Your Proactive AI Workspace",
+  name: "OpenZhiyu",
+  title: "OpenZhiyu | Your Proactive AI Workspace",
   description:
     "Open-source, local-first AI workspace with memory, context, and execution built in.",
-  siteUrl: "https://openloomi.ai",
-  marketingUrl: "https://openloomi.ai",
-  appUrl: "https://app.openloomi.ai",
+  siteUrl: "https://openzhiyu.ai",
+  marketingUrl: "https://openzhiyu.ai",
+  appUrl: "https://app.openzhiyu.ai",
   contactEmail: "support@melandlabs.ai",
   keywords: [
-    "OpenLoomi",
+    "OpenZhiyu",
     "proactive AI workspace",
     "AI agent",
     "privacy-first AI",

@@ -8,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import "../../i18n";
 
 export interface MobileInsightToolbarProps {

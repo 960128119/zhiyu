@@ -1,6 +1,6 @@
 # Local Embeddings and Vector Backends
 
-OpenLoomi can generate embeddings locally with Transformers.js and store
+OpenZhiyu can generate embeddings locally with Transformers.js and store
 vectors in either SQLite through `sqlite-vec` or a ChromaDB server.
 
 ## Local embeddings
@@ -12,7 +12,7 @@ EMBEDDING_PROVIDER=local
 LOCAL_EMBEDDING_MODEL=Xenova/bge-large-zh-v1.5
 LOCAL_EMBEDDING_BATCH_SIZE=8
 LOCAL_EMBEDDING_MAX_TOKENS=512
-LOCAL_EMBEDDING_CACHE_DIR=.openloomi/models
+LOCAL_EMBEDDING_CACHE_DIR=.openzhiyu/models
 LOCAL_EMBEDDING_DEVICE=cpu
 LOCAL_EMBEDDING_LOCAL_ONLY=false
 ```
@@ -45,8 +45,8 @@ RAW_MESSAGE_VECTOR_STORE_BACKEND=sqlite-vec
 INSIGHT_VECTOR_STORE_BACKEND=sqlite-vec
 
 # Optional collection names for the generic stores
-SQLITE_VEC_RAG_COLLECTION=openloomi_rag_chunks
-SQLITE_VEC_INSIGHTS_COLLECTION=openloomi_insights
+SQLITE_VEC_RAG_COLLECTION=openzhiyu_rag_chunks
+SQLITE_VEC_INSIGHTS_COLLECTION=openzhiyu_insights
 ```
 
 Raw messages use dimension-specific tables such as
@@ -56,8 +56,8 @@ table is tied to the source `raw_messages` table and its delete trigger.
 RAG and insight vectors use generic collection tables:
 
 ```text
-openloomi_vec_<collection>_records
-openloomi_vec_<collection>_d<dimensions>
+openzhiyu_vec_<collection>_records
+openzhiyu_vec_<collection>_d<dimensions>
 ```
 
 The package creates a new dimension table when the embedding model changes,
@@ -74,25 +74,25 @@ does not require Docker or a separate database service.
 The current Chroma adapter uses client-server mode. Start a local server:
 
 ```bash
-docker run --rm -p 8000:8000 -v openloomi-chroma:/data chromadb/chroma:1.5.3
+docker run --rm -p 8000:8000 -v openzhiyu-chroma:/data chromadb/chroma:1.5.3
 ```
 
-Then configure OpenLoomi:
+Then configure OpenZhiyu:
 
 ```dotenv
 VECTOR_STORE_BACKEND=chroma
 CHROMA_URL=http://localhost:8000
 
-CHROMA_RAG_COLLECTION=openloomi_rag_chunks
-CHROMA_RAW_MESSAGES_COLLECTION=openloomi_raw_messages
-CHROMA_INSIGHTS_COLLECTION=openloomi_insights
+CHROMA_RAG_COLLECTION=openzhiyu_rag_chunks
+CHROMA_RAW_MESSAGES_COLLECTION=openzhiyu_raw_messages
+CHROMA_INSIGHTS_COLLECTION=openzhiyu_insights
 ```
 
 Individual sources can use different backends by setting
 `RAG_VECTOR_STORE_BACKEND`, `RAW_MESSAGE_VECTOR_STORE_BACKEND`, or
 `INSIGHT_VECTOR_STORE_BACKEND`.
 
-OpenLoomi always supplies embeddings to Chroma explicitly. Chroma's default
+OpenZhiyu always supplies embeddings to Chroma explicitly. Chroma's default
 embedding function is disabled to avoid additional model downloads and
 dimension drift.
 

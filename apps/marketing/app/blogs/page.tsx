@@ -7,18 +7,18 @@ import { blog } from "@/lib/source";
 const blogIndexTitle = "Blog";
 
 const blogIndexDescription =
-  "Explore the OpenLoomi blog for calm communication tactics | deep dives into AI inbox summaries | customer support automation stories | multilingual messaging best practices | productivity playbooks for distributed teams.";
+  "Explore the OpenZhiyu blog for calm communication tactics | deep dives into AI inbox summaries | customer support automation stories | multilingual messaging best practices | productivity playbooks for distributed teams.";
 
 export const metadata = {
   title: blogIndexTitle,
   description: blogIndexDescription,
   alternates: {
-    canonical: "https://openloomi.ai/blogs",
+    canonical: "https://openzhiyu.ai/blogs",
   },
   openGraph: {
     title: blogIndexTitle,
     description: blogIndexDescription,
-    url: "https://openloomi.ai/blogs",
+    url: "https://openzhiyu.ai/blogs",
     type: "website",
   },
   twitter: {
@@ -44,7 +44,7 @@ function BlogHero({ postCount }: { postCount: number }) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="max-w-3xl">
           <p className="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-accent-700">
-            OpenLoomi Journal
+            OpenZhiyu Journal
           </p>
           <h1 className="text-balance text-5xl font-semibold leading-[0.98] text-foreground sm:text-6xl lg:text-7xl">
             Signals for calmer, higher-leverage work.
@@ -53,7 +53,7 @@ function BlogHero({ postCount }: { postCount: number }) {
         <div className="max-w-xl lg:pb-2">
           <p className="text-pretty text-lg leading-8 text-foreground-muted">
             Product thinking, AI-native workflows, communication systems, and
-            the operating principles behind OpenLoomi.
+            the operating principles behind OpenZhiyu.
           </p>
           <p className="mt-5 text-sm font-medium text-foreground-secondary">
             {postCount} essays and product notes

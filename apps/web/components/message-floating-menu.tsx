@@ -2,10 +2,10 @@
 
 import { useState, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@openloomi/ui";
-import type { ChatMessage } from "@openloomi/shared";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@openzhiyu/ui";
+import type { ChatMessage } from "@openzhiyu/shared";
 import { MessageForwardPanel } from "./message-forward-panel";
 
 export interface MessageFloatingMenuProps {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createUser, getUser } from "@/lib/db/queries";
+import { createUser, getUser } from "@/lib/db/user-queries";
 import { signIn } from "@/app/(auth)/auth";
 import { DUMMY_PASSWORD } from "@/lib/env/constants";
 

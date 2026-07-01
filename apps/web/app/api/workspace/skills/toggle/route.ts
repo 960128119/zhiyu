@@ -10,8 +10,8 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { APP_DIR_NAME } from "@/lib/env/config/constants";
 
-// Get openloomi skills directory path
-function getopenloomiSkillsDir(): string {
+// Get openzhiyu skills directory path
+function getopenzhiyuSkillsDir(): string {
   const homeDir = homedir();
   return join(homeDir, APP_DIR_NAME, "skills");
 }
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const skillsDir = getopenloomiSkillsDir();
+    const skillsDir = getopenzhiyuSkillsDir();
     const skillPath = join(skillsDir, skillId);
 
     if (!existsSync(skillPath)) {

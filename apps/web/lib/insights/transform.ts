@@ -6,8 +6,8 @@ import type {
   GeneratedInsightPayload,
   OverlayContext,
 } from "@/lib/insights/types";
-import { coerceDate } from "@openloomi/shared";
-import type { BotWithAccount } from "../db/queries";
+import { coerceDate } from "@openzhiyu/shared";
+import type { BotWithAccount } from "../db/bot-queries";
 import { normalizeTimestamp } from "@/lib/utils";
 
 type TaskBucketKey = "myTasks" | "waitingForMe" | "waitingForOthers";

@@ -1,5 +1,5 @@
 /**
- * @openloomi/integrations-telegram - Telegram integration package
+ * @openzhiyu/integrations-telegram - Telegram integration package
  */
 
 export { TelegramAdapter } from "./adapter";
@@ -10,15 +10,15 @@ export { TelegramConversationStore } from "./conversation-store";
 export type {
   DialogInfo,
   ExtractedMessageInfo,
-} from "@openloomi/integrations/channels/sources/types";
+} from "@openzhiyu/integrations/channels/sources/types";
 export type {
   TelegramContactMeta,
   ContactMeta,
-} from "@openloomi/integrations/contacts";
+} from "@openzhiyu/integrations/contacts";
 
 // Re-export utility functions
 export {
-  openloomiMessageToTgText,
-  tgMessageToopenloomiMessage,
+  openzhiyuMessageToTgText,
+  tgMessageToopenzhiyuMessage,
 } from "./adapter";
 export { withTimeout, CONNECT_TIMEOUT_MS } from "./adapter";

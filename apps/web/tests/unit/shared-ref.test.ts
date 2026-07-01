@@ -11,7 +11,7 @@ import {
   getRefMarkerRangeBeforeCursor,
   buildRefMarker,
   extractRefsFromContent,
-} from "@openloomi/shared/ref";
+} from "@openzhiyu/shared/ref";
 
 describe("shared-ref", () => {
   describe("parseContentWithRefs", () => {

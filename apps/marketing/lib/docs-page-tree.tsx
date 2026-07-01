@@ -18,7 +18,7 @@ import { source } from "@/lib/source";
 
 const DOC_TITLES = new Map([
   ["/docs", "Welcome"],
-  ["/docs/what-is-openloomi", "What is OpenLoomi?"],
+  ["/docs/what-is-openzhiyu", "What is OpenZhiyu?"],
   ["/docs/getting-started", "Getting Started"],
   ["/docs/chat", "Chat"],
   ["/docs/connectors", "Connectors"],
@@ -32,15 +32,15 @@ const DOC_TITLES = new Map([
   ["/docs/glossary", "Glossary"],
   ["/docs/use-cases", "Use Cases"],
   ["/docs/changelog", "Changelog"],
-  ["/docs/changelog/openloomi-0.5.0", "OpenLoomi 0.5.0"],
-  ["/docs/changelog/openloomi-0.4.0", "OpenLoomi 0.4.0"],
-  ["/docs/changelog/openloomi-0.3.0", "OpenLoomi 0.3.0"],
-  ["/docs/changelog/openloomi-0.2.0", "OpenLoomi 0.2.0"],
-  ["/docs/changelog/openloomi-0.1.0", "OpenLoomi 0.1.0"],
+  ["/docs/changelog/openzhiyu-0.5.0", "OpenZhiyu 0.5.0"],
+  ["/docs/changelog/openzhiyu-0.4.0", "OpenZhiyu 0.4.0"],
+  ["/docs/changelog/openzhiyu-0.3.0", "OpenZhiyu 0.3.0"],
+  ["/docs/changelog/openzhiyu-0.2.0", "OpenZhiyu 0.2.0"],
+  ["/docs/changelog/openzhiyu-0.1.0", "OpenZhiyu 0.1.0"],
 ]);
 
 const DOC_ICON_NAMES = new Map([
-  ["/docs/what-is-openloomi", "FaRocket"],
+  ["/docs/what-is-openzhiyu", "FaRocket"],
   ["/docs/getting-started", "FaRocket"],
   ["/docs/chat", "FaComments"],
   ["/docs/connectors", "FaPlug"],
@@ -77,8 +77,8 @@ function getDocIcon(url: string) {
 
   return Icon ? (
     <Icon
-      className="openloomi-doc-icon"
-      style={{ color: "var(--openloomi-fox-yellow, #f5b64a)" }}
+      className="openzhiyu-doc-icon"
+      style={{ color: "var(--openzhiyu-fox-yellow, #f5b64a)" }}
       aria-hidden="true"
       focusable="false"
     />
@@ -133,7 +133,7 @@ export function getDocsPageTree(): PageTree.Root {
 
   return {
     ...tree,
-    name: "OpenLoomi Docs",
+    name: "OpenZhiyu Docs",
     children: tree.children.map(renameNode),
   };
 }

@@ -1,7 +1,7 @@
 import { auth } from "@/app/(auth)/auth";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import type { NextRequest } from "next/server";
-import { searchEvents, searchChats, searchFiles } from "@/lib/db/queries";
+import { searchEvents, searchChats, searchFiles } from "@/lib/db/insight-queries";
 import type { SearchResultItem } from "@/components/global-search-dialog";
 
 /**

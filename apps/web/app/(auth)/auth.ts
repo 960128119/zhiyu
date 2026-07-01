@@ -7,7 +7,7 @@ import {
   getUserTypeForService,
   getLatestSurveyByUserId,
   getUserById,
-} from "@/lib/db/queries";
+} from "@/lib/db/user-queries";
 import { authConfig } from "./auth.config";
 import { DUMMY_PASSWORD, authSessionVersion } from "@/lib/env/constants";
 import type { DefaultJWT } from "next-auth/jwt";
@@ -193,7 +193,7 @@ function createProductionAuthModule() {
           const discordEmail =
             discordProfile?.email ??
             (discordProfile?.id
-              ? `${discordProfile.id}@discord.openloomi`
+              ? `${discordProfile.id}@discord.openzhiyu`
               : null);
 
           if (!discordEmail) {

@@ -1,14 +1,26 @@
-// Extended translations - adds missing keys to @openloomi/i18n
-import baseEn from "@openloomi/i18n/locales/en-US";
+// Extended translations - adds missing keys to @openzhiyu/i18n
+import baseEn from "@openzhiyu/i18n/locales/en-US";
 
 const en = {
   ...baseEn,
   common: {
     ...baseEn.common,
     export: "Export",
+    toolNames: {
+      ...baseEn.common.toolNames,
+      wechatDesktopHealth: "Check WeChat",
+      wechatDesktopPreviewMessage: "Preview WeChat Message",
+      wechatDesktopSendMessage: "Send WeChat Message",
+      createLoopTask: "Create Automatic Task",
+      listLoopTasks: "List Automatic Tasks",
+      setLoopTaskStatus: "Update Automatic Task",
+      deleteLoopTask: "Delete Automatic Task",
+    },
   },
   nav: {
     ...baseEn.nav,
+    automaticTasks: "Automatic Tasks",
+    legacyTasks: "Legacy Tasks",
     insights: "Insight",
     inbox: "Insight",
     termsAndPolicies: "Terms & Policies",
@@ -139,7 +151,7 @@ const en = {
     dailyFocusActionPrefix: "Action: {{label}}",
     dailyFocusTodayBadge: "Today",
     dailyFocusDeadline: "Due {{deadline}}",
-    dailyFocusOverdueDeadline: "Overdue · {{deadline}}",
+    dailyFocusOverdueDeadline: "Overdue 路 {{deadline}}",
     dailyFocusCollapseSection: "Collapse",
     dailyFocusExpandSection: "Expand",
     executionStatusRunning: "Running",

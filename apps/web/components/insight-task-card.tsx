@@ -2,8 +2,8 @@
 
 import { useTranslation } from "react-i18next";
 import { RemixIcon } from "@/components/remix-icon";
-import { Badge, Button, Input } from "@openloomi/ui";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@openloomi/ui";
+import { Badge, Button, Input } from "@openzhiyu/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@openzhiyu/ui";
 import { InsightBadge } from "@/components/insight-badge";
 import { cn } from "@/lib/utils";
 
@@ -257,7 +257,7 @@ export function InsightTaskCard({
                       }}
                       disabled={detailActions.executeDisabled}
                       aria-label={t(
-                        "insightDetail.todoAskopenloomi",
+                        "insightDetail.todoAskopenzhiyu",
                         "Execute all",
                       )}
                     >
@@ -265,7 +265,7 @@ export function InsightTaskCard({
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    {t("insightDetail.todoAskopenloomi", "Execute all")}
+                    {t("insightDetail.todoAskopenzhiyu", "Execute all")}
                   </TooltipContent>
                 </Tooltip>
               ) : null)}

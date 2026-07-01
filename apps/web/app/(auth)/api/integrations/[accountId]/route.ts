@@ -13,15 +13,15 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
+import { db } from "@/lib/db/client";
 import {
-  db,
   deleteIntegrationAccount,
   getIntegrationAccountById,
   loadIntegrationCredentials,
   updateIntegrationAccount,
-} from "@/lib/db/queries";
+} from "@/lib/db/integration-queries";
 import { integrationAccounts } from "@/lib/db/schema";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import { WhatsAppAdapter } from "@/lib/integrations/whatsapp";
 import { WhatsAppBaileysAuthState } from "@/lib/integrations/whatsapp/whatsapp-auth-state";
 import { isTauriMode } from "@/lib/env/constants";

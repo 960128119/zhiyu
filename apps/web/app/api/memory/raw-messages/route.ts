@@ -4,21 +4,26 @@ import {
   getRawMessageStorageBackend,
   isRawMessageStorageAvailable,
 } from "@/lib/memory/raw-message-store";
-import { upsertRawMessagesToChroma } from "@/lib/memory/chroma-memory-index";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import {
   queryMemoryWithFallback,
   runMemoryForgettingCycle,
-} from "@openloomi/indexeddb/forgetting";
+} from "@openzhiyu/indexeddb/forgetting";
 import type {
   MemorySummaryRecord,
   RawMessage,
   RawMessageQuery,
-} from "@openloomi/indexeddb";
+} from "@openzhiyu/indexeddb";
 import type { NextRequest } from "next/server";
 
 export const runtime = "nodejs";
 
+async function upsertRawMessagesToChromaBackend(messages: RawMessage[]) {
+  const { upsertRawMessagesToChroma } = await import(
+    "@/lib/memory/chroma-memory-index"
+  );
+  return upsertRawMessagesToChroma(messages);
+}
 function normalizeTimestampToMs(value: number | undefined): number | undefined {
   if (!Number.isFinite(value)) {
     return undefined;
@@ -217,7 +222,7 @@ export async function POST(request: NextRequest) {
           createdAt: message.createdAt ?? now,
         })) as RawMessage[];
         const ids = await manager.storeMessages(normalized);
-        await upsertRawMessagesToChroma(normalized);
+        await upsertRawMessagesToChromaBackend(normalized);
         return Response.json({
           success: true,
           stored: ids.length,
@@ -280,7 +285,7 @@ export async function POST(request: NextRequest) {
             }),
           )
         ).filter((message): message is RawMessage => message !== null);
-        await upsertRawMessagesToChroma(updatedMessages);
+        await upsertRawMessagesToChromaBackend(updatedMessages);
         return Response.json({ success: true, updated });
       }
 

@@ -8,18 +8,18 @@
 import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions";
 import { Api } from "telegram/tl";
-import { MessagePlatformAdapter } from "@openloomi/integrations/channels";
+import { MessagePlatformAdapter } from "@openzhiyu/integrations/channels";
 import type {
   Messages,
   At,
   Image,
   Message,
-} from "@openloomi/integrations/channels";
-import type { Attachment } from "@openloomi/shared";
+} from "@openzhiyu/integrations/channels";
+import type { Attachment } from "@openzhiyu/shared";
 import type {
   MessageEvent,
   MessageTarget,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 import type { Entity } from "telegram/define";
 import bigInt, { type BigInteger } from "big-integer";
 import { markdownToTelegramHtml } from "./markdown";
@@ -32,16 +32,16 @@ import {
   timeBeforeHours,
   type DialogInfo,
   type ExtractedMessageInfo,
-} from "@openloomi/integrations/channels/sources/types";
+} from "@openzhiyu/integrations/channels/sources/types";
 import type {
   FileIngester,
   ClientRegistry,
-} from "@openloomi/integrations/core";
+} from "@openzhiyu/integrations/core";
 import type {
   ContactMeta,
   TelegramContactMeta,
-} from "@openloomi/integrations/contacts";
-import { isTelegramContactMeta } from "@openloomi/integrations/contacts";
+} from "@openzhiyu/integrations/contacts";
+import { isTelegramContactMeta } from "@openzhiyu/integrations/contacts";
 
 const DEBUG = process.env.DEBUG_TELEGRAM === "true";
 
@@ -1081,7 +1081,7 @@ export class TelegramAdapter extends MessagePlatformAdapter {
         continue;
       }
 
-      const text = openloomiMessageToTgText(message);
+      const text = openzhiyuMessageToTgText(message);
       if (text.trim().length > 0) {
         textParts.push(text);
       }
@@ -1508,14 +1508,14 @@ export class TelegramAdapter extends MessagePlatformAdapter {
   }
 }
 
-export { getTgUserNameString } from "@openloomi/integrations/channels/sources/types";
+export { getTgUserNameString } from "@openzhiyu/integrations/channels/sources/types";
 export type {
   DialogInfo,
   TgUserInfo,
   ExtractedMessageInfo,
-} from "@openloomi/integrations/channels/sources/types";
+} from "@openzhiyu/integrations/channels/sources/types";
 
-export function openloomiMessageToTgText(message: Message): string {
+export function openzhiyuMessageToTgText(message: Message): string {
   if (typeof message === "string") {
     return message;
   }
@@ -1527,13 +1527,13 @@ export function openloomiMessageToTgText(message: Message): string {
   }
   if ("nodes" in message) {
     return message.nodes
-      .map((node) => openloomiMessageToTgText(node as Message))
+      .map((node) => openzhiyuMessageToTgText(node as Message))
       .join("");
   }
   return "";
 }
 
-export function tgMessageToopenloomiMessage(message: Api.Message): Messages {
+export function tgMessageToopenzhiyuMessage(message: Api.Message): Messages {
   const messages: Messages = [];
 
   if (!message.message) {

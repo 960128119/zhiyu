@@ -35,7 +35,7 @@ export function MobileDock({
       onSelectMenu();
     } else {
       // Default behavior: dispatch open sidebar event
-      const event = new CustomEvent("openloomi:open-sidebar");
+      const event = new CustomEvent("openzhiyu:open-sidebar");
       window.dispatchEvent(event);
     }
   };

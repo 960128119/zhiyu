@@ -1,4 +1,4 @@
-import type { ChatMessage } from "@openloomi/shared";
+import type { ChatMessage } from "@openzhiyu/shared";
 import {
   artifactPathBasename,
   extractArtifactPathsFromText,

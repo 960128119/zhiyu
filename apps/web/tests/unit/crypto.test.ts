@@ -2,7 +2,7 @@ import {
   TokenEncryption,
   encryptToken,
   decryptToken,
-} from "@openloomi/security/token-encryption";
+} from "@openzhiyu/security/token-encryption";
 import { test, expect } from "vitest";
 import * as crypto from "node:crypto";
 

@@ -11,7 +11,7 @@ import {
   getEmbeddingDimensions,
   getEmbeddingModel,
   getModelPricing,
-} from "@openloomi/rag";
+} from "@openzhiyu/rag";
 
 describe("rag-embeddings", () => {
   describe("cosineSimilarity", () => {

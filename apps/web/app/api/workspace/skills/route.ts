@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { APP_DIR_NAME } from "@/lib/env/config/constants";
 
-/** Skill metadata file path (only under ~/.openloomi) */
+/** Skill metadata file path (only under ~/.openzhiyu) */
 function getSkillMetadataPath(): string {
   const homeDir = homedir();
   return join(homeDir, APP_DIR_NAME, "skill-metadata.json");
@@ -27,7 +27,7 @@ function readSkillMetadata(): Record<string, { avatar?: string }> {
 // Get all skills source directories (in priority order)
 function getAllSkillsDirs(): string[] {
   const homeDir = homedir();
-  // Priority: openloomi > claude > agents (first wins in dedup)
+  // Priority: openzhiyu > claude > agents (first wins in dedup)
   return [
     join(homeDir, APP_DIR_NAME, "skills"),
     join(homeDir, ".claude", "skills"),
@@ -203,7 +203,7 @@ export async function GET() {
       success: true,
       skills: skillsWithAvatar,
       directories: {
-        openloomi: sourceDirs[0],
+        openzhiyu: sourceDirs[0],
         claude: sourceDirs[1],
         agents: sourceDirs[2],
       },

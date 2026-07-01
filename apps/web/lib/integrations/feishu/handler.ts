@@ -1,7 +1,7 @@
 /**
  * Feishu Bot Inbound Message Handler (Bot Mode, based on OpenClaw)
  *
- * Unlike Telegram/iMessage self mode: this is "user → bot → openloomi replies on behalf".
+ * Unlike Telegram/iMessage self mode: this is "user → bot → openzhiyu replies on behalf".
  * - One im.message.receive_v1 contains one user message.
  * - Group @ mention activation: incrementally pull Feishu conversation history based on local latest message time (window up to 3 days), write to session file,
  *   then combine with locally built model context (total history text limit ~20,000 Unicode characters).
@@ -19,28 +19,33 @@ import { DEFAULT_AI_MODEL, AI_PROXY_BASE_URL } from "@/lib/env/constants";
 import { getCloudAuthToken } from "@/lib/auth/token-manager";
 import { handleAgentRuntime } from "@/lib/ai/runtime/shared";
 import { getRawMessageManager } from "@/lib/memory/raw-message-store";
-import { upsertRawMessagesToChroma } from "@/lib/memory/chroma-memory-index";
 import {
   getInsightEmbeddingModelName,
   hasInsightEmbeddingProviderConfig,
 } from "@/lib/insights/embedding-service";
-import { buildMemoryRecordEmbeddingDocument } from "@openloomi/ai/memory";
+import { buildMemoryRecordEmbeddingDocument } from "@openzhiyu/ai/memory";
 import {
   rawMessageToMemoryRecord,
   type RawMessage,
-} from "@openloomi/indexeddb";
-import { UniversalEmbeddings } from "@openloomi/rag/universal-embeddings";
+} from "@openzhiyu/indexeddb";
+import { UniversalEmbeddings } from "@openzhiyu/rag/universal-embeddings";
 import {
   FeishuConversationStore,
   type ChatType,
   type QuotedMessage,
   type RuntimeConversationMessage,
-} from "@openloomi/integrations/feishu/conversation-store";
-import { FeishuAdapter } from "@openloomi/integrations/feishu";
+} from "@openzhiyu/integrations/feishu/conversation-store";
+import { FeishuAdapter } from "@openzhiyu/integrations/feishu";
 import { createTaskSession } from "@/lib/files/workspace/sessions";
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
+async function upsertRawMessagesToChromaBackend(messages: RawMessage[]) {
+  const { upsertRawMessagesToChroma } = await import(
+    "@/lib/memory/chroma-memory-index"
+  );
+  return upsertRawMessagesToChroma(messages);
+}
 const FEISHU_UNIFIED_MEMORY_SEARCH_ONLY =
   process.env.FEISHU_UNIFIED_MEMORY_SEARCH_ONLY === "true";
 const FEISHU_UNIFIED_MEMORY_EXCLUDED_TOOLS = [
@@ -89,8 +94,8 @@ const FEISHU_USER_COPY = {
     en: "Not enough context to answer reliably.",
   },
   authFailure: {
-    zh: "云端令牌无效或已过期，请在 openloomi 内重新登录后再向机器人发消息。（重启后请稍等界面加载完成再发。）",
-    en: "Your cloud session token is invalid or expired. Please sign in to openloomi again, then message the bot. After a restart, wait until the app has loaded.",
+    zh: "云端令牌无效或已过期，请在 openzhiyu 内重新登录后再向机器人发消息。（重启后请稍等界面加载完成再发。）",
+    en: "Your cloud session token is invalid or expired. Please sign in to openzhiyu again, then message the bot. After a restart, wait until the app has loaded.",
   },
   internalPlaceholder: {
     zh: "模型服务暂时异常，请稍后再试。若刚重启应用，请确认已登录并等待几秒后再发消息。",
@@ -177,7 +182,7 @@ async function storeFeishuRawMessage(input: {
       input.authToken,
     );
     await manager.storeMessage(messageWithEmbedding);
-    await upsertRawMessagesToChroma([messageWithEmbedding]);
+    await upsertRawMessagesToChromaBackend([messageWithEmbedding]);
     console.log("[Feishu] Stored raw message", {
       messageId: input.messageId,
       role: input.role,
@@ -715,7 +720,7 @@ export async function handleFeishuInboundMessage(
     }
 
     const prompt = [
-      "You are the openloomi assistant. Help the user based on the following cross-platform message summaries.",
+      "You are the openzhiyu assistant. Help the user based on the following cross-platform message summaries.",
       "When information is insufficient, say so instead of making up content.",
       "",
       imagePrioritySection,
@@ -847,7 +852,7 @@ export async function handleFeishuInboundMessage(
       chatType,
       role: "assistant",
       content: toSend,
-      person: bot.name || "openloomi",
+      person: bot.name || "openzhiyu",
       metadata: {
         replyToMessageId: messageId,
       },
@@ -876,7 +881,7 @@ export async function handleFeishuInboundMessage(
         chatType,
         role: "assistant",
         content: fallbackMessage,
-        person: bot.name || "openloomi",
+        person: bot.name || "openzhiyu",
         metadata: {
           replyToMessageId: messageId,
           error: error instanceof Error ? error.message : String(error),

@@ -12,6 +12,7 @@ import {
 import type {
   DocumentChunk,
   IVectorStore,
+  VectorStoreCapabilities,
   VectorSearchFilter,
   VectorSearchResult,
   VectorStoreSearchOptions,
@@ -34,7 +35,7 @@ type ChromaMetadataValue = string | number | boolean | null;
 type ChromaMetadata = Record<string, ChromaMetadataValue>;
 
 const DEFAULT_CHROMA_URL = "http://localhost:8000";
-const DEFAULT_COLLECTION_NAME = "openloomi_rag_chunks";
+const DEFAULT_COLLECTION_NAME = "openzhiyu_rag_chunks";
 
 /**
  * Chroma-backed implementation of the shared vector store interface.
@@ -51,6 +52,20 @@ export class ChromaVectorStore implements IVectorStore {
       options.collectionName ||
       process.env.CHROMA_COLLECTION ||
       DEFAULT_COLLECTION_NAME;
+  }
+
+  getCapabilities(): VectorStoreCapabilities {
+    return {
+      backend: "chroma",
+      nativeMetadataFilters: true,
+      nativeUserFilter: true,
+      nativeTimeRangeFilter: true,
+      includeEmbeddings: true,
+      deleteOlderThan: true,
+      stats: true,
+      multiDimensions: false,
+      persistent: true,
+    };
   }
 
   async addChunk(chunk: DocumentChunk): Promise<void> {
@@ -196,11 +211,11 @@ export class ChromaVectorStore implements IVectorStore {
     if (!this.collection) {
       this.collection = await this.client.getOrCreateCollection({
         name: this.collectionName,
-        // OpenLoomi always supplies vectors explicitly. Disabling Chroma's
+        // OpenZhiyu always supplies vectors explicitly. Disabling Chroma's
         // default embedding function avoids model downloads and dimension drift.
         embeddingFunction: null,
         metadata: {
-          source: "@openloomi/rag",
+          source: "@openzhiyu/rag",
           store: "chroma",
         },
       });

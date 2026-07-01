@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { useTranslation } from "react-i18next";
 import { openUrl } from "@/lib/tauri";
 

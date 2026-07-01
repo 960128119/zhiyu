@@ -9,7 +9,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
-import { encryptToken } from "@openloomi/security/token-encryption";
+import { encryptToken } from "@openzhiyu/security/token-encryption";
 import { createHash } from "node:crypto";
 import { ensureRedis, setLoginSession } from "@/lib/session/context";
 import { withRateLimit, RateLimitPresets } from "@/lib/rate-limit/middleware";
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest) {
   const cloudUrl =
     process.env.CLOUD_API_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    "https://app.openloomi.ai";
+    "https://app.openzhiyu.ai";
 
   const redirectUri =
     process.env.TWITTER_REDIRECT_URI ?? `${cloudUrl}/api/x/callback`;

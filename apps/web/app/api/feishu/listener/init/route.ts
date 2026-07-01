@@ -1,13 +1,12 @@
 /**
  * Feishu WebSocket listener initialization
  * Called by frontend after user authorizes Feishu, establishes long connections for all Feishu accounts under the user
- * In Tauri, can pass cloudAuthToken for AI authentication when handling incoming messages (same origin as Telegram/iMessage)
+ * Desktop/local web can pass cloudAuthToken for AI authentication when handling incoming messages.
  */
 import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { startFeishuListenersForUser } from "@/lib/integrations/feishu/ws-listener";
 import { setCloudAuthToken } from "@/lib/auth/token-manager";
-import { isTauriMode } from "@/lib/env/constants";
 import { createLogger } from "@/lib/utils/logger";
 
 const logger = createLogger("FeishuListenerInit");
@@ -19,19 +18,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Tauri: frontend passes cloud auth token (same origin as Telegram GET init?authToken=), store in connection and set globally
+    // Desktop/local web: frontend passes cloud auth token so restarted
+    // listener connections can call the AI service for inbound messages.
     let authToken: string | undefined;
-    if (isTauriMode()) {
-      try {
-        const body = await request.json().catch(() => ({}));
-        authToken =
-          typeof body?.cloudAuthToken === "string"
-            ? body.cloudAuthToken.trim() || undefined
-            : undefined;
-        if (authToken) setCloudAuthToken(authToken);
-      } catch {
-        // Ignore when no body or not JSON
-      }
+    try {
+      const body = await request.json().catch(() => ({}));
+      authToken =
+        typeof body?.cloudAuthToken === "string"
+          ? body.cloudAuthToken.trim() || undefined
+          : undefined;
+      if (authToken) setCloudAuthToken(authToken);
+    } catch {
+      // Ignore when no body or not JSON
     }
 
     logger.info(`Feishu listener init, userId=${session.user.id}`);

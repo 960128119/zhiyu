@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { isTauri, openUrl } from "@/lib/tauri";
 
 const QQ_BOT_URL = "https://q.qq.com/qqbot/openclaw/";

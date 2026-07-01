@@ -8,7 +8,7 @@ import {
   type LoopSchedulerStateJson,
 } from "./schedule";
 import { getLoopState, listLoops, upsertLoopState } from "./service";
-import { runNativeLoopOnce } from "./runtime";
+import { runLoopHarness } from "./harness";
 
 const runningNativeLoops = new Set<string>();
 
@@ -149,29 +149,16 @@ export async function runDueNativeLoops(input: {
       });
       launched += 1;
 
-      const runPromise: Promise<JobExecutionResult> = runNativeLoopOnce({
+      const runPromise: Promise<JobExecutionResult> = runLoopHarness({
         userId: input.userId,
         loopId: loop.id,
+        mode: executionMode === "dry_run" ? "dry_run" : "native_agent",
         triggeredBy: "scheduler",
         reason: {
           type: "native_scheduler",
           scheduledAt: now.toISOString(),
         },
-        execute:
-          executionMode === "dry_run"
-            ? undefined
-            : async ({ previousState, loopRun }) => {
-                const { executeNativeLoopAgent } = await import(
-                  "./native-executor"
-                );
-                return executeNativeLoopAgent({
-                  userId: input.userId!,
-                  loop,
-                  previousState,
-                  runId: loopRun.id,
-                });
-              },
-      });
+      }).then((execution) => execution.result);
 
       const trackedRun = runPromise
         .then(async (result) => {

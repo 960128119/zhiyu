@@ -1,5 +1,5 @@
 {
-  "name": "@openloomi/i18n",
+  "name": "@openzhiyu/i18n",
   "version": "0.5.1",
   "private": true,
   "type": "module",
@@ -9,7 +9,7 @@
     "./locales/zh-Hans": "./src/locales/zh-Hans.ts"
   },
   "devDependencies": {
-    "@openloomi/config": "workspace:*",
+    "@openzhiyu/config": "workspace:*",
     "typescript": "^5.6.3"
   },
   "scripts": {

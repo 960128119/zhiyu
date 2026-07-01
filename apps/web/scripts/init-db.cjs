@@ -9,16 +9,16 @@ const { dirname, join } = require("node:path");
 const os = require("node:os");
 
 // Get database path from environment variable or use default
-// Use ~/.openloomi for macOS/Linux, and %APPDATA%/openloomi for Windows
+// Use ~/.openzhiyu for macOS/Linux, and %APPDATA%/openzhiyu for Windows
 function getAppDataDir() {
   const home = os.homedir();
   const platform = process.platform;
 
   if (platform === "win32") {
-    return join(process.env.APPDATA || home, "openloomi");
+    return join(process.env.APPDATA || home, "openzhiyu");
   }
-  // macOS and Linux use ~/.openloomi
-  return join(home, ".openloomi");
+  // macOS and Linux use ~/.openzhiyu
+  return join(home, ".openzhiyu");
 }
 
 const dbPath =

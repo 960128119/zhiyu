@@ -1,4 +1,4 @@
-import type { Attachment } from "@openloomi/shared";
+import type { Attachment } from "@openzhiyu/shared";
 
 export interface SendReplyInput {
   botId: string;

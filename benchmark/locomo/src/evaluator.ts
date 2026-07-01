@@ -1,7 +1,7 @@
 /**
  * LoCoMo Evaluator for Memory System.
  *
- * Uses OpenLoomi's MemoryStorageAdapter interface with in-memory implementation
+ * Uses OpenZhiyu's MemoryStorageAdapter interface with in-memory implementation
  * for benchmarking the memory system.
  * Now uses /api/native/agent for answering questions.
  */
@@ -23,7 +23,7 @@ import {
 import { calculateMetrics, evaluateLLMJudge } from "./metrics";
 
 /**
- * Write memory records to ~/.openloomi/data/memory/bench/ folder
+ * Write memory records to ~/.openzhiyu/data/memory/bench/ folder
  */
 async function writeMemoryFiles(
   sample: LoCoMoSample,
@@ -31,7 +31,7 @@ async function writeMemoryFiles(
 ): Promise<void> {
   const memoryDir = join(
     homedir(),
-    ".openloomi",
+    ".openzhiyu",
     "data",
     "memory",
     "bench",
@@ -362,7 +362,7 @@ Answer based on the conversation history above:`;
 }
 
 /**
- * Evaluator for LoCoMo benchmark using OpenLoomi Memory API.
+ * Evaluator for LoCoMo benchmark using OpenZhiyu Memory API.
  */
 export class LoCoMoEvaluator {
   private retrievalMode: RetrievalMode;
@@ -398,7 +398,7 @@ export class LoCoMoEvaluator {
     this.resume = resume;
     this.checkpointDir = join(
       homedir(),
-      ".openloomi",
+      ".openzhiyu",
       "data",
       "memory",
       "bench",
@@ -457,7 +457,7 @@ export class LoCoMoEvaluator {
 
   /**
    * Load a LoCoMo sample into the memory system.
-   * Writes memory records to ~/.openloomi/data/memory/bench/ for the agent to search.
+   * Writes memory records to ~/.openzhiyu/data/memory/bench/ for the agent to search.
    */
   async loadSample(sample: LoCoMoSample): Promise<void> {
     this.storage.clear();
@@ -671,13 +671,13 @@ export class LoCoMoEvaluator {
 
   /**
    * Query memory using the agent API.
-   * The agent will search through ~/.openloomi/data/memory/bench/ for relevant information.
+   * The agent will search through ~/.openzhiyu/data/memory/bench/ for relevant information.
    */
   private async queryMemory(
     question: string,
     sample: LoCoMoSample,
   ): Promise<string> {
-    const memoryPath = `~/.openloomi/data/memory/bench/${sample.sample_id}/`;
+    const memoryPath = `~/.openzhiyu/data/memory/bench/${sample.sample_id}/`;
     const prompt = `Please answer the following question based on the information in your memory files.
 
 Question: ${question}

@@ -6,13 +6,13 @@ import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN, enUS } from "date-fns/locale";
 import { RemixIcon } from "@/components/remix-icon";
-import { Badge, Button, Input } from "@openloomi/ui";
+import { Badge, Button, Input } from "@openzhiyu/ui";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { toast } from "./toast";
 import { useRssSubscriptions } from "@/hooks/use-rss-subscriptions";
 import {
@@ -145,7 +145,7 @@ export function RssAddControls() {
           <p>
             {t(
               "integrations.customFeedDescription",
-              "Paste any RSS/Atom/JSON feed URL. openloomi will fetch it periodically and surface new stories in your understanding feed.",
+              "Paste any RSS/Atom/JSON feed URL. openzhiyu will fetch it periodically and surface new stories in your understanding feed.",
             )}
           </p>
           <Button

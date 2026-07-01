@@ -3,15 +3,16 @@ import {
   convertTdataToStringSession,
   validateTdataDirectory,
   extractAccountInfo,
-} from "@openloomi/integrations/telegram/tdata-converter";
+} from "@openzhiyu/integrations/telegram/tdata-converter";
 import { TelegramClient } from "telegram";
 import { StringSession } from "telegram/sessions";
 import { auth } from "@/app/(auth)/auth";
-import { upsertIntegrationAccount, createBot } from "@/lib/db/queries";
+import { createBot } from "@/lib/db/bot-queries";
+import { upsertIntegrationAccount } from "@/lib/db/integration-queries";
 import {
   getTgUserNameString,
   type TgUserInfo,
-} from "@openloomi/integrations/channels/sources/types";
+} from "@openzhiyu/integrations/channels/sources/types";
 
 /**
  * Login using Telegram Desktop session

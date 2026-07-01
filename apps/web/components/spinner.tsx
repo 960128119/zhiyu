@@ -13,7 +13,7 @@ type SpinnerProps = {
 
 export function Spinner({
   size = 28,
-  label = "openloomi is getting things ready",
+  label = "openzhiyu is getting things ready",
   className,
 }: SpinnerProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -45,7 +45,10 @@ export function Spinner({
           "pointer-events-none select-none",
           !prefersReducedMotion && "motion-safe:animate-spin",
         )}
-        style={prefersReducedMotion ? undefined : { animationDuration: "1.8s" }}
+        style={{
+          height: "auto",
+          ...(!prefersReducedMotion ? { animationDuration: "1.8s" } : null),
+        }}
       />
       <span className="sr-only">{label}</span>
     </div>

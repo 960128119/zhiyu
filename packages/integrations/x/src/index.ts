@@ -1,7 +1,7 @@
 import { Client, ApiError } from "@xdevplatform/xdk";
-import { AppError } from "@openloomi/shared/errors";
-import type { ExtractedMessageInfo } from "@openloomi/integrations/channels/sources/types";
-import type { Messages } from "@openloomi/integrations/channels";
+import { AppError } from "@openzhiyu/shared/errors";
+import type { ExtractedMessageInfo } from "@openzhiyu/integrations/channels/sources/types";
+import type { Messages } from "@openzhiyu/integrations/channels";
 
 type XAdapterOptions = {
   botId: string;

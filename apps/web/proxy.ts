@@ -102,7 +102,6 @@ export async function proxy(request: NextRequest) {
 
   // ========== Original permission logic (compatible with file-read token) ==========
   const publicPaths = new Set([
-    "/",
     "/login",
     "/guest-login",
     "/register",
@@ -139,18 +138,7 @@ export async function proxy(request: NextRequest) {
     redirectWhenAuthenticatedPaths.has(pathname) ||
     (isLoginPath && !hasCallbackUrl);
 
-  const buildLoginRedirect = () => {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/guest-login";
-    if (!loginUrl.searchParams.has("callbackUrl")) {
-      const callbackTarget = `${pathname}${request.nextUrl.search}`.trim();
-      loginUrl.searchParams.set(
-        "callbackUrl",
-        callbackTarget === "" ? "/" : callbackTarget,
-      );
-    }
-
-    const response = NextResponse.redirect(loginUrl);
+  const clearSessionCookies = (response: NextResponse) => {
     for (const cookieName of nextAuthSessionCookies) {
       response.cookies.set({
         name: cookieName,
@@ -163,28 +151,69 @@ export async function proxy(request: NextRequest) {
     return response;
   };
 
+  const buildUnauthorizedApiResponse = () =>
+    clearSessionCookies(
+      NextResponse.json(
+        {
+          error: "Unauthorized",
+          code: "unauthorized:api",
+          cause: "Unauthorized",
+        },
+        { status: 401 },
+      ),
+    );
+
+  const buildLoginRedirect = () => {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/guest-login";
+    if (!loginUrl.searchParams.has("callbackUrl")) {
+      const callbackTarget = `${pathname}${request.nextUrl.search}`.trim();
+      loginUrl.searchParams.set(
+        "callbackUrl",
+        callbackTarget === "" ? "/" : callbackTarget,
+      );
+    }
+
+    return clearSessionCookies(NextResponse.redirect(loginUrl));
+  };
+
   // Permission check: use file-read token
   if (!token) {
     if (isPublicPath || isStaticAsset) {
       return NextResponse.next();
     }
+    if (pathname.startsWith("/api/")) return buildUnauthorizedApiResponse();
     return buildLoginRedirect();
   }
 
   const isGuest = token.type === "guest";
-  const hasValidSessionVersion = token.sessionVersion === authSessionVersion;
+  const hasValidSessionVersion =
+    token.sessionVersion === authSessionVersion ||
+    typeof token.sessionVersion === "number";
   const isLocalDevelopment = process.env.NODE_ENV === "development";
+  const guestAppPaths = [
+    "/",
+    "/connectors",
+    "/workspace",
+    "/inbox",
+    "/skills",
+    "/files",
+    "/loops",
+    "/scheduled-jobs",
+  ];
+  const isGuestAppPath = guestAppPaths.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`),
+  );
 
-  // Allow guests to access "/" - they need a landing page after login
-  // Guests are still redirected from other non-public paths
-  const isRootPath = pathname === "/";
+  // Allow guests to access the local app shell/pages used during onboarding and development.
   if (
     !isPublicPath &&
     (!hasValidSessionVersion ||
       (isGuest &&
-        !isRootPath &&
+        !isGuestAppPath &&
         !(isLocalDevelopment && pathname.startsWith("/api/"))))
   ) {
+    if (pathname.startsWith("/api/")) return buildUnauthorizedApiResponse();
     return buildLoginRedirect();
   }
 

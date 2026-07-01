@@ -4,24 +4,14 @@
  */
 
 import {
-  getDueJobs,
-  startJobExecution,
-  completeJobExecution,
   recoverStuckJobs,
   cleanupStuckJobs,
 } from "./service";
-import { executeJob } from "./executor";
-import {
-  isTauriMode,
-  DEFAULT_AI_MODEL,
-  AI_PROXY_BASE_URL,
-} from "../env/constants";
+import { isTauriMode } from "../env/constants";
 import { getCloudAuthToken } from "@/lib/auth/token-manager";
 import { db } from "../db/index";
-import { characters, jobExecutions, scheduledJobs } from "../db/schema";
+import { jobExecutions, scheduledJobs } from "../db/schema";
 import { eq } from "drizzle-orm";
-import type { ScheduledJob } from "@/lib/db/schema";
-import { runScheduledJobLoop } from "@/lib/loops";
 import {
   getNativeLoopSchedulerStatus,
   runDueNativeLoops,
@@ -41,6 +31,10 @@ const CHECK_INTERVAL = 60 * 1000; // Check every minute
 
 // Store current user ID for filtering jobs (set when scheduler starts)
 let schedulerUserId: string | undefined;
+
+export function isLocalSchedulerAllowed() {
+  return isTauriMode() || process.env.ENABLE_LOCAL_SCHEDULER === "true";
+}
 
 /**
  * Set the current user ID for job filtering
@@ -67,9 +61,10 @@ export async function startLocalScheduler() {
     return;
   }
 
-  // Only run in Tauri/desktop mode
-  if (!isTauriMode()) {
-    console.log("[LocalScheduler] Not in Tauri mode, skipping");
+  if (!isLocalSchedulerAllowed()) {
+    console.log(
+      "[LocalScheduler] Local scheduler disabled; set ENABLE_LOCAL_SCHEDULER=true to run it outside Tauri",
+    );
     return;
   }
 
@@ -206,143 +201,6 @@ async function checkAndExecuteDueJobs() {
       );
     }
 
-    // Get all jobs that are due to run for the current user
-    const dueJobs = await getDueJobs(new Date(), schedulerUserId);
-
-    if (dueJobs.length === 0) {
-      return;
-    }
-
-    console.log(`[LocalScheduler] Found ${dueJobs.length} due job(s)`);
-
-    // Filter out jobs that are already running (prevent duplicate execution)
-    const jobsToRun = dueJobs.filter(
-      (job: ScheduledJob) => !runningJobs.has(job.id),
-    );
-
-    if (jobsToRun.length === 0) {
-      console.log(
-        "[LocalScheduler] All due jobs are already running, skipping",
-      );
-      return;
-    }
-
-    console.log(`[LocalScheduler] Will execute ${jobsToRun.length} job(s)`);
-
-    // Execute each due job asynchronously (fire-and-forget)
-    for (const job of jobsToRun) {
-      // Mark job as running to prevent duplicate execution in the same cycle
-      runningJobs.add(job.id);
-
-      try {
-        // Phase 1.2: Check Character status before auto-triggering
-        const rawJobConfig = job.jobConfig;
-        const jobConfigObj =
-          typeof rawJobConfig === "string"
-            ? JSON.parse(rawJobConfig)
-            : rawJobConfig;
-        const characterId = jobConfigObj?.characterId as string | undefined;
-
-        if (characterId) {
-          const [char] = await db
-            .select({ status: characters.status })
-            .from(characters)
-            .where(eq(characters.id, characterId))
-            .limit(1);
-
-          if (char && char.status !== "active") {
-            console.log(
-              `[LocalScheduler] Character ${characterId} is "${char.status}", skipping job ${job.id}`,
-            );
-            runningJobs.delete(job.id);
-            continue;
-          }
-        }
-        console.log(`[LocalScheduler] Executing job: ${job.id} (${job.name})`);
-
-        // Build modelConfig from cloud auth token (for Tauri mode)
-        // Use DEFAULT_AI_MODEL as default model to match manual execution behavior.
-        const cloudAuthToken = schedulerAuthToken;
-        const selectedModel = (() => {
-          const model = (job as any)?.jobConfig?.modelConfig?.model;
-          // Treat "default" as "no model specified" so we use the default
-          return typeof model === "string" && model !== "default"
-            ? model
-            : undefined;
-        })();
-
-        const effectiveModel = selectedModel || DEFAULT_AI_MODEL;
-
-        const modelConfig =
-          isTauriMode() && cloudAuthToken
-            ? {
-                baseUrl: AI_PROXY_BASE_URL,
-                apiKey: cloudAuthToken,
-                model: effectiveModel,
-              }
-            : undefined;
-
-        const context = {
-          userId: job.userId,
-          jobId: job.id,
-          executionId: crypto.randomUUID(),
-          triggeredBy: "scheduler" as const,
-          modelConfig,
-          timezone: (job as any).timezone,
-        };
-
-        // Start execution record
-        await startJobExecution(context);
-
-        // Serialize jobConfig to string for executeJob
-        const jobConfigStr =
-          typeof job.jobConfig === "string"
-            ? job.jobConfig
-            : JSON.stringify(job.jobConfig);
-
-        // Execute job asynchronously - don't wait for completion
-        runScheduledJobLoop({
-          job,
-          context,
-          jobConfigStr,
-          jobDescription: job.description || undefined,
-          execute: () =>
-            executeJob(context, jobConfigStr, job.description || undefined),
-        })
-          .then(async (result) => {
-            console.log(
-              `[LocalScheduler] Job ${job.id} completed:`,
-              result.status,
-            );
-            await completeJobExecution(context, result);
-          })
-          .catch(async (error) => {
-            console.error(`[LocalScheduler] Job ${job.id} failed:`, error);
-            try {
-              await completeJobExecution(context, {
-                status: "error",
-                error: error instanceof Error ? error.message : String(error),
-                output: "",
-                duration: 0,
-              });
-            } catch (e) {
-              console.error(
-                "[LocalScheduler] Failed to complete job execution record:",
-                e,
-              );
-              // Ensure job is removed from running set to prevent permanent stuck state
-              runningJobs.delete(job.id);
-            }
-          })
-          .finally(() => {
-            // Remove job from running set when done
-            runningJobs.delete(job.id);
-          });
-      } catch (error) {
-        console.error(`[LocalScheduler] Failed to start job ${job.id}:`, error);
-        runningJobs.delete(job.id);
-      }
-    }
   } catch (error) {
     console.error("[LocalScheduler] Error checking for due jobs:", error);
   } finally {

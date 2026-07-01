@@ -2,8 +2,8 @@
  * Tauri path utilities module
  *
  * Consistent with Rust side get_data_dir():
- * - Unix: ~/.openloomi/data
- * - Windows: %USERPROFILE%\.openloomi\data or %APPDATA%\openloomi\data
+ * - Unix: ~/.openzhiyu/data
+ * - Windows: %USERPROFILE%\.openzhiyu\data or %APPDATA%\openzhiyu\data
  *
  * Note: This module is for server-side only
  */
@@ -18,10 +18,10 @@ export function getTauriDataDir(): string {
   // For development and production, use difference data dir.
   if (process.env.NODE_ENV === "development") {
     return process.platform === "win32"
-      ? `${process.env.APPDATA}/openloomi`
+      ? `${process.env.APPDATA}/openzhiyu`
       : process.platform === "darwin"
-        ? `${process.env.HOME}/Library/Application Support/openloomi`
-        : `${process.env.HOME}/.config/openloomi`;
+        ? `${process.env.HOME}/Library/Application Support/openzhiyu`
+        : `${process.env.HOME}/.config/openzhiyu`;
   }
 
   const { homedir } = require("node:os");
@@ -32,13 +32,13 @@ export function getTauriDataDir(): string {
     // Windows: Prefer USERPROFILE, then APPDATA
     const userprofile = process.env.USERPROFILE;
     if (userprofile) {
-      return join(userprofile, ".openloomi", "data");
+      return join(userprofile, ".openzhiyu", "data");
     }
-    return join(process.env.APPDATA || home, "openloomi", "data");
+    return join(process.env.APPDATA || home, "openzhiyu", "data");
   }
 
-  // Unix (Linux/macOS): ~/.openloomi/data
-  return join(home, ".openloomi", "data");
+  // Unix (Linux/macOS): ~/.openzhiyu/data
+  return join(home, ".openzhiyu", "data");
 }
 
 /**

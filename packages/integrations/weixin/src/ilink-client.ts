@@ -204,7 +204,7 @@ function assertWriteOk(rawText: string, apiName: string): void {
 }
 
 function generateClientId(): string {
-  return `openloomi-weixin-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
+  return `openzhiyu-weixin-${Date.now()}-${crypto.randomBytes(4).toString("hex")}`;
 }
 
 // =============================================================================

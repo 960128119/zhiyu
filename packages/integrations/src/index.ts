@@ -1,11 +1,11 @@
 /**
- * @openloomi/integrations - Unified package for integration packages
+ * @openzhiyu/integrations - Unified package for integration packages
  *
  * This is the main entry point that re-exports core interfaces and types.
  * Individual platform adapters are available via subpaths:
- * - @openloomi/integrations/whatsapp
- * - @openloomi/integrations/weixin
- * - @openloomi/integrations/telegram
+ * - @openzhiyu/integrations/whatsapp
+ * - @openzhiyu/integrations/weixin
+ * - @openzhiyu/integrations/telegram
  * etc.
  */
 

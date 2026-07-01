@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { getSession } from "next-auth/react";
 
 /**
@@ -10,6 +10,7 @@ import { getSession } from "next-auth/react";
  */
 export default function GuestLoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
@@ -19,34 +20,25 @@ export default function GuestLoginPage() {
       setIsCreating(true);
 
       try {
+        const callbackUrl = searchParams.get("callbackUrl") || "/";
         // Check if already authenticated (to avoid loops when middleware redirects back)
         const session = await getSession();
         if (session?.user) {
-          // Already logged in, go to home
-          router.push("/");
+          router.replace(callbackUrl);
           return;
         }
 
-        const response = await fetch("/api/auth/guest", {
-          method: "POST",
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          // Successful login, go to home
-          router.push("/");
-        } else {
-          console.error("[GuestLogin] Failed to create guest account");
-          router.push("/");
-        }
+        window.location.replace(
+          `/api/auth/guest?redirectUrl=${encodeURIComponent(callbackUrl)}`,
+        );
       } catch (error) {
         console.error("[GuestLogin] Error:", error);
-        router.push("/");
+        router.replace("/");
       }
     };
 
     createGuestAndLogin();
-  }, [router, isCreating]);
+  }, [router, searchParams, isCreating]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">

@@ -1,12 +1,12 @@
 /**
  * QQ Bot inbound message handling (Bot mode, consistent with Feishu)
- * User → QQ Bot → openloomi replies on behalf
+ * User → QQ Bot → openzhiyu replies on behalf
  */
 import { sendReplyByBotId } from "@/lib/bots/send-reply";
-import type { IntegrationAccountWithBot } from "@/lib/db/queries";
+import type { IntegrationAccountWithBot } from "@/lib/db/integration-queries";
 import { DEFAULT_AI_MODEL, AI_PROXY_BASE_URL } from "@/lib/env/constants";
 import { handleAgentRuntime } from "@/lib/ai/runtime/shared";
-import { QQBotConversationStore } from "@openloomi/integrations/qqbot";
+import { QQBotConversationStore } from "@openzhiyu/integrations/qqbot";
 
 /** Reply target: openid for DM, group_openid for group chat */
 function getReplyRecipient(params: {
@@ -59,7 +59,7 @@ export async function handleQQInboundMessage(
 
   try {
     const prompt = [
-      "You are the openloomi assistant. Help the user based on the following cross-platform message summaries.",
+      "You are the openzhiyu assistant. Help the user based on the following cross-platform message summaries.",
       "When information is insufficient, say so instead of making up content.",
       "",
       "=== User's question (this single message to the bot) ===",

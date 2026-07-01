@@ -5,7 +5,7 @@
  */
 
 import OpenAI from "openai";
-import { estimateTokens } from "@openloomi/shared";
+import { estimateTokens } from "@openzhiyu/shared";
 
 const OPENROUTER_API_KEY =
   process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY;
@@ -38,8 +38,8 @@ async function getOpenAIClient(): Promise<OpenAI> {
     apiKey: OPENROUTER_API_KEY,
     baseURL: EMBEDDING_BASE_URL,
     defaultHeaders: {
-      "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://openloomi.ai",
-      "X-Title": "openloomi AI",
+      "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://openzhiyu.ai",
+      "X-Title": "openzhiyu AI",
     },
   });
 }

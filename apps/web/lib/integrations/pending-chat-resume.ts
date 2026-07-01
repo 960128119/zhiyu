@@ -2,13 +2,13 @@ import type { IntegrationId } from "@/hooks/use-integrations";
 import { normalizeIntegrationPlatform } from "@/lib/integrations/connector-target";
 
 export const CONNECTOR_AUTHORIZATION_RESULT_EVENT =
-  "openloomi:connector-authorization-result";
+  "openzhiyu:connector-authorization-result";
 export const CONNECTOR_AUTHORIZATION_PENDING_ID_PARAM = "connectorPendingId";
 
-const PENDING_RESUME_KEY = "openloomi:pending-connector-chat-resume";
-const PENDING_RESUME_MAP_KEY = "openloomi:pending-connector-chat-resumes";
-const AUTHORIZATION_RESULT_KEY = "openloomi:connector-authorization-result";
-const RESUME_TAB_NAME_PREFIX = "openloomi:connector-resume-tab:";
+const PENDING_RESUME_KEY = "openzhiyu:pending-connector-chat-resume";
+const PENDING_RESUME_MAP_KEY = "openzhiyu:pending-connector-chat-resumes";
+const AUTHORIZATION_RESULT_KEY = "openzhiyu:connector-authorization-result";
+const RESUME_TAB_NAME_PREFIX = "openzhiyu:connector-resume-tab:";
 const PENDING_TTL_MS = 15 * 60 * 1000;
 const RESULT_TTL_MS = 5 * 60 * 1000;
 

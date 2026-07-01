@@ -36,7 +36,7 @@ jobs:
       - name: Calculate SHA256 for ARM64 DMG
         id: sha_arm
         run: |
-          URL="https://github.com/melandlabs/openloomi/releases/download/v${{ steps.version.outputs.version }}/openloomi_${{ steps.version.outputs.version }}_aarch64.dmg"
+          URL="https://github.com/melandlabs/openzhiyu/releases/download/v${{ steps.version.outputs.version }}/openzhiyu_${{ steps.version.outputs.version }}_aarch64.dmg"
           echo "Downloading from: $URL"
           SHA=$(curl -sfL "$URL" | shasum -a 256 | cut -d ' ' -f 1)
           if [ -z "$SHA" ]; then
@@ -49,7 +49,7 @@ jobs:
       - name: Calculate SHA256 for Intel DMG
         id: sha_intel
         run: |
-          URL="https://github.com/melandlabs/openloomi/releases/download/v${{ steps.version.outputs.version }}/openloomi_${{ steps.version.outputs.version }}_amd64.dmg"
+          URL="https://github.com/melandlabs/openzhiyu/releases/download/v${{ steps.version.outputs.version }}/openzhiyu_${{ steps.version.outputs.version }}_amd64.dmg"
           echo "Downloading from: $URL"
           SHA=$(curl -sfL "$URL" | shasum -a 256 | cut -d ' ' -f 1)
           if [ -z "$SHA" ]; then
@@ -61,7 +61,7 @@ jobs:
 
       - name: Update Cask file
         run: |
-          CASK_FILE="Casks/openloomi.rb"
+          CASK_FILE="Casks/openzhiyu.rb"
           VERSION="${{ steps.version.outputs.version }}"
           ARM_SHA="${{ steps.sha_arm.outputs.sha }}"
           INTEL_SHA="${{ steps.sha_intel.outputs.sha }}"
@@ -82,6 +82,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Casks/openloomi.rb
-          git commit -m "chore: update homebrew cask openloomi to v${{ steps.version.outputs.version }}"
+          git add Casks/openzhiyu.rb
+          git commit -m "chore: update homebrew cask openzhiyu to v${{ steps.version.outputs.version }}"
           git push

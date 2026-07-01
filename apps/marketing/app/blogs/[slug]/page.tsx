@@ -24,20 +24,20 @@ export async function generateMetadata({
   if (!page) {
     return {
       title:
-        "Article Not Found | OpenLoomi Knowledge Base | Calm Communication Guides | Inbox Intelligence Playbook | Productivity Systems Reference | Automation & Translation Tips",
+        "Article Not Found | OpenZhiyu Knowledge Base | Calm Communication Guides | Inbox Intelligence Playbook | Productivity Systems Reference | Automation & Translation Tips",
       description:
-        "The article you requested is unavailable. Browse the OpenLoomi blog for calm communication guides | inbox intelligence playbooks | productivity systems references | automation & translation tips | OpenLoomi product updates.",
+        "The article you requested is unavailable. Browse the OpenZhiyu blog for calm communication guides | inbox intelligence playbooks | productivity systems references | automation & translation tips | OpenZhiyu product updates.",
       alternates: {
-        canonical: `https://openloomi.ai/blogs/${slug}`,
+        canonical: `https://openzhiyu.ai/blogs/${slug}`,
       },
     };
   }
 
   const title = page.data.title;
-  const description = page.data.description ?? `${title} from OpenLoomi`;
-  const canonical = `https://openloomi.ai${page.url}`;
+  const description = page.data.description ?? `${title} from OpenZhiyu`;
+  const canonical = `https://openzhiyu.ai${page.url}`;
   const imageUrl = page.data.image
-    ? new URL(page.data.image, "https://openloomi.ai").toString()
+    ? new URL(page.data.image, "https://openzhiyu.ai").toString()
     : undefined;
 
   return {
@@ -76,9 +76,9 @@ export default async function BlogPage({
   }
 
   const MDX = page.data.body;
-  const canonical = `https://openloomi.ai${page.url}`;
+  const canonical = `https://openzhiyu.ai${page.url}`;
   const imageUrl = page.data.image
-    ? new URL(page.data.image, "https://openloomi.ai").toString()
+    ? new URL(page.data.image, "https://openzhiyu.ai").toString()
     : undefined;
 
   const articleJsonLd = {
@@ -92,14 +92,14 @@ export default async function BlogPage({
     author: {
       "@type": "Organization",
       name: page.data.author,
-      url: "https://openloomi.ai",
+      url: "https://openzhiyu.ai",
     },
     publisher: {
       "@type": "Organization",
-      name: "OpenLoomi",
+      name: "OpenZhiyu",
       logo: {
         "@type": "ImageObject",
-        url: "https://openloomi.ai/images/logo_web.png",
+        url: "https://openzhiyu.ai/images/logo_web.png",
       },
     },
     mainEntityOfPage: { "@type": "WebPage", "@id": canonical },

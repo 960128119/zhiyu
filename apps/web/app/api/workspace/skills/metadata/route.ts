@@ -1,7 +1,7 @@
 /**
  * Skills Metadata API Route
  * PATCH: Update single skill metadata (e.g. avatar)
- * Read/write ~/.openloomi/skill-metadata.json, only allows .openloomi path under homedir
+ * Read/write ~/.openzhiyu/skill-metadata.json, only allows .openzhiyu path under homedir
  */
 
 import { type NextRequest, NextResponse } from "next/server";
@@ -10,12 +10,12 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { APP_DIR_NAME } from "@/lib/env/config/constants";
 
-function getopenloomiDir(): string {
+function getopenzhiyuDir(): string {
   return join(homedir(), APP_DIR_NAME);
 }
 
 function getSkillMetadataPath(): string {
-  return join(getopenloomiDir(), "skill-metadata.json");
+  return join(getopenzhiyuDir(), "skill-metadata.json");
 }
 
 /** Ensure metadata file directory exists and write JSON */
@@ -23,7 +23,7 @@ function writeSkillMetadata(
   data: Record<string, { avatar?: string }>,
 ): { success: boolean; error?: string } {
   try {
-    const dir = getopenloomiDir();
+    const dir = getopenzhiyuDir();
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
     }

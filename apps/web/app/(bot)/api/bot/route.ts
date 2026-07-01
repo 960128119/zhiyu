@@ -11,9 +11,9 @@ import {
   deleteAllBotsByUserId,
   deleteBotByEmailAndAdapter,
   deleteBotsByAdapter,
-} from "@/lib/db/queries";
+} from "@/lib/db/bot-queries";
 import type { IntegrationId } from "@/lib/integrations/client";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import { BotRequestSchema } from "./schema";
 
 /**

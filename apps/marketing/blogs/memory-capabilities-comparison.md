@@ -1,20 +1,20 @@
 ---
-title: "Memory Capabilities Comparison: OpenClaw vs. Hermes Agent vs. Claude Code vs. OpenLoomi"
+title: "Memory Capabilities Comparison: OpenClaw vs. Hermes Agent vs. Claude Code vs. OpenZhiyu"
 date: 2026-05-27
-description: A comparison of durable memory, retrieval, and model-facing recall, with a source-level look at OpenLoomi's multi-corpus memory pipeline.
+description: A comparison of durable memory, retrieval, and model-facing recall, with a source-level look at OpenZhiyu's multi-corpus memory pipeline.
 ---
 
 # Memory Capabilities Comparison
 
-_Last verified on June 10, 2026. OpenLoomi behavior reflects the current
+_Last verified on June 10, 2026. OpenZhiyu behavior reflects the current
 repository after
-[PR #154](https://github.com/melandlabs/openloomi/pull/154). External-system
+[PR #154](https://github.com/melandlabs/openzhiyu/pull/154). External-system
 summaries use the official documentation and repositories linked below._
 
-This article compares how OpenClaw, Hermes Agent, Claude Code, and OpenLoomi
+This article compares how OpenClaw, Hermes Agent, Claude Code, and OpenZhiyu
 store durable context and bring it back into an active model session. The
-comparison is intentionally OpenLoomi-centered: the other systems establish
-useful architectural baselines, while the OpenLoomi section follows the current
+comparison is intentionally OpenZhiyu-centered: the other systems establish
+useful architectural baselines, while the OpenZhiyu section follows the current
 implementation down to its storage, lifecycle, vector, API, and MCP boundaries.
 
 The short version:
@@ -24,7 +24,7 @@ The short version:
   skills.
 - Claude Code uses hierarchical instruction files and project-scoped auto
   memory.
-- OpenLoomi separates raw memory, lifecycle summaries, insights, and knowledge,
+- OpenZhiyu separates raw memory, lifecycle summaries, insights, and knowledge,
   then performs cross-source semantic recall at the application layer.
 
 Four products, four definitions of "I remember that." At least nobody named a
@@ -33,10 +33,10 @@ database table `misc_final_really_final`.
 ## Table of Contents
 
 - [Comparison Matrix](#comparison-matrix)
-- [The OpenLoomi Memory Model](#the-openloomi-memory-model)
-- [OpenLoomi Write and Maintenance Flows](#openloomi-write-and-maintenance-flows)
-- [OpenLoomi Recall Paths](#openloomi-recall-paths)
-- [Why OpenLoomi Keeps Sources Isolated](#why-openloomi-keeps-sources-isolated)
+- [The OpenZhiyu Memory Model](#the-openzhiyu-memory-model)
+- [OpenZhiyu Write and Maintenance Flows](#openzhiyu-write-and-maintenance-flows)
+- [OpenZhiyu Recall Paths](#openzhiyu-recall-paths)
+- [Why OpenZhiyu Keeps Sources Isolated](#why-openzhiyu-keeps-sources-isolated)
 - [Other Systems in Brief](#other-systems-in-brief)
 - [Final Recall Comparison](#final-recall-comparison)
 - [Persistence Across Restarts](#persistence-across-restarts)
@@ -46,7 +46,7 @@ database table `misc_final_really_final`.
 
 ## Comparison Matrix
 
-| Capability            | OpenClaw                                                              | Hermes Agent                                                                 | Claude Code                                                                        | OpenLoomi                                                                                                       |
+| Capability            | OpenClaw                                                              | Hermes Agent                                                                 | Claude Code                                                                        | OpenZhiyu                                                                                                       |
 | --------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | Core memory model     | Durable Markdown plus a rebuildable search index.                     | Curated memory files, searchable session history, and optional providers.    | Hierarchical instruction files plus project-scoped auto-memory Markdown.           | Separate raw memory, lifecycle summaries, insights, and RAG knowledge.                                          |
 | Canonical persistence | Workspace files such as `MEMORY.md` and `memory/*.md`.                | `MEMORY.md`, `USER.md`, SQLite session history, and generated skills.        | `CLAUDE.md`, `.claude/rules/*.md`, and project auto-memory files.                  | IndexedDB, SQLite, or Postgres records, plus optional local Markdown/JSON exports.                              |
@@ -59,9 +59,9 @@ database table `misc_final_really_final`.
 | Main strength         | Transparent and inspectable memory files.                             | Agent learning and self-improvement.                                         | Repository-aware persistent instructions and learned project context.              | Structured multi-corpus memory with lifecycle management and application-level semantic recall.                 |
 | Main cost             | Capability varies with plugins and index configuration.               | Memory behavior spans several mechanisms and optional providers.             | Recall depends on file scope and agent file reads rather than ranked retrieval.    | More stores, embedding maintenance, backend compatibility, and failure modes must be operated coherently.       |
 
-## The OpenLoomi Memory Model
+## The OpenZhiyu Memory Model
 
-OpenLoomi does not treat every durable artifact as one interchangeable blob.
+OpenZhiyu does not treat every durable artifact as one interchangeable blob.
 The current architecture has five related but distinct domains:
 
 | Domain              | Canonical data                                                        | Purpose                                                                |
@@ -117,7 +117,7 @@ by tier through the engine-level recall API.
 
 ### Canonical Records and Vector Indexes
 
-OpenLoomi keeps source records and semantic indexes conceptually separate:
+OpenZhiyu keeps source records and semantic indexes conceptually separate:
 
 ```text
 canonical row
@@ -145,7 +145,7 @@ It is not the cross-source application search. That second "unified" layer is
 adjective, different job. Naming is free; explaining it later is apparently
 where the invoice arrives.
 
-## OpenLoomi Write and Maintenance Flows
+## OpenZhiyu Write and Maintenance Flows
 
 ### Raw Messages
 
@@ -194,9 +194,9 @@ Raw and insight embedding maintenance runs on a 24-hour due window in the
 desktop scheduler. It regenerates vectors when an embedding is missing, the
 model changes, or the embedding-content hash changes.
 
-## OpenLoomi Recall Paths
+## OpenZhiyu Recall Paths
 
-OpenLoomi has three different read paths because they answer different
+OpenZhiyu has three different read paths because they answer different
 questions.
 
 ### 1. Raw Query with Summary Fallback
@@ -281,7 +281,7 @@ That is an operational contract, not decorative fine print. Comparing a
 calling the larger number "more relevant" would be mathematics wearing a fake
 ID badge.
 
-## Why OpenLoomi Keeps Sources Isolated
+## Why OpenZhiyu Keeps Sources Isolated
 
 Putting every vector into one physical collection would make the first demo
 simple and the next six maintenance tasks exciting in all the wrong ways.
@@ -343,7 +343,7 @@ vector/FTS memory database.
 | OpenClaw     | `memory_search`, then optional `memory_get`.                         | Ranked snippets and bounded source-file excerpts.                                 | Hybrid vector/keyword ranking with optional recency and diversity.    |
 | Hermes Agent | Prompt-injected curated memory, `session_search`, provider prefetch. | Curated facts, real transcript messages, or provider-managed context.             | Prompt inclusion, FTS5, or provider-defined ranking.                  |
 | Claude Code  | Instruction loading and normal file reads.                           | Scoped instructions, auto-memory index content, and selected topic files.         | File hierarchy, path scope, and agent navigation.                     |
-| OpenLoomi    | `/api/memory/search` or semantic-memory MCP tool.                    | Globally ranked raw-memory, insight, and knowledge evidence with source metadata. | Per-source semantic retrieval followed by one global similarity sort. |
+| OpenZhiyu    | `/api/memory/search` or semantic-memory MCP tool.                    | Globally ranked raw-memory, insight, and knowledge evidence with source metadata. | Per-source semantic retrieval followed by one global similarity sort. |
 
 ## Persistence Across Restarts
 
@@ -352,7 +352,7 @@ vector/FTS memory database.
 | OpenClaw     | Workspace Markdown and configured transcript sources.                                           | Search indexes and active prompt context.                                   |
 | Hermes Agent | Curated memory files, session SQLite database, and generated skills.                            | Prompt snapshots and provider-prefetched turn context.                      |
 | Claude Code  | Instruction and auto-memory Markdown files.                                                     | Loaded context and ordinary file-read state.                                |
-| OpenLoomi    | Raw messages, summaries, insights, RAG rows, embedding metadata, and optional filesystem files. | Vector indexes can be repaired; login/insight session context is temporary. |
+| OpenZhiyu    | Raw messages, summaries, insights, RAG rows, embedding metadata, and optional filesystem files. | Vector indexes can be repaired; login/insight session context is temporary. |
 
 Persistence is not the same as recall. A fact can survive perfectly on disk and
 still require a tool call, index, path match, or semantic query before the model
@@ -360,7 +360,7 @@ sees it. Storage is memory's passport; retrieval is the boarding pass.
 
 ## Tradeoffs
 
-### OpenLoomi Strengths
+### OpenZhiyu Strengths
 
 - Native semantic retrieval across raw interactions, interpreted insights, and
   document knowledge.
@@ -372,7 +372,7 @@ sees it. Storage is memory's passport; retrieval is the boarding pass.
 - Exact/structured tools remain available instead of forcing every query
   through vector search.
 
-### OpenLoomi Costs
+### OpenZhiyu Costs
 
 - Each corpus has its own indexing and repair path.
 - Cross-source score comparison assumes compatible embedding models.
@@ -394,7 +394,7 @@ budget arriving on time.
   processing, thresholds, lifecycle scoring, source filters, and ranking.
 - "RAG support" here means a native document/chunk embedding and retrieval
   pipeline, not merely searching text files with embeddings.
-- OpenLoomi does not claim that one backend is always active. Runtime,
+- OpenZhiyu does not claim that one backend is always active. Runtime,
   environment variables, extension availability, and fallback behavior decide
   the actual path.
 - The comparison does not claim a latency or answer-accuracy winner. A fair
@@ -410,6 +410,6 @@ budget arriving on time.
 - [Hermes Agent official repository](https://github.com/NousResearch/hermes-agent)
 - [Claude Code memory documentation](https://code.claude.com/docs/en/memory)
 - [How Claude Code works](https://code.claude.com/docs/en/how-claude-code-works)
-- [OpenLoomi memory-system architecture](/blogs/openloomi-memory-system)
-- [OpenLoomi vector backend guide](https://github.com/melandlabs/openloomi/blob/main/docs/vector-backends.md)
-- [OpenLoomi PR #154](https://github.com/melandlabs/openloomi/pull/154)
+- [OpenZhiyu memory-system architecture](/blogs/openzhiyu-memory-system)
+- [OpenZhiyu vector backend guide](https://github.com/melandlabs/openzhiyu/blob/main/docs/vector-backends.md)
+- [OpenZhiyu PR #154](https://github.com/melandlabs/openzhiyu/pull/154)

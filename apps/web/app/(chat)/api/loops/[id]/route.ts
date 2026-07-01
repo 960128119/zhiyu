@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/app/(auth)/auth";
 import {
+  deleteLoop,
   getLoop,
   getLoopDashboardDetail,
   loopVerificationSchema,
@@ -94,6 +95,34 @@ export async function PATCH(
         error: error instanceof Error ? error.message : "Failed to update loop",
       },
       { status: 400 },
+    );
+  }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const { id } = await params;
+    const deleted = await deleteLoop(session.user.id, id);
+    if (!deleted) {
+      return NextResponse.json({ error: "Loop not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("[Loops] DELETE by ID error:", error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Failed to delete loop",
+      },
+      { status: 500 },
     );
   }
 }

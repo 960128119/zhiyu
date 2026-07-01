@@ -2,7 +2,7 @@
  * Telegram Self-Chat Conversation Store
  *
  * File-backed per-day in-memory store for conversation history with AI.
- * Data persists to ~/.openloomi/memory/telegram/YYYY-MM-DD.json
+ * Data persists to ~/.openzhiyu/memory/telegram/YYYY-MM-DD.json
  *
  * Token trimming is handled by handleAgentRuntime (40K budget) — not here.
  */
@@ -12,12 +12,12 @@ import {
   loadChannelDay,
   clearChannelConversationFromAllDays,
   clearChannelForUserPrefix,
-} from "@openloomi/ai/store";
+} from "@openzhiyu/ai/store";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
 function getAppMemoryDir(): string {
-  return join(homedir(), ".openloomi", "data", "memory");
+  return join(homedir(), ".openzhiyu", "data", "memory");
 }
 
 export interface ConversationMessage {

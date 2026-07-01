@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
-import { Badge, Button, Input, Label, Separator, Switch } from "@openloomi/ui";
+import { Badge, Button, Input, Label, Separator, Switch } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { toast } from "@/components/toast";
 import { fetchWithAuth } from "@/lib/utils";

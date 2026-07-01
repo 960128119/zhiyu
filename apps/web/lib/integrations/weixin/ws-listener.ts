@@ -7,16 +7,16 @@
  * Protocol-level code lives in packages, web-specific glue lives here.
  */
 
-import type { IntegrationAccountWithBot } from "@/lib/db/queries";
+import type { IntegrationAccountWithBot } from "@/lib/db/integration-queries";
 import {
   getIntegrationAccountsByUserId,
   loadIntegrationCredentials,
-} from "@/lib/db/queries";
+} from "@/lib/db/integration-queries";
 import {
   startWeixinConnection as startWeixinConnection_,
   stopWeixinConnection as stopWeixinConnection_,
-} from "@openloomi/integrations/weixin";
-import type { InboundMessageHandler } from "@openloomi/integrations/core";
+} from "@openzhiyu/integrations/weixin";
+import type { InboundMessageHandler } from "@openzhiyu/integrations/core";
 import { handleWeixinInboundMessage } from "./handler";
 
 const DEBUG = process.env.DEBUG_WEIXIN === "true";

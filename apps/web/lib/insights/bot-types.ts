@@ -1,14 +1,14 @@
-import type { ExtractedMessageInfo } from "@openloomi/integrations/channels/sources/types";
+import type { ExtractedMessageInfo } from "@openzhiyu/integrations/channels/sources/types";
 import type { ExtractEmailInfo } from "../integrations/email";
 import type {
   DetailData,
   InsightData,
   TimelineData,
 } from "@/lib/ai/subagents/insights";
-import type { BotWithAccount } from "../db/queries";
+import type { BotWithAccount } from "../db/bot-queries";
 import type { UserType } from "@/app/(auth)/auth";
-import type { Platform } from "@openloomi/integrations/channels/sources/types";
-import type { RawMessageData } from "@openloomi/indexeddb/extractor";
+import type { Platform } from "@openzhiyu/integrations/channels/sources/types";
+import type { RawMessageData } from "@openzhiyu/indexeddb/extractor";
 
 export type ExtractedMessageInfoWithoutAttachments = Omit<
   ExtractedMessageInfo,

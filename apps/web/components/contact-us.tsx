@@ -1,7 +1,7 @@
 import type React from "react";
 import { useState, useEffect } from "react";
-import { Button, Textarea } from "@openloomi/ui";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@openloomi/ui";
+import { Button, Textarea } from "@openzhiyu/ui";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { cn } from "@/lib/utils";
 import { toast } from "./toast";
 import { isTauri, openUrl } from "@/lib/tauri";
@@ -67,9 +67,9 @@ export default function ContactUs({
 
   const handleEmailClick = () => {
     if (isTauriEnv) {
-      openUrl(`mailto:${email}?subject=openloomi Suggestions`);
+      openUrl(`mailto:${email}?subject=openzhiyu Suggestions`);
     } else {
-      openUrl(`mailto:${email}?subject=openloomi Suggestions`);
+      openUrl(`mailto:${email}?subject=openzhiyu Suggestions`);
     }
     setShowEmailOptions(false);
   };

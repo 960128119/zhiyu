@@ -199,7 +199,7 @@ export async function logout(): Promise<void> {
  * This allows local app data (Chat, Message, Bot, etc.) to properly associate with user ID.
  */
 async function getOrCreateShadowUser(cloudUser: CloudUser): Promise<User> {
-  const { getUserById } = await import("@/lib/db/queries");
+  const { getUserById } = await import("@/lib/db/user-queries");
   const { db } = await import("@/lib/db");
   const { user } = await import("@/lib/db/schema");
 

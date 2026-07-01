@@ -3,8 +3,8 @@
  */
 
 import { auth } from "@/app/(auth)/auth";
-import { listTasksFromInsights } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { listTasksFromInsights } from "@/lib/db/insight-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 import type { NextRequest } from "next/server";
 
 const DEFAULT_LIMIT = 5;

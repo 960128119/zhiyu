@@ -3,24 +3,24 @@
  * Send messages via Feishu Open Platform API using app_id / app_secret
  * Needs to work with Feishu WebSocket long-poll listener to receive messages
  */
-import { MessagePlatformAdapter } from "@openloomi/integrations/channels";
+import { MessagePlatformAdapter } from "@openzhiyu/integrations/channels";
 import type {
   Messages,
   Message,
   Image,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 import type {
   MessageEvent,
   MessageTarget,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 import type {
   Friend,
   Group,
   GroupMember,
-} from "@openloomi/integrations/channels";
-import { Permission } from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
+import { Permission } from "@openzhiyu/integrations/channels";
 import * as Lark from "@larksuiteoapi/node-sdk";
-import type { ExtractedMessageInfo } from "@openloomi/integrations/channels/sources/types";
+import type { ExtractedMessageInfo } from "@openzhiyu/integrations/channels/sources/types";
 
 const DEBUG = process.env.DEBUG_FEISHU === "true";
 
@@ -46,7 +46,7 @@ function isImageMessage(message: Message): message is Image {
 }
 
 /**
- * Convert openloomi Messages to Feishu-sendable text (merge multiple segments into one, images temporarily as placeholders or skipped)
+ * Convert openzhiyu Messages to Feishu-sendable text (merge multiple segments into one, images temporarily as placeholders or skipped)
  */
 function messagesToFeishuText(messages: Messages): string {
   const parts: string[] = [];

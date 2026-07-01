@@ -196,7 +196,7 @@ describe("sqlite raw message search", () => {
   it("removes vec0 rows when raw messages are deleted with direct SQL", async () => {
     const dbPath = join(
       tmpdir(),
-      `openloomi-raw-message-trigger-${randomUUID()}.db`,
+      `openzhiyu-raw-message-trigger-${randomUUID()}.db`,
     );
     const storage = new SQLiteRawMessageManager({ dbPath });
     let directDb: Database.Database | undefined;

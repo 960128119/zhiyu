@@ -6,7 +6,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { isTauri, openUrl } from "@/lib/tauri";
 
 const FEISHU_OPEN_PLATFORM_URL = "https://open.feishu.cn/app";
@@ -111,7 +111,7 @@ export function FeishuStepsDialog({
             <p className="text-muted-foreground text-xs mt-1">
               {t(
                 "auth.feishuStepsNote",
-                "Note: If the long connection is not shown here, try restarting openloomi",
+                "Note: If the long connection is not shown here, try restarting openzhiyu",
               )}
             </p>
             <ol

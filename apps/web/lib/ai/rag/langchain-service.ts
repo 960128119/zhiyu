@@ -15,8 +15,8 @@ import { parseFile } from "@/lib/files/parsers";
 import { randomUUID } from "node:crypto";
 import { isTauriMode, TAURI_DB_PATH } from "@/lib/env";
 import { estimateTokens } from "@/lib/ai";
-import { UniversalEmbeddings } from "@openloomi/rag/universal-embeddings";
-import type { DocumentChunk } from "@openloomi/rag/vector-service";
+import { UniversalEmbeddings } from "@openzhiyu/rag/universal-embeddings";
+import type { DocumentChunk } from "@openzhiyu/rag/vector-service";
 
 // Re-export for consumers of langchain-service
 export { UniversalEmbeddings };
@@ -86,6 +86,7 @@ export interface SearchOptions {
   limit?: number;
   threshold?: number; // Minimum similarity score (0-1)
   documentIds?: string[]; // Optional: filter to specific document IDs
+  queryEmbedding?: number[];
 }
 
 type StoredRAGChunk = InsertRAGChunk & {
@@ -120,7 +121,7 @@ async function getConfiguredVectorStore() {
 
   try {
     if (backend === "chroma") {
-      const { getChromaVectorStore } = await import("@openloomi/rag");
+      const { getChromaVectorStore } = await import("@openzhiyu/rag/chroma-store");
       return getChromaVectorStore({
         url: process.env.CHROMA_URL,
         collectionName:
@@ -129,10 +130,10 @@ async function getConfiguredVectorStore() {
     }
 
     const { getSQLiteVecStore } =
-      await import("@openloomi/rag/sqlite-vec-store");
+      await import("@openzhiyu/rag/sqlite-vec-store");
     return await getSQLiteVecStore(TAURI_DB_PATH, undefined, {
       collectionName:
-        process.env.SQLITE_VEC_RAG_COLLECTION || "openloomi_rag_chunks",
+        process.env.SQLITE_VEC_RAG_COLLECTION || "openzhiyu_rag_chunks",
     });
   } catch (error) {
     console.warn(
@@ -354,8 +355,8 @@ export async function searchSimilarChunks(
   const { limit = 5, threshold = 0.7, documentIds } = options;
 
   // 1. Generate embedding for query
-  const embeddings = getEmbeddings(authToken);
-  const queryEmbedding = await embeddings.embedQuery(query);
+  const queryEmbedding =
+    options.queryEmbedding ?? (await getEmbeddings(authToken).embedQuery(query));
 
   const vectorStore = await getConfiguredVectorStore();
   if (vectorStore) {

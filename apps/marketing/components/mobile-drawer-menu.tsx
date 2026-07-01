@@ -46,7 +46,7 @@ export function MobileDrawerMenu({
     if (isOpen) {
       document.body.style.overflow = "hidden";
       const banner = document.querySelector(
-        'section[aria-label="openloomi Affiliate Program Promotion"]',
+        'section[aria-label="openzhiyu Affiliate Program Promotion"]',
       );
       if (banner) {
         (banner as HTMLElement).style.display = "none";
@@ -55,7 +55,7 @@ export function MobileDrawerMenu({
     } else {
       document.body.style.overflow = "";
       const banner = document.querySelector(
-        'section[aria-label="openloomi Affiliate Program Promotion"]',
+        'section[aria-label="openzhiyu Affiliate Program Promotion"]',
       );
       if (banner) {
         (banner as HTMLElement).style.display = "";
@@ -65,7 +65,7 @@ export function MobileDrawerMenu({
     return () => {
       document.body.style.overflow = "";
       const banner = document.querySelector(
-        'section[aria-label="openloomi Affiliate Program Promotion"]',
+        'section[aria-label="openzhiyu Affiliate Program Promotion"]',
       );
       if (banner) {
         (banner as HTMLElement).style.display = "";
@@ -135,7 +135,7 @@ export function MobileDrawerMenu({
               >
                 <Image
                   src="/img/logo-full-light.png"
-                  alt="OpenLoomi"
+                  alt="OpenZhiyu"
                   className="h-5 w-auto object-contain"
                   width={100}
                   height={20}

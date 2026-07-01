@@ -1,16 +1,16 @@
 /**
- * RAG module - thin re-export layer for @openloomi/rag package.
+ * RAG module - thin re-export layer for @openzhiyu/rag package.
  * DB-dependent files stay here; pure utilities are re-exported from the package.
  */
 
-// Pure utilities from @openloomi/rag - use named exports to avoid duplicate export errors
+// Pure utilities from @openzhiyu/rag - use named exports to avoid duplicate export errors
 export {
   chunkText,
   countTokens,
   getOptimalChunkSize,
   estimateChunkCount,
-} from "@openloomi/rag/chunking";
-export type { ChunkOptions, TextChunk } from "@openloomi/rag/chunking";
+} from "@openzhiyu/rag/chunking";
+export type { ChunkOptions, TextChunk } from "@openzhiyu/rag/chunking";
 
 export {
   generateEmbedding,
@@ -19,8 +19,8 @@ export {
   getEmbeddingDimensions,
   getEmbeddingModel,
   getModelPricing,
-} from "@openloomi/rag/embeddings";
-export type { EmbeddingResult } from "@openloomi/rag/embeddings";
+} from "@openzhiyu/rag/embeddings";
+export type { EmbeddingResult } from "@openzhiyu/rag/embeddings";
 
 export {
   getVectorStore,
@@ -29,13 +29,13 @@ export {
   deleteDocumentFromVectorStore,
   getVectorStoreStats,
   configureVectorService,
-} from "@openloomi/rag/vector-service";
+} from "@openzhiyu/rag/vector-service";
 export type {
   IVectorStore,
   SearchResult,
   VectorSearchResult,
   DocumentChunk,
-} from "@openloomi/rag/vector-service";
+} from "@openzhiyu/rag/vector-service";
 
 // Re-export parsers from package (configured in apps/web/lib/rag/parsers.ts)
 export {
@@ -50,7 +50,7 @@ export {
 export type { FileContent } from "./parsers";
 
 // Re-export universal embeddings from package
-export { UniversalEmbeddings } from "@openloomi/rag/universal-embeddings";
+export { UniversalEmbeddings } from "@openzhiyu/rag/universal-embeddings";
 
 // Re-export sqlite/pgvector from package (wired in app-specific files)
 export {

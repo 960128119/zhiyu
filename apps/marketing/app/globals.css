@@ -342,53 +342,53 @@ article div[class*="table"] {
   overflow-x: auto;
 }
 
-.openloomi-docs-shell {
+.openzhiyu-docs-shell {
   --color-fd-card: transparent;
   --fd-sidebar-width: 18.5rem;
   --fd-primary: var(--color-primary);
   --fd-accent: var(--color-surfaceBlue);
   --fd-accent-foreground: var(--color-primary-800);
-  --openloomi-fox-yellow: #f5b64a;
-  --openloomi-fox-yellow-strong: #d99018;
+  --openzhiyu-fox-yellow: #f5b64a;
+  --openzhiyu-fox-yellow-strong: #d99018;
   --fd-muted-foreground: var(--color-foreground-muted);
   background: var(--color-background-card);
 }
 
-.openloomi-docs-shell [data-sidebar-placeholder] {
+.openzhiyu-docs-shell [data-sidebar-placeholder] {
   top: 6rem !important;
   height: calc(100vh - 6rem) !important;
   max-height: calc(100vh - 6rem) !important;
 }
 
-.openloomi-docs-shell #nd-sidebar,
-.openloomi-docs-shell aside#nd-sidebar {
+.openzhiyu-docs-shell #nd-sidebar,
+.openzhiyu-docs-shell aside#nd-sidebar {
   background: transparent !important;
   background-color: transparent !important;
   border-right: 1px solid var(--color-border-primary) !important;
   box-shadow: none !important;
 }
 
-.openloomi-docs-shell #nd-sidebar > div:first-child {
+.openzhiyu-docs-shell #nd-sidebar > div:first-child {
   display: none !important;
 }
 
-.openloomi-docs-shell #nd-sidebar [data-radix-scroll-area-viewport] {
+.openzhiyu-docs-shell #nd-sidebar [data-radix-scroll-area-viewport] {
   height: calc(100vh - 6rem) !important;
   max-height: calc(100vh - 6rem) !important;
   overflow-y: auto !important;
   overscroll-behavior: contain;
 }
 
-.openloomi-docs-shell #nd-sidebar [data-radix-scroll-area-viewport] > div {
+.openzhiyu-docs-shell #nd-sidebar [data-radix-scroll-area-viewport] > div {
   padding: 1rem 0.875rem 1.5rem !important;
 }
 
-.openloomi-docs-shell #nd-sidebar a[href="/"]:empty {
+.openzhiyu-docs-shell #nd-sidebar a[href="/"]:empty {
   display: none !important;
 }
 
-.openloomi-docs-shell #nd-sidebar a,
-.openloomi-docs-shell #nd-sidebar button {
+.openzhiyu-docs-shell #nd-sidebar a,
+.openzhiyu-docs-shell #nd-sidebar button {
   min-height: 2.375rem;
   border: 1px solid transparent;
   border-radius: 8px !important;
@@ -402,76 +402,76 @@ article div[class*="table"] {
     box-shadow 160ms ease !important;
 }
 
-.openloomi-docs-shell #nd-sidebar a:hover,
-.openloomi-docs-shell #nd-sidebar button:hover {
+.openzhiyu-docs-shell #nd-sidebar a:hover,
+.openzhiyu-docs-shell #nd-sidebar button:hover {
   background: #eef4fb !important;
   border-color: #d9e5f4;
   color: var(--color-primary-800) !important;
 }
 
-.openloomi-docs-shell #nd-sidebar a:focus-visible,
-.openloomi-docs-shell #nd-sidebar button:focus-visible {
+.openzhiyu-docs-shell #nd-sidebar a:focus-visible,
+.openzhiyu-docs-shell #nd-sidebar button:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
   outline-offset: 2px;
 }
 
-.openloomi-docs-shell #nd-sidebar a[data-active="true"] {
+.openzhiyu-docs-shell #nd-sidebar a[data-active="true"] {
   background: linear-gradient(90deg, #e8f0fa 0%, #f4f8fd 100%) !important;
   border-color: #cddff4;
   color: var(--color-primary-800) !important;
   box-shadow: inset 3px 0 0 var(--color-primary);
 }
 
-.openloomi-docs-shell #nd-sidebar a[data-active="true"]::before {
+.openzhiyu-docs-shell #nd-sidebar a[data-active="true"]::before {
   display: none !important;
 }
 
-.openloomi-docs-shell #nd-sidebar button[aria-expanded] {
+.openzhiyu-docs-shell #nd-sidebar button[aria-expanded] {
   color: var(--color-foreground-secondary) !important;
 }
 
-.openloomi-docs-shell #nd-sidebar [role="group"] {
+.openzhiyu-docs-shell #nd-sidebar [role="group"] {
   margin-left: 0;
   padding-left: 0;
   border-left: none;
 }
 
-.openloomi-docs-shell #nd-sidebar .openloomi-doc-icon {
-  color: var(--openloomi-fox-yellow);
+.openzhiyu-docs-shell #nd-sidebar .openzhiyu-doc-icon {
+  color: var(--openzhiyu-fox-yellow);
   opacity: 1;
 }
 
-.openloomi-docs-shell #nd-sidebar a[data-active="true"] .openloomi-doc-icon,
-.openloomi-docs-shell #nd-sidebar a:hover .openloomi-doc-icon,
-.openloomi-docs-shell #nd-sidebar button:hover .openloomi-doc-icon {
-  color: var(--openloomi-fox-yellow-strong) !important;
+.openzhiyu-docs-shell #nd-sidebar a[data-active="true"] .openzhiyu-doc-icon,
+.openzhiyu-docs-shell #nd-sidebar a:hover .openzhiyu-doc-icon,
+.openzhiyu-docs-shell #nd-sidebar button:hover .openzhiyu-doc-icon {
+  color: var(--openzhiyu-fox-yellow-strong) !important;
   opacity: 1;
 }
 
-.openloomi-docs-shell article {
+.openzhiyu-docs-shell article {
   padding-top: 2.25rem;
 }
 
 @media (max-width: 767px) {
-  .openloomi-docs-shell {
+  .openzhiyu-docs-shell {
     background: var(--color-background-card);
   }
 
-  .openloomi-docs-shell #nd-sidebar,
-  .openloomi-docs-shell aside#nd-sidebar {
+  .openzhiyu-docs-shell #nd-sidebar,
+  .openzhiyu-docs-shell aside#nd-sidebar {
     background: var(--color-background-card) !important;
     height: 100vh !important;
     max-height: 100vh !important;
   }
 
-  .openloomi-docs-shell #nd-sidebar [data-radix-scroll-area-viewport] {
+  .openzhiyu-docs-shell #nd-sidebar [data-radix-scroll-area-viewport] {
     height: 100vh !important;
     max-height: 100vh !important;
   }
 }
 body.mobile-menu-open
-  section[aria-label="openloomi Affiliate Program Promotion"],
-body.mobile-menu-open [aria-label="openloomi Affiliate Program Promotion"] {
+  section[aria-label="openzhiyu Affiliate Program Promotion"],
+body.mobile-menu-open [aria-label="openzhiyu Affiliate Program Promotion"] {
   display: none !important;
   opacity: 0 !important;
   visibility: hidden !important;

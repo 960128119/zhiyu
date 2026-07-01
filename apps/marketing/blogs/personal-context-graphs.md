@@ -118,7 +118,7 @@ A personal context graph is the opposite. It persists. It evolves. It connects. 
 
 That’s why I think personal context graphs are the missing layer for AI-native work. Not as a feature, but as infrastructure: the substrate that makes work legible, manageable, and finally less heavy.
 
-This is the direction we’re building toward at OpenLoomiAI: a personal context graph that understands your work as a living system, gives you control with minimal effort, and helps you keep momentum without carrying the entire world in your head.
+This is the direction we’re building toward at OpenZhiyuAI: a personal context graph that understands your work as a living system, gives you control with minimal effort, and helps you keep momentum without carrying the entire world in your head.
 
 Because the best productivity system isn’t the one that helps you do more.
 

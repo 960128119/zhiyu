@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
-import { getUserProfile, updateUserProfile } from "@/lib/db/queries";
+import { getUserProfile, updateUserProfile } from "@/lib/db/user-queries";
 import { isTauriMode } from "@/lib/env/constants";
 import {
   createCloudClientForRequest,

@@ -10,15 +10,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-} from "@openloomi/ui";
-import { Button } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { Button } from "@openzhiyu/ui";
 import {
   Card,
   CardContent,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { cn } from "@/lib/utils";
 import { getStoredAuthToken } from "@/lib/auth/remote-client";

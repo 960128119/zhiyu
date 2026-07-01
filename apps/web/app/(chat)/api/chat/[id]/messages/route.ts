@@ -1,8 +1,8 @@
 import { auth } from "@/app/(auth)/auth";
-import { getChatById, getMessagesByChatId } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { getChatById, getMessagesByChatId } from "@/lib/db/chat-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 import { convertToUIMessages } from "@/lib/utils";
-import type { ChatMessage } from "@openloomi/shared";
+import type { ChatMessage } from "@openzhiyu/shared";
 
 /**
  * Get message list for specified chat

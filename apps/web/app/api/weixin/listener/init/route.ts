@@ -6,7 +6,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { startWeixinListenersForUser } from "@/lib/integrations/weixin/ws-listener";
 import { setCloudAuthToken } from "@/lib/auth/token-manager";
-import { isTauriMode } from "@/lib/env/constants";
 
 export async function POST(request: Request) {
   try {
@@ -16,17 +15,15 @@ export async function POST(request: Request) {
     }
 
     let authToken: string | undefined;
-    if (isTauriMode()) {
-      try {
-        const body = await request.json().catch(() => ({}));
-        authToken =
-          typeof body?.cloudAuthToken === "string"
-            ? body.cloudAuthToken.trim() || undefined
-            : undefined;
-        if (authToken) setCloudAuthToken(authToken);
-      } catch {
-        // Ignore when no body or not JSON
-      }
+    try {
+      const body = await request.json().catch(() => ({}));
+      authToken =
+        typeof body?.cloudAuthToken === "string"
+          ? body.cloudAuthToken.trim() || undefined
+          : undefined;
+      if (authToken) setCloudAuthToken(authToken);
+    } catch {
+      // Ignore when no body or not JSON
     }
 
     await startWeixinListenersForUser(session.user.id, authToken);

@@ -5,8 +5,8 @@
 import { tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import type { Session } from "next-auth";
-import { getBotsByUserId } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { getBotsByUserId } from "@/lib/db/bot-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 
 /**
  * Create the queryIntegrations tool

@@ -1,6 +1,6 @@
 import { auth } from "@/app/(auth)/auth";
-import { getChatInsights } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { getChatInsights } from "@/lib/db/insight-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 
 export const dynamic = "force-dynamic";
 

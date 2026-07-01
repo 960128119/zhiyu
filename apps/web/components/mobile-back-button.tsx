@@ -1,9 +1,9 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useIsMobile } from "@openloomi/hooks/use-is-mobile";
+import { useIsMobile } from "@openzhiyu/hooks/use-is-mobile";
 import { RemixIcon } from "@/components/remix-icon";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { cn, getHomePath } from "@/lib/utils";
 
 /**

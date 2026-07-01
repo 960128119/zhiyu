@@ -7,7 +7,7 @@
  */
 
 import type { NextRequest } from "next/server";
-import { getUser, createUser } from "@/lib/db/queries";
+import { getUser, createUser } from "@/lib/db/user-queries";
 import {
   generateToken,
   getTokenLifetime,

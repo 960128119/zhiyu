@@ -12,7 +12,8 @@ import {
   createSuccessResponse,
   createErrorResponse,
 } from "@/lib/auth/remote-auth-utils";
-import { db, getUser, createUser } from "@/lib/db/queries";
+import { db } from "@/lib/db/client";
+import { getUser, createUser } from "@/lib/db/user-queries";
 import { user as userTable } from "@/lib/db/schema";
 
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";

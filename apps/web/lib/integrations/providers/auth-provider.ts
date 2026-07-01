@@ -1,11 +1,11 @@
 /**
  * AuthProvider implementation for apps/web
  *
- * Implements the AuthProvider interface from @openloomi/integrations/core
+ * Implements the AuthProvider interface from @openzhiyu/integrations/core
  * using the auth system from apps/web.
  */
 
-import type { AuthProvider, UserType } from "@openloomi/integrations/core";
+import type { AuthProvider, UserType } from "@openzhiyu/integrations/core";
 import { auth } from "@/app/(auth)/auth";
 import { headers } from "next/headers";
 

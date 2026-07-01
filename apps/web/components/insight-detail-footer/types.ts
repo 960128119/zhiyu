@@ -1,7 +1,7 @@
 import type { Insight } from "@/lib/db/schema";
-import type { Attachment, ChatMessage } from "@openloomi/shared";
+import type { Attachment, ChatMessage } from "@openzhiyu/shared";
 import type { UseChatHelpers } from "@ai-sdk/react";
-import type { ContactMeta } from "@openloomi/integrations/contacts";
+import type { ContactMeta } from "@openzhiyu/integrations/contacts";
 
 export type InsightReplyContext = {
   chatId: string;

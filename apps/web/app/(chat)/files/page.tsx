@@ -9,7 +9,7 @@ import { RemixIcon } from "@/components/remix-icon";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
-import { PageSectionHeader } from "@openloomi/ui";
+import { PageSectionHeader } from "@openzhiyu/ui";
 import {
   Button,
   Card,
@@ -17,13 +17,13 @@ import {
   CardHeader,
   CardTitle,
   Progress,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { useFileStorageUsage } from "@/hooks/use-file-storage";
 import { formatBytes } from "@/lib/utils";
 import { openUrl } from "@/lib/tauri";
@@ -662,7 +662,7 @@ export default function SavedFilesPage() {
                           `files.providers.${file.storageProvider}`,
                           file.storageProvider === "google_drive"
                             ? "Google Drive"
-                            : "openloomi Cloud",
+                            : "openzhiyu Cloud",
                         )}
                       </span>
                     </div>

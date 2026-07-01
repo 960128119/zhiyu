@@ -71,6 +71,70 @@ describe("loop verifier", () => {
     ]);
   });
 
+  it("uses execution trace tool calls as required source evidence", () => {
+    const result = verifyLoopRun({
+      verificationConfig: {
+        type: "structured_check",
+        requiredSources: ["wechatDesktopSendMessage"],
+      },
+      result: {
+        status: "success",
+        output: "Sent",
+        duration: 10,
+        result: {
+          executionTrace: {
+            events: [
+              {
+                type: "tool_used",
+                toolName: "mcp__business-tools__wechatDesktopSendMessage",
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(result.passed).toBe(true);
+    expect(result.evidence.observedSources).toContain(
+      "wechatDesktopSendMessage",
+    );
+  });
+
+  it("fails a required WeChat delivery when only weather search ran", () => {
+    const result = verifyLoopRun({
+      verificationConfig: {
+        type: "structured_check",
+        requiredSources: ["wechatDesktopSendMessage"],
+      },
+      result: {
+        status: "success",
+        output: "北京天气预报已查询",
+        duration: 10,
+        result: {
+          executionTrace: {
+            events: [
+              {
+                type: "tool_used",
+                toolName: "mcp__business-tools__searchUnifiedMemory",
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(result.passed).toBe(false);
+    expect(result.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "missing_required_source",
+          message:
+            'Required source "wechatDesktopSendMessage" was not observed',
+        }),
+      ]),
+    );
+  });
+
   it("fails any verification when the execution failed", () => {
     const result = verifyLoopRun({
       verificationConfig: { type: "legacy_status" },

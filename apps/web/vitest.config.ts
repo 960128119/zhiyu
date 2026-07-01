@@ -9,436 +9,460 @@ export default defineConfig({
     alias: [
       // Specific paths first (higher priority)
       {
-        find: "@openloomi/shared/errors",
+        find: "@openzhiyu/shared/errors",
         replacement: alias("../../packages/shared/src/errors.ts"),
       },
       {
-        find: "@openloomi/security/token-encryption",
+        find: "@openzhiyu/security/token-encryption",
         replacement: alias("../../packages/security/src/token-encryption.ts"),
       },
       {
-        find: "@openloomi/security/url-validator",
+        find: "@openzhiyu/security/url-validator",
         replacement: alias("../../packages/security/src/url-validator.ts"),
       },
-      // agent subpaths - must be before the shorter @openloomi/agent alias
+      // agent subpaths - must be before the shorter @openzhiyu/agent alias
       {
-        find: "@openloomi/agent/types",
+        find: "@openzhiyu/agent/types",
         replacement: alias("../../packages/ai/src/agent/types.ts"),
       },
       {
-        find: "@openloomi/agent/registry",
+        find: "@openzhiyu/agent/registry",
         replacement: alias("../../packages/ai/src/agent/registry.ts"),
       },
       {
-        find: "@openloomi/agent/sandbox",
+        find: "@openzhiyu/agent/sandbox",
         replacement: alias("../../packages/ai/src/agent/sandbox/index.ts"),
       },
       {
-        find: "@openloomi/agent/plugin",
+        find: "@openzhiyu/agent/plugin",
         replacement: alias("../../packages/ai/src/agent/plugin.ts"),
       },
       {
-        find: "@openloomi/agent/base",
+        find: "@openzhiyu/agent/base",
         replacement: alias("../../packages/ai/src/agent/base.ts"),
       },
-      // agent/ai subpaths - must be before the shorter @openloomi/agent/ai alias
+      // agent/ai subpaths - must be before the shorter @openzhiyu/agent/ai alias
       {
-        find: "@openloomi/agent/ai/request-context",
+        find: "@openzhiyu/agent/ai/request-context",
         replacement: alias("../../packages/ai/src/agent/ai/request-context.ts"),
       },
       {
-        find: "@openloomi/agent/ai/providers",
+        find: "@openzhiyu/agent/ai/providers",
         replacement: alias("../../packages/ai/src/agent/ai/providers.ts"),
       },
       {
-        find: "@openloomi/agent/ai/router",
+        find: "@openzhiyu/agent/ai/router",
         replacement: alias("../../packages/ai/src/agent/ai/router.ts"),
       },
       {
-        find: "@openloomi/agent/ai/tokens",
+        find: "@openzhiyu/agent/ai/tokens",
         replacement: alias("../../packages/ai/src/agent/ai/tokens.ts"),
       },
       {
-        find: "@openloomi/agent/ai/*",
+        find: "@openzhiyu/agent/ai/*",
         replacement: alias("../../packages/ai/src/agent/ai/*"),
       },
       {
-        find: "@openloomi/agent/ai",
+        find: "@openzhiyu/agent/ai",
         replacement: alias("../../packages/ai/src/agent/ai/index.ts"),
       },
-      // @openloomi/ai/agent subpaths - must be before @openloomi/ai/*
+      // @openzhiyu/ai/agent subpaths - must be before @openzhiyu/ai/*
       {
-        find: "@openloomi/ai/agent/context",
+        find: "@openzhiyu/ai/agent/context",
         replacement: alias("../../packages/ai/src/agent/context"),
       },
       {
-        find: "@openloomi/ai/agent/compaction",
+        find: "@openzhiyu/ai/agent/compaction",
         replacement: alias("../../packages/ai/src/agent/compaction"),
       },
       {
-        find: "@openloomi/ai/agent/registry",
+        find: "@openzhiyu/ai/agent/registry",
         replacement: alias("../../packages/ai/src/agent/registry"),
       },
       {
-        find: "@openloomi/ai/agent/billing",
+        find: "@openzhiyu/ai/agent/billing",
         replacement: alias("../../packages/ai/src/agent/billing"),
       },
       {
-        find: "@openloomi/ai/agent/model",
+        find: "@openzhiyu/ai/agent/model",
         replacement: alias("../../packages/ai/src/agent/model"),
       },
       {
-        find: "@openloomi/ai/agent/routing",
+        find: "@openzhiyu/ai/agent/routing",
         replacement: alias("../../packages/ai/src/agent/routing"),
       },
       {
-        find: "@openloomi/ai/agent/sandbox",
+        find: "@openzhiyu/ai/agent/sandbox",
         replacement: alias("../../packages/ai/src/agent/sandbox"),
       },
       {
-        find: "@openloomi/ai/agent/plugin",
+        find: "@openzhiyu/ai/agent/plugin",
         replacement: alias("../../packages/ai/src/agent/plugin.ts"),
       },
       {
-        find: "@openloomi/ai/agent/types",
+        find: "@openzhiyu/ai/agent/types",
         replacement: alias("../../packages/ai/src/agent/types.ts"),
       },
       {
-        find: "@openloomi/ai/agent/*",
+        find: "@openzhiyu/ai/agent/*",
         replacement: alias("../../packages/ai/src/agent/*"),
       },
       {
-        find: "@openloomi/ai/agent",
+        find: "@openzhiyu/ai/agent",
         replacement: alias("../../packages/ai/src/agent/index.ts"),
       },
-      // @openloomi/ai subpaths - store and memory
+      // @openzhiyu/ai subpaths - store and memory
       {
-        find: "@openloomi/ai/store",
+        find: "@openzhiyu/ai/store",
         replacement: alias("../../packages/ai/src/store/index.ts"),
       },
       {
-        find: "@openloomi/ai/memory",
+        find: "@openzhiyu/ai/memory",
         replacement: alias("../../packages/ai/src/memory/index.ts"),
       },
-      // @openloomi/ai/* wildcard - matches single segment subpaths
+      // @openzhiyu/ai/* wildcard - matches single segment subpaths
       {
-        find: "@openloomi/ai/*",
+        find: "@openzhiyu/ai/*",
         replacement: alias("../../packages/ai/src/*"),
       },
       {
-        find: "@openloomi/ai",
+        find: "@openzhiyu/ai",
         replacement: alias("../../packages/ai/src/index.ts"),
       },
       {
-        find: "@openloomi/audit",
+        find: "@openzhiyu/audit",
         replacement: alias("../../packages/audit/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/channels/sources/types",
+        find: "@openzhiyu/integrations/channels/sources/types",
         replacement: alias(
           "../../packages/integrations/channels/src/sources/types.ts",
         ),
       },
       // Package roots
       {
-        find: "@openloomi/mcp",
+        find: "@openzhiyu/mcp",
         replacement: alias("../../packages/ai/mcp/src/index.ts"),
       },
-      // rag subpaths - must be before the shorter @openloomi/rag alias
+      // rag subpaths - must be before the shorter @openzhiyu/rag alias
       {
-        find: "@openloomi/rag/universal-embeddings",
+        find: "@openzhiyu/rag/universal-embeddings",
         replacement: alias("../../packages/ai/rag/src/universal-embeddings.ts"),
       },
       {
-        find: "@openloomi/rag/*",
+        find: "@openzhiyu/rag/*",
         replacement: alias("../../packages/ai/rag/src/*"),
       },
       {
-        find: "@openloomi/rag",
+        find: "@openzhiyu/rag",
         replacement: alias("../../packages/ai/rag/src/index.ts"),
       },
-      // i18n subpaths - must be before the shorter @openloomi/i18n alias
       {
-        find: "@openloomi/i18n/locales",
+        find: "@openzhiyu/runtime-api/rag",
+        replacement: alias("../../packages/runtime-api/src/rag.ts"),
+      },
+      {
+        find: "@openzhiyu/runtime-api/*",
+        replacement: alias("../../packages/runtime-api/src/*"),
+      },
+      {
+        find: "@openzhiyu/runtime-api",
+        replacement: alias("../../packages/runtime-api/src/index.ts"),
+      },
+      {
+        find: "@openzhiyu/runtime-worker/jobs",
+        replacement: alias("../../packages/runtime-worker/src/jobs.ts"),
+      },
+      {
+        find: "@openzhiyu/runtime-worker/*",
+        replacement: alias("../../packages/runtime-worker/src/*"),
+      },
+      {
+        find: "@openzhiyu/runtime-worker",
+        replacement: alias("../../packages/runtime-worker/src/index.ts"),
+      },
+      // i18n subpaths - must be before the shorter @openzhiyu/i18n alias
+      {
+        find: "@openzhiyu/i18n/locales",
         replacement: alias("../../packages/i18n/src/locales"),
       },
       {
-        find: "@openloomi/i18n/*",
+        find: "@openzhiyu/i18n/*",
         replacement: alias("../../packages/i18n/src/*"),
       },
       {
-        find: "@openloomi/i18n",
+        find: "@openzhiyu/i18n",
         replacement: alias("../../packages/i18n/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/calendar",
+        find: "@openzhiyu/integrations/calendar",
         replacement: alias("../../packages/integrations/calendar/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/calendar/*",
+        find: "@openzhiyu/integrations/calendar/*",
         replacement: alias("../../packages/integrations/calendar/src/*"),
       },
       {
-        find: "@openloomi/integrations/hubspot",
+        find: "@openzhiyu/integrations/hubspot",
         replacement: alias("../../packages/integrations/hubspot/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/hubspot/*",
+        find: "@openzhiyu/integrations/hubspot/*",
         replacement: alias("../../packages/integrations/hubspot/src/*"),
       },
       {
-        find: "@openloomi/indexeddb/extractor",
+        find: "@openzhiyu/indexeddb/extractor",
         replacement: alias("../../packages/indexeddb/src/extractor.ts"),
       },
       {
-        find: "@openloomi/indexeddb/*",
+        find: "@openzhiyu/indexeddb/*",
         replacement: alias("../../packages/indexeddb/src/*"),
       },
       {
-        find: "@openloomi/indexeddb",
+        find: "@openzhiyu/indexeddb",
         replacement: alias("../../packages/indexeddb/src/index.ts"),
       },
       {
-        find: "@openloomi/sqlite/*",
+        find: "@openzhiyu/sqlite/*",
         replacement: alias("../../packages/sqlite/src/*"),
       },
       {
-        find: "@openloomi/sqlite",
+        find: "@openzhiyu/sqlite",
         replacement: alias("../../packages/sqlite/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/imessage",
+        find: "@openzhiyu/integrations/imessage",
         replacement: alias("../../packages/integrations/imessage/src/index.ts"),
       },
       {
-        find: "@openloomi/shared/errors",
+        find: "@openzhiyu/shared/errors",
         replacement: alias("../../packages/shared/src/errors.ts"),
       },
       {
-        find: "@openloomi/shared/ref",
+        find: "@openzhiyu/shared/ref",
         replacement: alias("../../packages/shared/src/ref.ts"),
       },
       {
-        find: "@openloomi/shared/utils",
+        find: "@openzhiyu/shared/utils",
         replacement: alias("../../packages/shared/src/utils.ts"),
       },
       {
-        find: "@openloomi/shared/soul",
+        find: "@openzhiyu/shared/soul",
         replacement: alias("../../packages/shared/src/soul.ts"),
       },
       {
-        find: "@openloomi/shared/*",
+        find: "@openzhiyu/shared/*",
         replacement: alias("../../packages/shared/src/*"),
       },
       {
-        find: "@openloomi/shared",
+        find: "@openzhiyu/shared",
         replacement: alias("../../packages/shared/src/index.ts"),
       },
       {
-        find: "@openloomi/security/key-manager",
+        find: "@openzhiyu/security/key-manager",
         replacement: alias("../../packages/security/src/key-manager.ts"),
       },
       {
-        find: "@openloomi/security",
+        find: "@openzhiyu/security",
         replacement: alias("../../packages/security/src/index.ts"),
       },
       {
-        find: "@openloomi/storage/adapters",
+        find: "@openzhiyu/storage/adapters",
         replacement: alias("../../packages/storage/src/adapters"),
       },
       {
-        find: "@openloomi/storage/adapters/local-fs",
+        find: "@openzhiyu/storage/adapters/local-fs",
         replacement: alias("../../packages/storage/src/adapters/local-fs.ts"),
       },
       {
-        find: "@openloomi/storage/adapters/vercel-blob",
+        find: "@openzhiyu/storage/adapters/vercel-blob",
         replacement: alias(
           "../../packages/storage/src/adapters/vercel-blob.ts",
         ),
       },
       {
-        find: "@openloomi/storage/*",
+        find: "@openzhiyu/storage/*",
         replacement: alias("../../packages/storage/src/*"),
       },
       {
-        find: "@openloomi/storage",
+        find: "@openzhiyu/storage",
         replacement: alias("../../packages/storage/src/local.ts"),
       },
       {
-        find: "@openloomi/integrations/channels",
+        find: "@openzhiyu/integrations/channels",
         replacement: alias("../../packages/integrations/channels/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/contacts",
+        find: "@openzhiyu/integrations/contacts",
         replacement: alias("../../packages/integrations/src/contacts.ts"),
       },
       // Telegram integrations (specific paths first, then general)
       {
-        find: "@openloomi/integrations/telegram/adapter",
+        find: "@openzhiyu/integrations/telegram/adapter",
         replacement: alias(
           "../../packages/integrations/telegram/src/adapter.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/telegram/markdown",
+        find: "@openzhiyu/integrations/telegram/markdown",
         replacement: alias(
           "../../packages/integrations/telegram/src/markdown.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/telegram/conversation-store",
+        find: "@openzhiyu/integrations/telegram/conversation-store",
         replacement: alias(
           "../../packages/integrations/telegram/src/conversation-store.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/telegram/tdata-decrypter",
+        find: "@openzhiyu/integrations/telegram/tdata-decrypter",
         replacement: alias(
           "../../packages/integrations/telegram/src/tdata-decrypter/index.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/telegram/tdata-converter",
+        find: "@openzhiyu/integrations/telegram/tdata-converter",
         replacement: alias(
           "../../packages/integrations/telegram/src/tdata-converter.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/telegram",
+        find: "@openzhiyu/integrations/telegram",
         replacement: alias("../../packages/integrations/telegram/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/whatsapp/adapter",
+        find: "@openzhiyu/integrations/whatsapp/adapter",
         replacement: alias(
           "../../packages/integrations/whatsapp/src/adapter.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/whatsapp/client-registry",
+        find: "@openzhiyu/integrations/whatsapp/client-registry",
         replacement: alias(
           "../../packages/integrations/whatsapp/src/client-registry.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/whatsapp/conversation-store",
+        find: "@openzhiyu/integrations/whatsapp/conversation-store",
         replacement: alias(
           "../../packages/integrations/whatsapp/src/conversation-store.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/whatsapp/markdown",
+        find: "@openzhiyu/integrations/whatsapp/markdown",
         replacement: alias(
           "../../packages/integrations/whatsapp/src/markdown.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/whatsapp",
+        find: "@openzhiyu/integrations/whatsapp",
         replacement: alias("../../packages/integrations/whatsapp/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/asana",
+        find: "@openzhiyu/integrations/asana",
         replacement: alias("../../packages/integrations/asana/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/dingtalk",
+        find: "@openzhiyu/integrations/dingtalk",
         replacement: alias("../../packages/integrations/dingtalk/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/facebook-messenger",
+        find: "@openzhiyu/integrations/facebook-messenger",
         replacement: alias(
           "../../packages/integrations/facebook-messenger/src/index.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/feishu",
+        find: "@openzhiyu/integrations/feishu",
         replacement: alias("../../packages/integrations/feishu/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/gmail",
+        find: "@openzhiyu/integrations/gmail",
         replacement: alias("../../packages/integrations/gmail/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/google-docs",
+        find: "@openzhiyu/integrations/google-docs",
         replacement: alias(
           "../../packages/integrations/google-docs/src/index.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/instagram",
+        find: "@openzhiyu/integrations/instagram",
         replacement: alias(
           "../../packages/integrations/instagram/src/index.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/jira",
+        find: "@openzhiyu/integrations/jira",
         replacement: alias("../../packages/integrations/jira/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/linkedin",
+        find: "@openzhiyu/integrations/linkedin",
         replacement: alias("../../packages/integrations/linkedin/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/qqbot",
+        find: "@openzhiyu/integrations/qqbot",
         replacement: alias("../../packages/integrations/qqbot/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/weixin/ilink-client",
+        find: "@openzhiyu/integrations/weixin/ilink-client",
         replacement: alias(
           "../../packages/integrations/weixin/src/ilink-client.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/weixin/conversation-store",
+        find: "@openzhiyu/integrations/weixin/conversation-store",
         replacement: alias(
           "../../packages/integrations/weixin/src/conversation-store.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/weixin/qr-login",
+        find: "@openzhiyu/integrations/weixin/qr-login",
         replacement: alias(
           "../../packages/integrations/weixin/src/qr-login.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/weixin/ws-listener",
+        find: "@openzhiyu/integrations/weixin/ws-listener",
         replacement: alias(
           "../../packages/integrations/weixin/src/ws-listener.ts",
         ),
       },
       {
-        find: "@openloomi/integrations/weixin",
+        find: "@openzhiyu/integrations/weixin",
         replacement: alias("../../packages/integrations/weixin/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/x",
+        find: "@openzhiyu/integrations/x",
         replacement: alias("../../packages/integrations/x/src/index.ts"),
       },
       {
-        find: "@openloomi/integrations/utils",
+        find: "@openzhiyu/integrations/utils",
         replacement: alias("../../packages/integrations/src/utils"),
       },
       {
-        find: "@openloomi/integrations/core",
+        find: "@openzhiyu/integrations/core",
         replacement: alias("../../packages/integrations/src/core"),
       },
       {
-        find: "@openloomi/integrations/*",
+        find: "@openzhiyu/integrations/*",
         replacement: alias("../../packages/integrations/src/*"),
       },
       {
-        find: "@openloomi/integrations",
+        find: "@openzhiyu/integrations",
         replacement: alias("../../packages/integrations/src/index.ts"),
       },
       {
-        find: "@openloomi/agent",
+        find: "@openzhiyu/agent",
         replacement: alias("../../packages/ai/src/agent/index.ts"),
       },
       {
-        find: "@openloomi/insights",
+        find: "@openzhiyu/insights",
         replacement: alias("../../packages/insights/src/index.ts"),
       },
       {
-        find: "@openloomi/rss",
+        find: "@openzhiyu/rss",
         replacement: alias("../../packages/integrations/rss/src/index.ts"),
       },
       { find: "@", replacement: alias(".") },

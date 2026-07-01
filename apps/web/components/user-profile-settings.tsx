@@ -12,7 +12,7 @@ import {
   Input,
   Label,
   Separator,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { toast } from "@/components/toast";
 import { fetchWithAuth } from "@/lib/utils";
 import { useUserProfile } from "@/hooks/use-user-profile";

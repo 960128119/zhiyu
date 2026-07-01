@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import type { Insight } from "@/lib/db/schema";
 import type { SearchResultItem } from "@/components/global-search-dialog";
 import { useGlobalInsightDrawer } from "@/components/global-insight-drawer";

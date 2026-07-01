@@ -1,10 +1,12 @@
 {
-  "name": "openloomi-monorepo",
+  "name": "openzhiyu-monorepo",
   "version": "0.5.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --filter web dev",
+    "dev": "pnpm dev:deps && pnpm --filter web dev",
+    "dev:deps": "node ./scripts/start-local-deps.cjs",
+    "dev:web": "pnpm --filter web dev",
     "dev:all": "pnpm -r --parallel dev",
     "test": "pnpm --filter web test",
     "tsc": "pnpm --filter web tsc",
@@ -57,6 +59,7 @@
     ]
   },
   "dependencies": {
+    "@chroma-core/default-embed": "^0.1.9",
     "better-sqlite3": "^11.10.0"
   }
 }

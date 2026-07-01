@@ -15,8 +15,8 @@ import { enGB, zhCN } from "date-fns/locale";
 import type { Insight } from "@/lib/db/schema";
 import type { DetailData } from "@/lib/ai/subagents/insights";
 import InsightDetailContent from "@/components/insight-detail-content";
-import { Badge, Button, Input } from "@openloomi/ui";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@openloomi/ui";
+import { Badge, Button, Input } from "@openzhiyu/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@openzhiyu/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,8 +27,8 @@ import {
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
-} from "@openloomi/ui";
-import { coerceDate } from "@openloomi/shared";
+} from "@openzhiyu/ui";
+import { coerceDate } from "@openzhiyu/shared";
 import { ReplyWorkspace } from "@/components/insight-detail-footer";
 
 /**
@@ -42,8 +42,8 @@ function convertRawMessageTimestamp(secondsTimestamp: number): number {
 import { useIntegrations, type IntegrationId } from "@/hooks/use-integrations";
 import { useSendInsightReply } from "@/components/insight-detail-footer/hooks";
 import { cn, normalizeTimestamp } from "@/lib/utils";
-import { queryRawMessages } from "@openloomi/indexeddb/client";
-import type { RawMessage } from "@openloomi/indexeddb";
+import { queryRawMessages } from "@openzhiyu/indexeddb/client";
+import type { RawMessage } from "@openzhiyu/indexeddb";
 import { toast } from "sonner";
 import { useInsightOptimisticUpdates } from "@/components/insight-optimistic-context";
 

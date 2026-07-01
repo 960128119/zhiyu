@@ -8,7 +8,7 @@ import {
   loadIntegrationCredentials,
   bulkUpsertContacts,
 } from "@/lib/db/queries";
-import type { IntegrationAccountWithBot } from "@/lib/db/queries";
+import type { IntegrationAccountWithBot } from "@/lib/db/integration-queries";
 import { handleQQInboundMessage } from "./handler";
 
 const DEBUG = process.env.DEBUG_QQBOT === "true";

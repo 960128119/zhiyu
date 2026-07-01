@@ -3,7 +3,7 @@
  * Decides which store to use based on the store factory provided by the caller.
  *
  * Usage (in the app):
- *   import { configureVectorService } from "@openloomi/rag/vector-service";
+ *   import { configureVectorService } from "@openzhiyu/rag/vector-service";
  *   configureVectorService({
  *     getStore: async () => { return configuredStore; },
  *   });
@@ -12,10 +12,10 @@
 export { SQLiteVecStore } from "./sqlite-vec-store";
 export { getSQLiteVecStore, resetSQLiteVecStore } from "./sqlite-vec-store";
 export type { SQLiteVecStoreOptions, SchemaModule } from "./sqlite-vec-store";
-export { ChromaVectorStore } from "./chroma-store";
-export { getChromaVectorStore, resetChromaVectorStore } from "./chroma-store";
 
 export {
+  PG_VECTOR_STORE_CAPABILITIES,
+  getPGVectorCapabilities,
   getPGVectorStore,
   processDocumentWithPGVector,
   searchWithPGVector,
@@ -40,6 +40,7 @@ export interface SearchResult {
  * Unified vector storage interface.
  */
 export interface IVectorStore {
+  getCapabilities?(): VectorStoreCapabilities;
   addChunk(chunk: DocumentChunk): Promise<void>;
   addChunks(chunks: DocumentChunk[]): Promise<void>;
   similaritySearch(
@@ -95,6 +96,38 @@ export interface VectorStoreSearchOptions {
 export interface VectorStoreStats {
   count: number;
   dimensions: number;
+}
+
+export type VectorStoreBackend = "chroma" | "sqlite-vec" | "pgvector" | "custom";
+
+export interface VectorStoreCapabilities {
+  backend: VectorStoreBackend;
+  nativeMetadataFilters: boolean;
+  nativeUserFilter: boolean;
+  nativeTimeRangeFilter: boolean;
+  includeEmbeddings: boolean;
+  deleteOlderThan: boolean;
+  stats: boolean;
+  multiDimensions: boolean;
+  persistent: boolean;
+}
+
+export const FALLBACK_VECTOR_STORE_CAPABILITIES: VectorStoreCapabilities = {
+  backend: "custom",
+  nativeMetadataFilters: false,
+  nativeUserFilter: false,
+  nativeTimeRangeFilter: false,
+  includeEmbeddings: false,
+  deleteOlderThan: false,
+  stats: false,
+  multiDimensions: false,
+  persistent: false,
+};
+
+export function getVectorStoreCapabilities(
+  store: IVectorStore,
+): VectorStoreCapabilities {
+  return store.getCapabilities?.() ?? FALLBACK_VECTOR_STORE_CAPABILITIES;
 }
 
 // ---------------------------------------------------------------------------

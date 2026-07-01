@@ -1,4 +1,4 @@
-import { AppError } from "@openloomi/shared";
+import { AppError } from "@openzhiyu/shared";
 
 export type HubspotCredentials = {
   accessToken: string;

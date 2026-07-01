@@ -1,6 +1,6 @@
 /**
  * DELETE /api/workspace/skills/[skillId]
- * Only allows deleting skill directories under ~/.openloomi/skills, and cleans up corresponding entries in skill-metadata.json
+ * Only allows deleting skill directories under ~/.openzhiyu/skills, and cleans up corresponding entries in skill-metadata.json
  */
 
 import { type NextRequest, NextResponse } from "next/server";
@@ -9,7 +9,7 @@ import { join, normalize, sep } from "node:path";
 import { homedir } from "node:os";
 import { APP_DIR_NAME } from "@/lib/env/config/constants";
 
-function getopenloomiSkillsDir(): string {
+function getopenzhiyuSkillsDir(): string {
   return join(homedir(), APP_DIR_NAME, "skills");
 }
 
@@ -59,12 +59,12 @@ export async function DELETE(
       );
     }
 
-    const openloomiSkillsDir = getopenloomiSkillsDir();
-    const skillPath = join(openloomiSkillsDir, skillId);
+    const openzhiyuSkillsDir = getopenzhiyuSkillsDir();
+    const skillPath = join(openzhiyuSkillsDir, skillId);
 
-    if (!isPathUnderBase(skillPath, openloomiSkillsDir)) {
+    if (!isPathUnderBase(skillPath, openzhiyuSkillsDir)) {
       return NextResponse.json(
-        { success: false, error: "Skill can only be deleted from ~/.openloomi/skills" },
+        { success: false, error: "Skill can only be deleted from ~/.openzhiyu/skills" },
         { status: 403 },
       );
     }

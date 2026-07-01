@@ -9,6 +9,7 @@ import {
   stopLocalScheduler,
   getSchedulerStatus,
   setSchedulerUserId,
+  isLocalSchedulerAllowed,
 } from "@/lib/cron/local-scheduler";
 import { setCloudAuthToken } from "@/lib/auth/token-manager";
 import { isTauriMode } from "@/lib/env";
@@ -20,18 +21,19 @@ export async function GET(request: Request) {
   console.log("[SchedulerAPI] GET request received");
   console.log(`   URL: ${request.url}`);
   console.log(`   isTauriMode: ${isTauriMode()}`);
+  console.log(`   isLocalSchedulerAllowed: ${isLocalSchedulerAllowed()}`);
 
   // Get cloudAuthToken from URL params
   const url = new URL(request.url);
   const cloudAuthToken = url.searchParams.get("cloudAuthToken") || undefined;
 
   try {
-    // Only allow in Tauri mode
-    if (!isTauriMode()) {
-      console.log("[SchedulerAPI] Not in Tauri mode, returning 400");
+    if (!isLocalSchedulerAllowed()) {
+      console.log("[SchedulerAPI] Local scheduler disabled, returning 400");
       return NextResponse.json(
         {
-          error: "Local scheduler is only available in Tauri/Desktop mode",
+          error:
+            "Local scheduler is disabled. Set ENABLE_LOCAL_SCHEDULER=true to run it outside Tauri/Desktop mode.",
         },
         { status: 400 },
       );
@@ -95,12 +97,12 @@ export async function POST() {
   console.log("[SchedulerAPI] POST request received (stop)");
 
   try {
-    // Only allow in Tauri mode
-    if (!isTauriMode()) {
-      console.log("[SchedulerAPI] Not in Tauri mode, returning 400");
+    if (!isLocalSchedulerAllowed()) {
+      console.log("[SchedulerAPI] Local scheduler disabled, returning 400");
       return NextResponse.json(
         {
-          error: "Local scheduler is only available in Tauri/Desktop mode",
+          error:
+            "Local scheduler is disabled. Set ENABLE_LOCAL_SCHEDULER=true to run it outside Tauri/Desktop mode.",
         },
         { status: 400 },
       );

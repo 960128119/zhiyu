@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 
 export interface MobileHeaderProps {
@@ -27,7 +27,7 @@ export function MobileHeader({ title, onMenuClick }: MobileHeaderProps) {
       onMenuClick();
     } else {
       // Default behavior: dispatch open sidebar event
-      const event = new CustomEvent("openloomi:open-sidebar");
+      const event = new CustomEvent("openzhiyu:open-sidebar");
       window.dispatchEvent(event);
     }
   };

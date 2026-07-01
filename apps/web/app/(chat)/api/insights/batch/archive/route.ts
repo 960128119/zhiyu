@@ -1,7 +1,7 @@
 import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db/queries";
 import { insight } from "@/lib/db/schema";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import { eq, inArray } from "drizzle-orm";
 import type { InsightTaskItem } from "@/lib/ai/subagents/insights";
 

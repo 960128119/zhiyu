@@ -12,7 +12,7 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { createHash } from "node:crypto";
-import { getUser, createUser, getUserTypeForService } from "@/lib/db/queries";
+import { getUser, createUser, getUserTypeForService } from "@/lib/db/user-queries";
 import { authSessionVersion, DUMMY_PASSWORD } from "@/lib/env/constants";
 import { verifyState } from "@/lib/auth/oauth-state";
 

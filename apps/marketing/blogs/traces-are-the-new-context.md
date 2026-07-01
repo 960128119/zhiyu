@@ -96,4 +96,4 @@ This is the line I’d draw clearly. If you want AI to truly take work off your 
 
 We’ve seen this in coding, where trace-rich environments allowed AI to become materially useful beyond drafting. The same principle applies to everything else. In business workflows, the next breakthrough won’t come from making CRMs prettier or chatbots smarter. It will come from making the underlying work trace-native, so AI can reason, act, and close loops reliably.
 
-That’s the direction we’re building toward with OpenLoomiAI: systems that don’t just capture the end state of work, but the process footprints that make work trackble, understandable and manageable as on-going loops.
+That’s the direction we’re building toward with OpenZhiyuAI: systems that don’t just capture the end state of work, but the process footprints that make work trackble, understandable and manageable as on-going loops.

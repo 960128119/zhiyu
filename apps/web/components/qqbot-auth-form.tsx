@@ -10,8 +10,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
-import { Button, Input, Label } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { Button, Input, Label } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { createIntegrationAccount } from "@/lib/integrations/client";
 import { toast } from "@/components/toast";
@@ -100,7 +100,7 @@ export function QQBotAuthForm({
           name,
           description: t(
             "auth.qqbotBotDescription",
-            "Chat with openloomi via QQ",
+            "Chat with openzhiyu via QQ",
           ),
           adapter: "qqbot",
           enable: true,
@@ -148,7 +148,7 @@ export function QQBotAuthForm({
       <p className="text-sm text-muted-foreground">
         {t(
           "auth.qqbotDescription",
-          "Create a bot on QQ Open Platform, get AppID and AppSecret, fill them in below to chat with openloomi.",
+          "Create a bot on QQ Open Platform, get AppID and AppSecret, fill them in below to chat with openzhiyu.",
         )}
       </p>
       <div className="grid gap-4 py-4">
@@ -247,7 +247,7 @@ export function QQBotAuthForm({
             <DialogDescription>
               {t(
                 "auth.qqbotDescription",
-                "Create a bot on QQ Open Platform, get AppID and AppSecret, fill them in below to chat with openloomi.",
+                "Create a bot on QQ Open Platform, get AppID and AppSecret, fill them in below to chat with openzhiyu.",
               )}
             </DialogDescription>
           </DialogHeader>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { Spinner } from "@/components/spinner";
 import { RemixIcon } from "@/components/remix-icon";
 import type { InsightTaskStatus } from "@/lib/db/schema";

@@ -9,7 +9,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { isTauri } from "@/lib/tauri";
 
 type FeishuConnectSuccessAlertProps = {
@@ -43,7 +43,7 @@ export function FeishuConnectSuccessAlert({
             {isTauri()
               ? t(
                   "auth.feishuConnectRestartDescTauri",
-                  "To ensure stable Lark/Feishu message listening, please fully quit and restart the openloomi desktop client",
+                  "To ensure stable Lark/Feishu message listening, please fully quit and restart the openzhiyu desktop client",
                 )
               : t(
                   "auth.feishuConnectRestartDescWeb",

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { createHash } from "node:crypto";
 
 import { auth } from "@/app/(auth)/auth";
 import { pollAppRegistrationOnce } from "@/lib/integrations/feishu/app-registration";
@@ -71,19 +72,26 @@ export async function POST() {
     return exp;
   }
 
+  const deviceCodeHash = createHash("sha256")
+    .update(payload.deviceCode)
+    .digest("hex")
+    .slice(0, 12);
   const step = await pollAppRegistrationOnce({
     domain: payload.domain,
     deviceCode: payload.deviceCode,
     currentIntervalSec: payload.intervalSec,
     domainAlreadySwitched: payload.domainSwitched,
-    tp: "ob_app",
   });
   console.log(
-    "[Feishu registration poll] userId=%s cookieDomain=%s switched=%s stepKind=%s",
+    "[Feishu registration poll] userId=%s cookieDomain=%s switched=%s deviceHash=%s stepKind=%s reason=%s code=%s nextInterval=%s",
     session.user.id,
     payload.domain,
     payload.domainSwitched ? "yes" : "no",
+    deviceCodeHash,
     step.kind,
+    step.kind === "pending" ? (step.reason ?? "-") : "-",
+    step.kind === "pending" ? (step.code ?? "-") : "-",
+    step.kind === "pending" ? step.nextIntervalSec : "-",
   );
 
   if (step.kind === "success") {

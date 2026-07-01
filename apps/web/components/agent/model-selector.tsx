@@ -315,7 +315,7 @@ const MODELS = {
 /**
  * Local storage key for model preference
  */
-const MODEL_PREFERENCE_KEY = "openloomi:preferredModel";
+const MODEL_PREFERENCE_KEY = "openzhiyu:preferredModel";
 
 /**
  * Model selector component props

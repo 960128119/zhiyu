@@ -7,9 +7,9 @@ import {
   useChatContextOptional,
   type ChatContextValue,
 } from "@/components/chat-context";
-import { Badge, Button } from "@openloomi/ui";
-import { HorizontalScrollContainer, hasDragged } from "@openloomi/ui";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@openloomi/ui";
+import { Badge, Button } from "@openzhiyu/ui";
+import { HorizontalScrollContainer, hasDragged } from "@openzhiyu/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@openzhiyu/ui";
 import type { ChatHistoryResponse } from "@/lib/ai/chat/api";
 import { buildNavigationUrl } from "@/lib/utils";
 import { fetcher } from "@/lib/utils";

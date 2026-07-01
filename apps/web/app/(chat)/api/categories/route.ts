@@ -3,8 +3,8 @@ import {
   getUserCategories,
   createUserCategory,
   updateUserCategoriesSortOrder,
-} from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+} from "@/lib/db/insight-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import {

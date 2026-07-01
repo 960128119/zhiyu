@@ -8,7 +8,6 @@ import os from "node:os";
 // Tauri-related imports (dynamic loading, avoid server-side window errors)
 import { getDataDirectory } from "@/lib/tauri";
 import { isTauriMode } from "@/lib/env";
-import { getOrCreateShadowUser } from "@/lib/db/remote-user-queries";
 import { APP_DIR_NAME } from "@/lib/env/config/constants";
 
 // ========== Core environment detection (distinguish client/server/Tauri) ==========
@@ -68,6 +67,17 @@ export interface AuthModuleLike {
   signOut: (options?: Record<string, unknown>) => Promise<void>;
 }
 
+async function getOrCreateShadowUserOnDemand(
+  input: Parameters<
+    typeof import("@/lib/db/remote-user-queries").getOrCreateShadowUser
+  >[0],
+) {
+  const { getOrCreateShadowUser } = await import(
+    "@/lib/db/remote-user-queries"
+  );
+  return getOrCreateShadowUser(input);
+}
+
 // ========== Core utility functions ==========
 //
 // Priority follows the original design (cloud user.id is the identity key,
@@ -108,7 +118,7 @@ const getSessionFilePath = async (): Promise<string> => {
   // Client Tauri environment: use Tauri data directory
   if (isTauriClientEnv()) {
     const appDataDir = getDataDirectory();
-    const sessionPath = `${appDataDir}/openloomi_session.json`;
+    const sessionPath = `${appDataDir}/openzhiyu_session.json`;
     return sessionPath;
   }
 
@@ -118,7 +128,7 @@ const getSessionFilePath = async (): Promise<string> => {
     const appDataDir = path.join(homeDir, APP_DIR_NAME);
 
     await fs.mkdir(appDataDir, { recursive: true });
-    const sessionPath = path.join(appDataDir, "openloomi_session.json");
+    const sessionPath = path.join(appDataDir, "openzhiyu_session.json");
     return sessionPath;
   }
 
@@ -335,7 +345,7 @@ export function createTauriProductionAuthModule(): AuthModuleLike {
 
           // Create shadow user in database to ensure foreign key constraints work
           try {
-            await getOrCreateShadowUser({
+            await getOrCreateShadowUserOnDemand({
               id: userId,
               email,
               name: email?.split("@")[0] || "User",
@@ -390,7 +400,7 @@ export function createTauriProductionAuthModule(): AuthModuleLike {
 
         // Create shadow user in database to ensure foreign key constraints work
         try {
-          await getOrCreateShadowUser({
+          await getOrCreateShadowUserOnDemand({
             id: userId,
             email: email as string,
             name: (name as string) || (email as string)?.split("@")[0] || null,

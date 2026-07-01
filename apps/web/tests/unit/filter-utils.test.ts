@@ -9,7 +9,7 @@ import {
   normalizeImportanceOption,
   normalizeUrgencyOption,
   normalizePlatformOption,
-} from "@openloomi/insights";
+} from "@openzhiyu/insights";
 
 describe("Filter Utils", () => {
   describe("toInsightFilterResponse", () => {

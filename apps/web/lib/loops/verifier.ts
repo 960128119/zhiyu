@@ -78,13 +78,45 @@ function collectObservedFields(
 }
 
 function collectObservedSources(
+  result: JobExecutionResult,
   structuredReport: StructuredExecutionOutput | null,
 ): string[] {
   const sources = new Set<string>();
+  const resultData = asRecord(result.result);
+  const executionTrace = asRecord(resultData.executionTrace);
+  const traceEvents = Array.isArray(executionTrace.events)
+    ? executionTrace.events
+    : [];
+  const toolGate = asRecord(resultData.toolGate);
+  const toolGateDecisions = Array.isArray(toolGate.decisions)
+    ? toolGate.decisions
+    : [];
+
   for (const step of structuredReport?.reasoningChain ?? []) {
     if (step.sourceType) sources.add(step.sourceType);
     if (step.sourceLabel) sources.add(step.sourceLabel);
   }
+
+  for (const event of traceEvents) {
+    const record = asRecord(event);
+    if (typeof record.toolName === "string" && record.toolName.trim()) {
+      sources.add(record.toolName);
+      if (record.toolName.includes("__")) {
+        sources.add(record.toolName.split("__").pop() ?? record.toolName);
+      }
+    }
+  }
+
+  for (const decision of toolGateDecisions) {
+    const record = asRecord(decision);
+    if (typeof record.actionName === "string" && record.actionName.trim()) {
+      sources.add(record.actionName);
+      if (record.actionName.includes("__")) {
+        sources.add(record.actionName.split("__").pop() ?? record.actionName);
+      }
+    }
+  }
+
   return [...sources].sort();
 }
 
@@ -115,7 +147,7 @@ export function verifyLoopRun(input: {
   const config = loopVerificationSchema.parse(input.verificationConfig ?? {});
   const structuredReport = extractStructuredReport(input.result);
   const observedFields = collectObservedFields(input.result, structuredReport);
-  const observedSources = collectObservedSources(structuredReport);
+  const observedSources = collectObservedSources(input.result, structuredReport);
   const evidence: LoopVerificationEvidence = {
     status: input.result.status,
     observedFields,

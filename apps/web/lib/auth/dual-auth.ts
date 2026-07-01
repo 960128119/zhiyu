@@ -38,7 +38,7 @@ export async function getAuthUser(request: Request): Promise<AuthUser | null> {
         // Avoid calling cloud API every time
         if (isShadowUser(userId)) {
           try {
-            const { getUserById } = await import("@/lib/db/queries");
+            const { getUserById } = await import("@/lib/db/user-queries");
             const localUser = await getUserById(userId);
             if (localUser) {
               return {
@@ -58,7 +58,7 @@ export async function getAuthUser(request: Request): Promise<AuthUser | null> {
         // Non-shadow user or local fetch failed, try to get from cloud
         try {
           const response = await fetch(
-            `${process.env.CLOUD_API_URL || process.env.NEXT_PUBLIC_CLOUD_API_URL || "https://app.openloomi.ai"}/api/remote-auth/user`,
+            `${process.env.CLOUD_API_URL || process.env.NEXT_PUBLIC_CLOUD_API_URL || "https://app.openzhiyu.ai"}/api/remote-auth/user`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,

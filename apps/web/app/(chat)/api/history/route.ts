@@ -1,7 +1,7 @@
 import { auth } from "@/app/(auth)/auth";
 import type { NextRequest } from "next/server";
-import { getChatsByUserId } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { getChatsByUserId } from "@/lib/db/chat-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 import type { ChatHistoryResponse } from "@/lib/ai/chat/api";
 
 export async function GET(request: NextRequest): Promise<Response> {

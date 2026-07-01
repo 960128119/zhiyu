@@ -1,6 +1,6 @@
 import { auth } from "@/app/(auth)/auth";
 import { deleteInsightsByIds } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 
 /**
  * Batch delete Insights

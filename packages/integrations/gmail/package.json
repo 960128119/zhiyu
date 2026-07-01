@@ -1,5 +1,5 @@
 {
-  "name": "@openloomi/integrations-gmail",
+  "name": "@openzhiyu/integrations-gmail",
   "version": "0.5.1",
   "private": true,
   "type": "module",
@@ -7,10 +7,10 @@
     "./conversation-store": "./src/conversation-store.ts"
   },
   "dependencies": {
-    "@openloomi/ai": "workspace:*"
+    "@openzhiyu/ai": "workspace:*"
   },
   "devDependencies": {
-    "@openloomi/config": "workspace:*",
+    "@openzhiyu/config": "workspace:*",
     "typescript": "^5.6.3"
   },
   "scripts": {

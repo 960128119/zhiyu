@@ -6,7 +6,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { useTranslation } from "react-i18next";
 import { useMemo } from "react";
 import { useIntegrations, type IntegrationId } from "@/hooks/use-integrations";

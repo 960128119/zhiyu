@@ -1,11 +1,11 @@
 import type { TFunction } from "i18next";
 
-// Re-export from @openloomi/shared for backward compatibility
+// Re-export from @openzhiyu/shared for backward compatibility
 export {
   stripMalformedToolCalls,
   containsMalformedToolCall,
   extractMalformedToolCalls,
-} from "@openloomi/shared";
+} from "@openzhiyu/shared";
 
 /**
  * Get the display name for a tool, translating MCP tool names
@@ -59,6 +59,17 @@ export function getToolDisplayName(
       return t("common.toolNames.queryIntegrations");
     case "sendReply":
       return t("common.toolNames.sendReply");
+    case "wechatDesktopHealth":
+      return t("common.toolNames.wechatDesktopHealth") || "Check WeChat";
+    case "wechatDesktopPreviewMessage":
+      return (
+        t("common.toolNames.wechatDesktopPreviewMessage") ||
+        "Preview WeChat Message"
+      );
+    case "wechatDesktopSendMessage":
+      return (
+        t("common.toolNames.wechatDesktopSendMessage") || "Send WeChat Message"
+      );
     case "createInsight":
       return t("common.toolNames.createInsight");
     case "modifyInsight":
@@ -77,16 +88,14 @@ export function getToolDisplayName(
       return t("common.toolNames.getRawMessages");
     case "searchRawMessages":
       return t("common.toolNames.searchRawMessages");
-    case "createScheduledJob":
-      return t("common.toolNames.createScheduledJob");
-    case "listScheduledJobs":
-      return t("common.toolNames.listScheduledJobs");
-    case "deleteScheduledJob":
-      return t("common.toolNames.deleteScheduledJob");
-    case "toggleScheduledJob":
-      return t("common.toolNames.toggleScheduledJob");
-    case "executeScheduledJob":
-      return t("common.toolNames.executeScheduledJob");
+    case "createLoopTask":
+      return t("common.toolNames.createLoopTask") || "Create Loop Task";
+    case "listLoopTasks":
+      return t("common.toolNames.listLoopTasks") || "List Loop Tasks";
+    case "setLoopTaskStatus":
+      return t("common.toolNames.setLoopTaskStatus") || "Update Loop Task";
+    case "deleteLoopTask":
+      return t("common.toolNames.deleteLoopTask") || "Delete Loop Task";
     default:
       return toolNameWithoutPrefix;
   }
@@ -138,6 +147,22 @@ export function getToolRunningText(
       return t("common.runningIndicator.runningQueryIntegrations");
     case "sendReply":
       return t("common.runningIndicator.runningSendReply");
+    case "wechatDesktopHealth":
+      return t("common.runningIndicator.running", {
+        tool: t("common.toolNames.wechatDesktopHealth") || "Check WeChat",
+      });
+    case "wechatDesktopPreviewMessage":
+      return t("common.runningIndicator.running", {
+        tool:
+          t("common.toolNames.wechatDesktopPreviewMessage") ||
+          "Preview WeChat Message",
+      });
+    case "wechatDesktopSendMessage":
+      return t("common.runningIndicator.running", {
+        tool:
+          t("common.toolNames.wechatDesktopSendMessage") ||
+          "Send WeChat Message",
+      });
     case "createInsight":
       return t("common.runningIndicator.runningCreateInsight");
     case "modifyInsight":
@@ -156,25 +181,21 @@ export function getToolRunningText(
       return t("common.runningIndicator.runningGetRawMessages");
     case "searchRawMessages":
       return t("common.runningIndicator.runningSearchRawMessages");
-    case "createScheduledJob":
+    case "createLoopTask":
       return t("common.runningIndicator.running", {
-        tool: t("common.toolNames.createScheduledJob"),
+        tool: t("common.toolNames.createLoopTask") || "Create Loop Task",
       });
-    case "listScheduledJobs":
+    case "listLoopTasks":
       return t("common.runningIndicator.running", {
-        tool: t("common.toolNames.listScheduledJobs"),
+        tool: t("common.toolNames.listLoopTasks") || "List Loop Tasks",
       });
-    case "deleteScheduledJob":
+    case "setLoopTaskStatus":
       return t("common.runningIndicator.running", {
-        tool: t("common.toolNames.deleteScheduledJob"),
+        tool: t("common.toolNames.setLoopTaskStatus") || "Update Loop Task",
       });
-    case "toggleScheduledJob":
+    case "deleteLoopTask":
       return t("common.runningIndicator.running", {
-        tool: t("common.toolNames.toggleScheduledJob"),
-      });
-    case "executeScheduledJob":
-      return t("common.runningIndicator.running", {
-        tool: t("common.toolNames.executeScheduledJob"),
+        tool: t("common.toolNames.deleteLoopTask") || "Delete Loop Task",
       });
     default: {
       // Fallback: use generic message with tool name

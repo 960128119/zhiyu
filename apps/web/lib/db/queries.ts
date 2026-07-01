@@ -1,4 +1,4 @@
-import {
+﻿import {
   and,
   asc,
   count,
@@ -18,14 +18,9 @@ import {
   type SQL,
   like,
 } from "drizzle-orm";
-import { config } from "dotenv";
-
-config({
-  path: ".env",
-});
-
-// Import database adapters (supports dual mode)
-import { initDb, getDb } from "./adapters";
+import { db } from "./client";
+import { getDb } from "./adapters";
+export { db, getDbInstance } from "./client";
 
 import {
   user,
@@ -98,7 +93,7 @@ import {
 } from "./schema";
 import { generateUUID } from "../utils";
 import { generateHashedPassword } from "./utils";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import type { UserType } from "@/app/(auth)/auth";
 import { isTauriMode } from "@/lib/env/constants";
 import { filterDueInsightSettings } from "@/lib/insights/tier";
@@ -113,10 +108,7 @@ import {
 import type { InsightTaskItem, TimelineData } from "../ai/subagents/insights";
 import { createHash } from "node:crypto";
 import { generateInsightId } from "../insights/transform";
-import {
-  upsertInsightEmbeddingsForCandidates,
-  type InsightEmbeddingCandidate,
-} from "../insights/embedding-service";
+import type { InsightEmbeddingCandidate } from "../insights/embedding-service";
 
 // Import serialization utilities from separate module
 export {
@@ -168,6 +160,17 @@ function addIdIfNeeded<T extends Record<string, unknown>>(
   return data as T & { id: string };
 }
 
+async function upsertInsightEmbeddingsForCandidatesOnDemand(
+  input: Parameters<
+    typeof import("../insights/embedding-service").upsertInsightEmbeddingsForCandidates
+  >[0],
+) {
+  const { upsertInsightEmbeddingsForCandidates } = await import(
+    "../insights/embedding-service"
+  );
+  return upsertInsightEmbeddingsForCandidates(input);
+}
+
 /**
  * Database-compatible transaction executor
  * SQLite (better-sqlite3) does not support async transactions, requires special handling
@@ -216,39 +219,6 @@ function hashPasswordResetToken(token: string) {
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
 // https://authjs.dev/reference/adapter/drizzle
-
-// Initialize database connection (using adapters)
-let dbInstance: ReturnType<typeof getDb> | null = null;
-
-export function getDbInstance() {
-  if (!dbInstance) {
-    dbInstance = initDb();
-  }
-  return dbInstance;
-}
-
-// Export db for backward compatibility
-// Use getter for lazy initialization, avoid initializing database connection when module loads
-// This way it won't error during build due to missing environment variables
-let _cachedDb: ReturnType<typeof getDb> | null = null;
-
-export const db: ReturnType<typeof getDb> = new Proxy({} as any, {
-  get(_target, prop) {
-    if (!_cachedDb) {
-      console.log("[DB] Initializing database connection (first access)...");
-      try {
-        _cachedDb = getDbInstance();
-        console.log("[DB] ✅ Database initialized successfully");
-      } catch (error) {
-        console.error("[DB] ❌ Failed to initialize database:", error);
-        throw error;
-      }
-    }
-    const db = _cachedDb;
-    // @ts-ignore - proxy to db instance
-    return db[prop];
-  },
-});
 
 export async function getUserByEmail(email: string) {
   try {
@@ -2396,7 +2366,7 @@ export function loadIntegrationCredentials<T = Record<string, unknown>>(
   if (auditContext) {
     try {
       // Dynamic import to avoid circular dependencies
-      const { logCredentialAccess } = require("@openloomi/audit");
+      const { logCredentialAccess } = require("@openzhiyu/audit");
       logCredentialAccess({
         accountId: account.id,
         userId: auditContext.userId,
@@ -3850,7 +3820,7 @@ export async function appendInsightsByBotId({
         embeddingCandidates,
       };
     });
-    await upsertInsightEmbeddingsForCandidates({
+    await upsertInsightEmbeddingsForCandidatesOnDemand({
       db,
       candidates: result.embeddingCandidates,
     });
@@ -4159,7 +4129,7 @@ async function revivePendingDeletionInsightsForBot({
  * Merge existing and incoming timeline events server-side.
  * Deduplicates by event ID first, then adds existing events not in incoming.
  * This ensures historical timeline events are never lost due to incomplete
- * model output — even if the model only outputs the latest event, older
+ * model output 鈥?even if the model only outputs the latest event, older
  * events from the existing timeline are preserved.
  */
 function mergeTimelinesServerSide(
@@ -4469,7 +4439,7 @@ export async function upsertInsightsByBotId({
 
       return { ids: resultIds, embeddingCandidates };
     });
-    await upsertInsightEmbeddingsForCandidates({
+    await upsertInsightEmbeddingsForCandidatesOnDemand({
       db,
       candidates: result.embeddingCandidates,
     });
@@ -5445,7 +5415,7 @@ export async function insertInsightRecords(
       [],
     );
 
-    await upsertInsightEmbeddingsForCandidates({
+    await upsertInsightEmbeddingsForCandidatesOnDemand({
       db,
       candidates: embeddingCandidates,
       options: {
@@ -6338,7 +6308,7 @@ export async function upsertContact(
 
         if (existingByName) {
           console.warn(
-            `[Contacts] UNIQUE constraint hit for contact "${contact.contactName}", user ${contact.userId}, bot ${contact.botId ?? "null"} — returning existing row (by name).`,
+            `[Contacts] UNIQUE constraint hit for contact "${contact.contactName}", user ${contact.userId}, bot ${contact.botId ?? "null"} 鈥?returning existing row (by name).`,
           );
           return existingByName;
         }

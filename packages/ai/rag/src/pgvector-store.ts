@@ -11,6 +11,7 @@ import { Document } from "@langchain/core/documents";
 import { Pool } from "pg";
 
 import { UniversalEmbeddings } from "./universal-embeddings";
+import type { VectorStoreCapabilities } from "./vector-service";
 
 // Embedding pricing
 const EMBEDDING_PRICING: Record<string, number> = {
@@ -20,6 +21,22 @@ const EMBEDDING_PRICING: Record<string, number> = {
 };
 
 const CREDIT_COST_MULTIPLIER = 100; // 1 USD = 100 credits
+
+export const PG_VECTOR_STORE_CAPABILITIES: VectorStoreCapabilities = {
+  backend: "pgvector",
+  nativeMetadataFilters: true,
+  nativeUserFilter: true,
+  nativeTimeRangeFilter: false,
+  includeEmbeddings: false,
+  deleteOlderThan: false,
+  stats: true,
+  multiDimensions: false,
+  persistent: true,
+};
+
+export function getPGVectorCapabilities(): VectorStoreCapabilities {
+  return PG_VECTOR_STORE_CAPABILITIES;
+}
 
 export interface PGVectorConfig {
   parseFile: (

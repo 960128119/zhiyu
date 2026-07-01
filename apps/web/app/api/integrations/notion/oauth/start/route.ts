@@ -10,7 +10,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { withRateLimit, RateLimitPresets } from "@/lib/rate-limit/middleware";
-import { encryptToken } from "@openloomi/security/token-encryption";
+import { encryptToken } from "@openzhiyu/security/token-encryption";
 
 const NOTION_AUTHORIZE_URL = "https://api.notion.com/v1/oauth/authorize";
 
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
   const cloudUrl =
     process.env.CLOUD_API_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||
-    "https://app.openloomi.ai";
+    "https://app.openzhiyu.ai";
 
   // Use frontend callback page and pass userId in state
   const redirectUri = `${cloudUrl}/api/notion/callback`;

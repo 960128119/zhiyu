@@ -59,6 +59,14 @@ describe("ChromaVectorStore", () => {
       collectionName: "test_collection",
     });
 
+    expect(store.getCapabilities()).toMatchObject({
+      backend: "chroma",
+      nativeMetadataFilters: true,
+      nativeTimeRangeFilter: true,
+      includeEmbeddings: true,
+      deleteOlderThan: true,
+    });
+
     await store.addChunk({
       id: "chunk-1",
       documentId: "document-1",
@@ -78,7 +86,7 @@ describe("ChromaVectorStore", () => {
       name: "test_collection",
       embeddingFunction: null,
       metadata: {
-        source: "@openloomi/rag",
+        source: "@openzhiyu/rag",
         store: "chroma",
       },
     });

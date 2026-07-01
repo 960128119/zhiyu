@@ -20,18 +20,18 @@ export async function generateMetadata({
   }
 
   const title = page.data.title;
-  const description = page.data.description ?? "OpenLoomi documentation";
+  const description = page.data.description ?? "OpenZhiyu documentation";
 
   return {
     title,
     description,
     alternates: {
-      canonical: `https://openloomi.ai${page.url}`,
+      canonical: `https://openzhiyu.ai${page.url}`,
     },
     openGraph: {
       title,
       description,
-      url: `https://openloomi.ai${page.url}`,
+      url: `https://openzhiyu.ai${page.url}`,
       type: "article",
     },
     twitter: {

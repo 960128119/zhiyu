@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import type { Session } from "next-auth";
-import { DropdownMenu, DropdownMenuContent } from "@openloomi/ui";
+import { DropdownMenu, DropdownMenuContent } from "@openzhiyu/ui";
 import { cn } from "@/lib/utils";
 import { useUserProfile } from "@/hooks/use-user-profile";
 import { UserMenuContent } from "@/components/user-menu-content";
@@ -113,27 +113,27 @@ export function UserMenuDropdown({
         return;
       }
 
-      router.push("/?page=openloomi-soul");
+      router.push("/?page=openzhiyu-soul");
     };
 
     window.addEventListener(
-      "openloomi:open-personalization",
+      "openzhiyu:open-personalization",
       handleOpenPersonalization as EventListener,
     );
 
     // Support legacy event names
     window.addEventListener(
-      "openloomi:open-user-settings",
+      "openzhiyu:open-user-settings",
       handleOpenPersonalization as EventListener,
     );
 
     return () => {
       window.removeEventListener(
-        "openloomi:open-personalization",
+        "openzhiyu:open-personalization",
         handleOpenPersonalization as EventListener,
       );
       window.removeEventListener(
-        "openloomi:open-user-settings",
+        "openzhiyu:open-user-settings",
         handleOpenPersonalization as EventListener,
       );
     };

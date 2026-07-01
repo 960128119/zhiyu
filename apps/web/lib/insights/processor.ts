@@ -1,11 +1,9 @@
 import pLimit from "p-limit";
 import {
   upsertInsightsByBotId,
-  type BotWithAccount,
   bulkUpsertContacts,
   getRssSubscriptionsByUser,
   getStoredInsightsByBotIdAndGroups,
-  getUserCategories,
   insertRssItems,
   insertInsightRecords,
   markRssItemsProcessed,
@@ -19,6 +17,8 @@ import {
   normalizeContactMetaList,
   upsertContact,
 } from "../db/queries";
+import type { BotWithAccount } from "../db/bot-queries";
+import { getUserCategories } from "../db/insight-queries";
 import { SlackAdapter } from "../integrations/slack";
 import { DiscordAdapter } from "../integrations/discord";
 import {
@@ -26,11 +26,11 @@ import {
   buildCategoriesPrompt,
   type InsightData,
 } from "../ai/subagents/insights";
-import { AppError } from "@openloomi/shared/errors";
-import type { ExtractedMessageInfo } from "@openloomi/integrations/channels/sources/types";
-import { TelegramAdapter } from "@openloomi/integrations/telegram";
-import { FacebookMessengerAdapter } from "@openloomi/integrations/facebook-messenger";
-import type { InsertRssItem } from "@openloomi/rss";
+import { AppError } from "@openzhiyu/shared/errors";
+import type { ExtractedMessageInfo } from "@openzhiyu/integrations/channels/sources/types";
+import { TelegramAdapter } from "@openzhiyu/integrations/telegram";
+import { FacebookMessengerAdapter } from "@openzhiyu/integrations/facebook-messenger";
+import type { InsertRssItem } from "@openzhiyu/rss";
 import { maxChunkSummaryCount } from "@/lib/env/constants";
 import {
   deleteInsightsSession,
@@ -58,37 +58,37 @@ import {
   generateInsightPayload,
   type GeneratedInsightPayload,
 } from "@/lib/insights/transform";
-import { LinkedInAdapter } from "@openloomi/integrations/linkedin";
-import { InstagramAdapter } from "@openloomi/integrations/instagram";
-import { GoogleCalendarAdapter } from "@openloomi/integrations/calendar";
+import { LinkedInAdapter } from "@openzhiyu/integrations/linkedin";
+import { InstagramAdapter } from "@openzhiyu/integrations/instagram";
+import { GoogleCalendarAdapter } from "@openzhiyu/integrations/calendar";
 import {
   HubspotClient,
   type HubspotDeal,
-} from "@openloomi/integrations/hubspot";
+} from "@openzhiyu/integrations/hubspot";
 import { setAIUserContext, clearAIUserContext } from "@/lib/ai";
 import {
   OutlookCalendarAdapter,
   type OutlookCalendarEvent,
-} from "@openloomi/integrations/calendar";
+} from "@openzhiyu/integrations/calendar";
 import { IMessageAdapter, parseIMessageChatId } from "../integrations/imessage";
-import type { Platform } from "@openloomi/integrations/channels/sources/types";
+import type { Platform } from "@openzhiyu/integrations/channels/sources/types";
 import { getBotCredentials } from "@/lib/bots/token";
 import {
   buildInsightRecord,
   fetchFeed,
   getCachedRssBotId,
 } from "@/lib/bots/rss";
-import { buildRssItemInserts } from "@openloomi/rss";
+import { buildRssItemInserts } from "@openzhiyu/rss";
 import {
   listRecentDocuments,
   type GoogleDocSummary,
-} from "@openloomi/integrations/google-docs";
+} from "@openzhiyu/integrations/google-docs";
 import {
   extractRawMessages,
   type RawMessageData,
-} from "@openloomi/indexeddb/extractor";
+} from "@openzhiyu/indexeddb/extractor";
 import { shouldSkipGmailEmail } from "../integrations/email/classifier";
-import { FeishuAdapter } from "@openloomi/integrations/feishu";
+import { FeishuAdapter } from "@openzhiyu/integrations/feishu";
 import { getUserLlmProviderConfig } from "@/lib/ai/user-llm-api-settings";
 
 import {
@@ -2313,7 +2313,7 @@ export async function getInsightsByBotId({
               await markRssItemsProcessed(processedPayload);
 
               const { extractRawMessages: extractRawMessagesLocal } =
-                await import("@openloomi/indexeddb/extractor");
+                await import("@openzhiyu/indexeddb/extractor");
               const extractedMessages = extractRawMessagesLocal(
                 feedResult.items,
                 "rss",

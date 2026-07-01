@@ -9,7 +9,7 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { useTranslation } from "react-i18next";
 import { toast } from "./toast";
 import { openUrl } from "@/lib/tauri";

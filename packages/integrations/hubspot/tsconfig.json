@@ -1,5 +1,5 @@
 {
-  "extends": "@openloomi/config/tsconfig.json",
+  "extends": "@openzhiyu/config/tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist"
   },

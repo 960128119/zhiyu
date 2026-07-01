@@ -7,16 +7,15 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { generateUUID } from "@/lib/utils";
-import type { ChatMessage } from "@openloomi/shared";
+import type { ChatMessage } from "@openzhiyu/shared";
 import { VirtualizedMessages } from "@/components/messages-virtualized";
 import { MultimodalInput } from "@/components/multimodal-input";
 import useSWR from "swr";
-import { fetcher } from "@/lib/utils";
-import type { Attachment } from "@openloomi/shared";
+import type { Attachment } from "@openzhiyu/shared";
 import type { SuggestedPrompt } from "@/components/suggested-actions";
 import { useChatContext } from "../chat-context";
 import { ArrowUpIcon, ArrowDownIcon } from "@/components/icons";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { FocusedInsightFloatingBar } from "../focused-insight-floating-bar";
 import { WorkspaceFloatPanel } from "./workspace-float-panel";
 import { useGlobalInsightDrawer } from "@/components/global-insight-drawer";
@@ -28,8 +27,24 @@ interface AgentChatPanelProps {
   initialInput?: string;
   /** Refresh token for replacing the current draft with the latest initial input. */
   prefillToken?: string;
-  /** A message to send immediately after mount (e.g., from onboarding "Chat with openloomi" card), sent only once */
+  /** A message to send immediately after mount (e.g., from onboarding "Chat with openzhiyu" card), sent only once */
   initialMessageToSend?: string;
+}
+
+async function voteFetcher(url: string) {
+  const response = await fetch(url, {
+    credentials: "include",
+  });
+
+  if (response.status === 404) {
+    return [];
+  }
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch votes: HTTP ${response.status}`);
+  }
+
+  return response.json();
 }
 
 /**
@@ -146,7 +161,7 @@ export function AgentChatPanel({
   const loadChatInput = useCallback(
     (targetChatId: string, initial?: string) => {
       if (typeof window === "undefined") return initial ?? "";
-      const key = `openloomi:chat-input-${targetChatId}`;
+      const key = `openzhiyu:chat-input-${targetChatId}`;
       chatInputKeyRef.current = key;
       const saved = localStorage.getItem(key);
       return saved ?? initial ?? "";
@@ -156,7 +171,7 @@ export function AgentChatPanel({
 
   // Update chatInputKeyRef when chatId changes (for new chats that don't trigger switch)
   useEffect(() => {
-    const key = `openloomi:chat-input-${chatId}`;
+    const key = `openzhiyu:chat-input-${chatId}`;
     chatInputKeyRef.current = key;
   }, [chatId]);
 
@@ -169,7 +184,7 @@ export function AgentChatPanel({
     // If this is a chat switch (not initial load)
     if (prevChatId && prevChatId !== chatId) {
       // Save previous chat's input using ref to avoid dependency issues
-      const prevKey = `openloomi:chat-input-${prevChatId}`;
+      const prevKey = `openzhiyu:chat-input-${prevChatId}`;
       const currentInput = inputRef.current;
       if (currentInput) {
         localStorage.setItem(prevKey, currentInput);
@@ -401,7 +416,7 @@ export function AgentChatPanel({
     [sendMessage, isAgentRunning],
   );
 
-  /** Auto-send initialMessageToSend after mount (e.g., from onboarding "Chat with openloomi" click): switches to new chat first, then sends, runs only once; if from URL send param, clears after sending */
+  /** Auto-send initialMessageToSend after mount (e.g., from onboarding "Chat with openzhiyu" click): switches to new chat first, then sends, runs only once; if from URL send param, clears after sending */
   const initialMessageSentRef = useRef(false);
   useEffect(() => {
     if (
@@ -412,13 +427,18 @@ export function AgentChatPanel({
       return;
     initialMessageSentRef.current = true;
     const sendParam = searchParams.get("send");
-    // First switch to new chat, then delay send to ensure context is updated to new session
-    switchChatId(null);
+    // Create the target chat explicitly so the send callback does not depend on
+    // React state finishing a chat switch before the timer fires.
+    const targetChatId = generateUUID();
+    switchChatId(targetChatId);
     const timerId = setTimeout(() => {
-      sendMessagePresent({
-        role: "user",
-        parts: [{ type: "text", text: initialMessageToSend.trim() }],
-      })
+      sendMessagePresent(
+        {
+          role: "user",
+          parts: [{ type: "text", text: initialMessageToSend.trim() }],
+        },
+        { chatId: targetChatId } as any,
+      )
         .then(() => {
           if (sendParam != null) {
             const next = new URLSearchParams(searchParams.toString());
@@ -453,13 +473,14 @@ export function AgentChatPanel({
   // Fetch vote data
   const { data: votes } = useSWR<Array<any>>(
     chatId ? `/api/vote?chatId=${chatId}` : null,
-    fetcher,
+    voteFetcher,
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
       refreshWhenHidden: false,
       refreshWhenOffline: false,
       dedupingInterval: 5000,
+      shouldRetryOnError: false,
     },
   );
 

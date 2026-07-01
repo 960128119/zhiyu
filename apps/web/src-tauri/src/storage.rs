@@ -1,4 +1,4 @@
-// Copyright 2026 openloomi Team. All rights reserved.
+// Copyright 2026 openzhiyu Team. All rights reserved.
 //
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file in the root of this source tree.
@@ -35,22 +35,22 @@ pub fn get_data_dir() -> PathBuf {
                 return PathBuf::from(home)
                     .join("Library")
                     .join("Application Support")
-                    .join("openloomi");
+                    .join("openzhiyu");
             }
         }
         #[cfg(target_os = "linux")]
         {
             if let Ok(home) = std::env::var("HOME") {
-                return PathBuf::from(home).join(".config").join("openloomi");
+                return PathBuf::from(home).join(".config").join("openzhiyu");
             }
         }
         #[cfg(target_os = "windows")]
         {
             if let Ok(appdata) = std::env::var("APPDATA") {
-                return PathBuf::from(appdata).join("openloomi");
+                return PathBuf::from(appdata).join("openzhiyu");
             }
             if let Ok(home) = std::env::var("USERPROFILE") {
-                return PathBuf::from(home).join(".openloomi");
+                return PathBuf::from(home).join(".openzhiyu");
             }
         }
     }
@@ -60,30 +60,30 @@ pub fn get_data_dir() -> PathBuf {
         #[cfg(unix)]
         {
             if let Ok(home) = std::env::var("HOME") {
-                return PathBuf::from(home).join(".openloomi").join("data");
+                return PathBuf::from(home).join(".openzhiyu").join("data");
             }
         }
         #[cfg(windows)]
         {
             if let Ok(home) = std::env::var("USERPROFILE") {
-                return PathBuf::from(home).join(".openloomi").join("data");
+                return PathBuf::from(home).join(".openzhiyu").join("data");
             }
             if let Ok(appdata) = std::env::var("APPDATA") {
-                return PathBuf::from(appdata).join("openloomi").join("data");
+                return PathBuf::from(appdata).join("openzhiyu").join("data");
             }
             if let Ok(localappdata) = std::env::var("LOCALAPPDATA") {
-                return PathBuf::from(localappdata).join("openloomi").join("data");
+                return PathBuf::from(localappdata).join("openzhiyu").join("data");
             }
         }
     }
 
-    PathBuf::from(".openloomi_data")
+    PathBuf::from(".openzhiyu_data")
 }
 
-/// Token file path: ~/.openloomi/token
+/// Token file path: ~/.openzhiyu/token
 pub fn get_token_path() -> PathBuf {
     let home = std::env::var("HOME").unwrap_or_default();
-    PathBuf::from(home).join(".openloomi").join("token")
+    PathBuf::from(home).join(".openzhiyu").join("token")
 }
 
 /// Tauri command: save token (base64-encoded to file)

@@ -11,7 +11,7 @@ import {
   type ReactNode,
 } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import type { ChatMessage } from "@openloomi/shared";
+import type { ChatMessage } from "@openzhiyu/shared";
 
 import type { Insight } from "@/lib/db/schema";
 import {
@@ -31,7 +31,7 @@ import { useTranslation } from "react-i18next";
 import { saveMessagesToDatabase } from "@/lib/ai/chat/save-messages";
 import { getAuthToken } from "@/lib/auth/token-manager";
 import { uploadImageTUS } from "@/lib/files/tus-upload";
-import type { ImageAttachment } from "@openloomi/ai/agent/types";
+import type { ImageAttachment } from "@openzhiyu/ai/agent/types";
 import { DEFAULT_AI_MODEL, AI_PROXY_BASE_URL } from "@/lib/env/constants";
 import {
   artifactPathBasename,
@@ -283,15 +283,20 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
     async (message, options) => {
       // Wait for activeChatId to stabilize, avoid adding messages to wrong chat when switching chat immediately after sending
       // Try multiple times to get stable activeChatId
-      let stableActiveChatId = activeChatId;
+      let stableActiveChatId =
+        typeof options?.chatId === "string" && options.chatId
+          ? options.chatId
+          : activeChatId;
       const maxRetries = 5;
-      for (let i = 0; i < maxRetries; i++) {
-        // Brief wait to ensure activeChatId has updated
-        await new Promise((resolve) => setTimeout(resolve, 10));
-        if (activeChatId === stableActiveChatId) {
-          break;
+      if (!options?.chatId) {
+        for (let i = 0; i < maxRetries; i++) {
+          // Brief wait to ensure activeChatId has updated
+          await new Promise((resolve) => setTimeout(resolve, 10));
+          if (activeChatId === stableActiveChatId) {
+            break;
+          }
+          stableActiveChatId = activeChatId;
         }
-        stableActiveChatId = activeChatId;
       }
 
       if (!stableActiveChatId || stableActiveChatId.length === 0) {
@@ -300,6 +305,9 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
 
       // Capture chatId for message updates, ensure streaming updates still write to correct chat after switching
       const chatIdForMessages = stableActiveChatId;
+      const existingChatMessages =
+        messagesMapRef.current.get(chatIdForMessages) ??
+        (chatIdForMessages === activeChatId ? messages : []);
 
       // Set sending lock to prevent chat switching during send
       setIsSending(true);
@@ -704,7 +712,7 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
       setMessages((prev) => [...prev, userMessage], chatIdForMessages);
 
       // Immediately save user message to database and update history cache
-      saveMessagesToDatabase([userMessage], activeChatId ?? "").then(
+      saveMessagesToDatabase([userMessage], chatIdForMessages).then(
         (result) => {
           if (!result?.chat) return;
 
@@ -762,7 +770,7 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
 
       // Record start index of new message (for saving to database)
       // Bug fix: store assistantMessageId for onDone to use instead of index
-      const newMessageStartIndex = messages.length;
+      const newMessageStartIndex = existingChatMessages.length;
       const assistantMessageIdForRetry = assistantMessageId;
 
       // Used to manage message stream order
@@ -777,7 +785,9 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
 
         // Build conversation history
         // During retry, need to remove incomplete last round of conversation
-        let conversationMessages = messages.filter((m) => m.role !== "system");
+        let conversationMessages = existingChatMessages.filter(
+          (m) => m.role !== "system",
+        );
 
         // If retrying, check if last round of conversation is complete
         // (assistant message may only have error, no actual content)
@@ -847,7 +857,7 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
             parts: [...parts], // Copy current parts
             id: assistantMessageId,
           } as ChatMessage;
-          saveMessagesToDatabase([messageToSave], activeChatId ?? "");
+          saveMessagesToDatabase([messageToSave], chatIdForMessages);
         };
 
         const abortFn = await streamNativeAgentResponse(messageContent, {
@@ -855,7 +865,7 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
           conversation,
           taskId: stableActiveChatId ?? undefined, // Use stableActiveChatId as taskId so Workspace can correctly display files
           workDir: stableActiveChatId
-            ? `~/.openloomi/sessions/${stableActiveChatId}`
+            ? `~/.openzhiyu/sessions/${stableActiveChatId}`
             : undefined, // Pass complete workDir path to ensure files are created in the correct directory
           images,
           fileAttachments:
@@ -880,7 +890,7 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
           },
           onUpdate: async (data) => {
             // Ensure state is true when receiving message
-            setIsAgentRunningFn(true);
+            setIsAgentRunningFn(true, chatIdForMessages);
 
             // Deduplicate based on messageId - avoid duplicate messages
             const messageId = (data as { messageId?: string }).messageId;
@@ -993,7 +1003,7 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
                       queryRawMessages,
                       queryRawMessagesGrouped,
                       formatRawMessagesForAI,
-                    } = await import("@openloomi/indexeddb/client");
+                    } = await import("@openzhiyu/indexeddb/client");
 
                     const params = outputObj.params;
                     let messages: any[];
@@ -1169,6 +1179,18 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
                   text: newReasoning,
                 });
               }
+
+              setMessages((prev) => {
+                const updated = [...prev];
+                const lastIndex = updated.length - 1;
+                if (lastIndex >= 0 && updated[lastIndex].role === "assistant") {
+                  updated[lastIndex] = {
+                    ...updated[lastIndex],
+                    parts: [...parts],
+                  } as ChatMessage;
+                }
+                return updated;
+              }, chatIdForMessages);
             } else if (data.type === "insightsRefresh") {
               // Insight change notification for optimistic update
               // Create a data-insightsRefresh part
@@ -1389,15 +1411,18 @@ export function ChatContextProvider({ children }: { children: ReactNode }) {
             // Save Native Agent messages to database (only non-user messages, user messages already saved on send)
             // Bug fix: use assistantMessageId to find messages instead of index
             const allNewMessages =
-              messagesRef.current.length > newMessageStartIndex
-                ? messagesRef.current.slice(newMessageStartIndex)
-                : messagesRef.current.filter(
+              (messagesMapRef.current.get(chatIdForMessages) ?? []).length >
+              newMessageStartIndex
+                ? (messagesMapRef.current.get(chatIdForMessages) ?? []).slice(
+                    newMessageStartIndex,
+                  )
+                : (messagesMapRef.current.get(chatIdForMessages) ?? []).filter(
                     (m) => m.id === assistantMessageIdForRetry,
                   );
             const messagesToSave = allNewMessages.filter(
               (m) => m.role !== "user",
             );
-            saveMessagesToDatabase(messagesToSave, activeChatId ?? "", {
+            saveMessagesToDatabase(messagesToSave, chatIdForMessages, {
               immediate: true,
               skipSync: false,
             });

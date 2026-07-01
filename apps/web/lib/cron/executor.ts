@@ -10,15 +10,13 @@ import type {
   JobExecutionContext,
 } from "./types";
 import { prepareConversationWindows } from "@/lib/ai";
-import { preprocessCompactionMessages } from "@openloomi/ai/agent";
+import { preprocessCompactionMessages } from "@openzhiyu/ai/agent";
 import { formatAgentStreamErrorForUser } from "@/lib/ai/runtime/format-error";
 import {
-  saveChat,
-  saveMessages,
-  getMessageById,
   updateMessageFileMetadata,
-  saveChatInsights,
 } from "@/lib/db/queries";
+import { getMessageById, saveChat, saveMessages } from "@/lib/db/chat-queries";
+import { saveChatInsights } from "@/lib/db/insight-queries";
 import { db } from "../db/index";
 import {
   characters,
@@ -107,10 +105,10 @@ function buildSchedulerWorkspaceOverride(
 The current working directory is already the execution output directory:
 ${sessionDir}
 
-This instruction overrides any generic workspace instruction that asks you to recreate or hand-copy the full ~/.openloomi/sessions path.
+This instruction overrides any generic workspace instruction that asks you to recreate or hand-copy the full ~/.openzhiyu/sessions path.
 
 File output rules for this scheduled execution:
-- Do NOT run mkdir for ~/.openloomi/sessions/...; the runtime has already created the output directory.
+- Do NOT run mkdir for ~/.openzhiyu/sessions/...; the runtime has already created the output directory.
 - Do NOT manually reconstruct chatId/executionId paths.
 - Save final deliverables directly in the current working directory using short paths such as "report.md", "output.html", or "analysis.xlsx".
 - Save temporary scripts under "temp/" using short paths such as "temp/script.py".
@@ -488,7 +486,7 @@ After calling chatInsight with withDetail=true, if any insights have attachments
 
     // Get user settings before building prompts so structured output follows
     // the same language as the user's configured assistant language.
-    const { getUserInsightSettings } = await import("@/lib/db/queries");
+    const { getUserInsightSettings } = await import("@/lib/db/insight-queries");
     const userSettings = context.userId
       ? await getUserInsightSettings(context.userId)
       : null;
@@ -527,10 +525,10 @@ After calling chatInsight with withDetail=true, if any insights have attachments
       if (isMacOS) {
         platformNotificationName = "macOS";
         platformNotificationSection = `**macOS Notification (ALWAYS send if no platform specified):**
-- dialog: (sleep 18 && osascript -e 'display dialog "Notification content" buttons {"OK"} default button 1 with title "openloomi Reminder"') &
-- notification: (sleep 18 && osascript -e 'display notification "Notification content" with title "openloomi Reminder"') &`;
+- dialog: (sleep 18 && osascript -e 'display dialog "Notification content" buttons {"OK"} default button 1 with title "openzhiyu Reminder"') &
+- notification: (sleep 18 && osascript -e 'display notification "Notification content" with title "openzhiyu Reminder"') &`;
         platformNotificationWorkflow =
-          "5. macOS notification - ALWAYS use the delayed notification pattern: (sleep 18 && osascript -e 'display notification ...' with title \"openloomi Reminder\") & AND also (sleep 18 && osascript -e 'display dialog ...' with title \"openloomi Reminder\") & - BOTH commands must be used with proper background delay execution (the & at the end makes it run in background)";
+          "5. macOS notification - ALWAYS use the delayed notification pattern: (sleep 18 && osascript -e 'display notification ...' with title \"openzhiyu Reminder\") & AND also (sleep 18 && osascript -e 'display dialog ...' with title \"openzhiyu Reminder\") & - BOTH commands must be used with proper background delay execution (the & at the end makes it run in background)";
         platformNotificationExamples = `- Task: "Remind me to attend meeting at 9 AM every day" (no platform specified)
   - Platforms: ALL available platforms + macOS notification
   - Reminder: "Time for meeting!"
@@ -541,10 +539,10 @@ After calling chatInsight with withDetail=true, if any insights have attachments
       } else if (isLinux) {
         platformNotificationName = "Linux";
         platformNotificationSection = `**Linux Notification (ALWAYS send if no platform specified):**
-- Use the Bash tool to send system notification: (sleep 18 && notify-send "openloomi Reminder" "Notification content") &
-- Alternative: (sleep 18 && zenity --info --text="Notification content" --title="openloomi Reminder") &`;
+- Use the Bash tool to send system notification: (sleep 18 && notify-send "openzhiyu Reminder" "Notification content") &
+- Alternative: (sleep 18 && zenity --info --text="Notification content" --title="openzhiyu Reminder") &`;
         platformNotificationWorkflow =
-          '5. Linux notification - ALWAYS use the delayed notification pattern: (sleep 18 && notify-send "openloomi Reminder" "Notification content") & - must run in background with & at the end';
+          '5. Linux notification - ALWAYS use the delayed notification pattern: (sleep 18 && notify-send "openzhiyu Reminder" "Notification content") & - must run in background with & at the end';
         platformNotificationExamples = `- Task: "Remind me to attend meeting at 9 AM every day" (no platform specified)
   - Platforms: ALL available platforms + Linux notification
   - Reminder: "Time for meeting!"
@@ -555,9 +553,9 @@ After calling chatInsight with withDetail=true, if any insights have attachments
       } else if (isWindows) {
         platformNotificationName = "Windows";
         platformNotificationSection = `**Windows Notification (ALWAYS send if no platform specified):**
-- Use PowerShell: Start-Process powershell -ArgumentList '-Command', 'Start-Sleep -Seconds 18; Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show(\"Notification content\", \"openloomi Reminder\")'`;
+- Use PowerShell: Start-Process powershell -ArgumentList '-Command', 'Start-Sleep -Seconds 18; Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show(\"Notification content\", \"openzhiyu Reminder\")'`;
         platformNotificationWorkflow =
-          "5. Windows notification - ALWAYS use the delayed notification pattern: Start-Process powershell -ArgumentList '-Command', 'Start-Sleep -Seconds 18; Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show(\"Notification content\", \"openloomi Reminder\")' - must run in background";
+          "5. Windows notification - ALWAYS use the delayed notification pattern: Start-Process powershell -ArgumentList '-Command', 'Start-Sleep -Seconds 18; Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.MessageBox]::Show(\"Notification content\", \"openzhiyu Reminder\")' - must run in background";
         platformNotificationExamples = `- Task: "Remind me to attend meeting at 9 AM every day" (no platform specified)
   - Platforms: ALL available platforms + Windows notification
   - Reminder: "Time for meeting!"
@@ -841,7 +839,7 @@ ${characterContextSection}`,
         conversation: runtimeConversation,
         permissionMode: "bypassPermissions", // Full permissions for scheduled tasks
         stream: false, // Non-stream mode, simpler message handling
-        excludeTools: ["createScheduledJob"], // Exclude createScheduledJob to prevent recursive job creation
+        excludeTools: ["createLoopTask"], // Exclude createLoopTask to prevent recursive loop creation
         session: {
           user: { id: context.userId, type: "pro" },
           expires: new Date(Date.now() + 3600000), // 1 hour

@@ -309,8 +309,8 @@ export function ErrorMessageDisplay({
     });
     // Remove log file paths and other sensitive info from error message
     const cleanError = error
-      .replace(/\/Users\/[^/]+\/\.openloomi\/logs\/[^\s]+/g, "")
-      .replace(/\/home\/[^/]+\/\.openloomi\/logs\/[^\s]+/g, "")
+      .replace(/\/Users\/[^/]+\/\.openzhiyu\/logs\/[^\s]+/g, "")
+      .replace(/\/home\/[^/]+\/\.openzhiyu\/logs\/[^\s]+/g, "")
       .replace(/http:\/\/[^/]+\/[^/]+\/Users\/[^/]+\/[^\s]+/g, "")
       .replace(/__CUSTOM_API_ERROR__\|[^|]+/g, "")
       .trim()

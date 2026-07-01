@@ -55,65 +55,65 @@ function GalleryImageCard({ item }: { item: GalleryItem }) {
  * Desktop: multi-column grid layout
  */
 export default function GallerySection() {
-  // Gallery image data - using existing OpenLoomi product screenshots
+  // Gallery image data - using existing OpenZhiyu product screenshots
   const galleryItems: GalleryItem[] = [
     {
-      image: "/img/openloomi/chat.png",
+      image: "/img/openzhiyu/chat.png",
       title: "Smart Chat Interface",
       category: "chat",
     },
     {
-      image: "/img/openloomi/chat-project.png",
+      image: "/img/openzhiyu/chat-project.png",
       title: "Project Context Tracking",
       category: "chat",
     },
     {
-      image: "/img/openloomi/insight-box.png",
+      image: "/img/openzhiyu/insight-box.png",
       title: "Insight Cards",
       category: "insight",
     },
     {
-      image: "/img/openloomi/agent-setting.png",
+      image: "/img/openzhiyu/agent-setting.png",
       title: "Agent Configuration",
       category: "settings",
     },
     {
-      image: "/img/openloomi/agent-setting-people.png",
+      image: "/img/openzhiyu/agent-setting-people.png",
       title: "People Preferences",
       category: "settings",
     },
     {
-      image: "/img/openloomi/agent-setting-topic.png",
+      image: "/img/openzhiyu/agent-setting-topic.png",
       title: "Theme Preferences",
       category: "settings",
     },
     {
-      image: "/img/openloomi/chat-history.png",
+      image: "/img/openzhiyu/chat-history.png",
       title: "Chat History Management",
       category: "chat",
     },
     {
-      image: "/img/openloomi/chat-report.png",
+      image: "/img/openzhiyu/chat-report.png",
       title: "Smart Report Generation",
       category: "insight",
     },
     {
-      image: "/img/openloomi/individual-plan.png",
+      image: "/img/openzhiyu/individual-plan.png",
       title: "Personal Plan Management",
       category: "planning",
     },
     {
-      image: "/img/openloomi/business-plan.png",
+      image: "/img/openzhiyu/business-plan.png",
       title: "Business Plan Tracking",
       category: "planning",
     },
     {
-      image: "/img/openloomi/im-choose.png",
+      image: "/img/openzhiyu/im-choose.png",
       title: "Multi-platform Integration",
       category: "platform",
     },
     {
-      image: "/img/openloomi/chat-project-source-1.png",
+      image: "/img/openzhiyu/chat-project-source-1.png",
       title: "Source Tracing",
       category: "chat",
     },
@@ -128,9 +128,9 @@ export default function GallerySection() {
     <section className={sectionWrapper}>
       <div className="w-full">
         <div className="mb-8 px-2">
-          <h2 className={sectionHeading}>See OpenLoomi in Action</h2>
+          <h2 className={sectionHeading}>See OpenZhiyu in Action</h2>
           <p className="text-foreground-muted text-lg">
-            Explore OpenLoomi&apos;s core features and use cases
+            Explore OpenZhiyu&apos;s core features and use cases
           </p>
         </div>
 

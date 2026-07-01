@@ -20,7 +20,7 @@ import {
   getTextFromMessage,
   getCurrentYearMonth,
   cn,
-} from "@openloomi/shared/utils";
+} from "@openzhiyu/shared/utils";
 
 describe("shared utils", () => {
   describe("normalizeTimestamp", () => {

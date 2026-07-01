@@ -79,6 +79,7 @@ data.db
 .vscode/
 .idea/
 venv
+**/.venv/
 .tmp/
 
 .pytest_cache
@@ -123,6 +124,7 @@ apps/skills/
 
 # Local notes
 Note.md
+.codex-logs/
 
 # Tauri bundled app resources (contains embedded .env with secrets)
 **/*.app/Contents/Resources/_up_/

@@ -1,9 +1,9 @@
 "use client";
 
 import { RemixIcon } from "@/components/remix-icon";
-import { Button } from "@openloomi/ui";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@openloomi/ui";
-import { useIsMobile } from "@openloomi/hooks/use-is-mobile";
+import { Button } from "@openzhiyu/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@openzhiyu/ui";
+import { useIsMobile } from "@openzhiyu/hooks/use-is-mobile";
 import { cn, getHomePath } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import type React from "react";
@@ -253,7 +253,7 @@ export function ResponsiveToolbar({
             "flex flex-1 flex-col items-center justify-center gap-1 py-2 text-xs transition-colors",
             activePanel === "chat" ? "text-primary" : "text-muted-foreground",
           )}
-          aria-label={t("mobileInsightToolbar.openloomi", "openloomi")}
+          aria-label={t("mobileInsightToolbar.openzhiyu", "openzhiyu")}
         >
           <RemixIcon
             name="chat"
@@ -266,7 +266,7 @@ export function ResponsiveToolbar({
               activePanel === "chat" && "font-semibold text-primary",
             )}
           >
-            {t("mobileInsightToolbar.openloomi", "openloomi")}
+            {t("mobileInsightToolbar.openzhiyu", "openzhiyu")}
           </span>
         </button>
       </div>

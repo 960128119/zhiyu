@@ -1,7 +1,7 @@
 /**
  * Feishu / DingTalk / QQ / WeChat listener initialization (Bot mode, not self mode)
  *
- * These platforms are all "user chatting with bot": openloomi listens to messages received by bot and replies on behalf.
+ * These platforms are all "user chatting with bot": openzhiyu listens to messages received by bot and replies on behalf.
  * This component only runs under Tauri, after session is ready, passes cloud_auth_token to backend,
  * for bot to call cloud AI when receiving user messages, and re-establishes WebSocket connection after app restart.
  */
@@ -11,8 +11,19 @@ import { useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { getAuthToken } from "@/lib/auth/token-manager";
 
+function shouldInitBotListeners() {
+  if (typeof window === "undefined") return false;
+  const isTauri = Boolean((window as any).__TAURI__);
+  const isLocalDev =
+    process.env.NODE_ENV === "development" &&
+    (window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1");
+
+  return isTauri || isLocalDev;
+}
+
 export function FeishuListenerInit() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -20,36 +31,38 @@ export function FeishuListenerInit() {
       return;
     }
 
-    const isTauri =
-      typeof window !== "undefined" &&
-      // @ts-ignore - __TAURI__ is injected by Tauri
-      (window as any).__TAURI__;
-
-    if (!isTauri) {
+    if (!shouldInitBotListeners()) {
       return;
     }
 
     // Too long delay causes server-side WS to connect but token not yet injected; user sends Feishu message first will get 401
     initTimeoutRef.current = setTimeout(async () => {
       const userId = session?.user?.id;
-      const isAuthenticated = session !== null && !!userId;
-      if (!isAuthenticated) {
+      if (status === "loading") {
+        return;
+      }
+      if (status !== "authenticated" || !userId) {
         return;
       }
 
       try {
         const cloudAuthToken = getAuthToken() || undefined;
-        if (!cloudAuthToken) {
-          return;
-        }
 
-        await fetch("/api/feishu/listener/init", {
+        const response = await fetch("/api/feishu/listener/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cloudAuthToken }),
         });
+        if (!response.ok) {
+          console.warn(
+            "[FeishuListenerInit] Feishu listener init failed:",
+            response.status,
+          );
+        }
       } catch {
-        // Silent (no error handling)
+        console.warn(
+          "[FeishuListenerInit] Feishu listener init request failed",
+        );
       }
     }, 400);
 
@@ -58,13 +71,13 @@ export function FeishuListenerInit() {
         clearTimeout(initTimeoutRef.current);
       }
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, status]);
 
   return null;
 }
 
 export function DingTalkListenerInit() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -72,35 +85,37 @@ export function DingTalkListenerInit() {
       return;
     }
 
-    const isTauri =
-      typeof window !== "undefined" &&
-      // @ts-ignore - __TAURI__ is injected by Tauri
-      (window as any).__TAURI__;
-
-    if (!isTauri) {
+    if (!shouldInitBotListeners()) {
       return;
     }
 
     initTimeoutRef.current = setTimeout(async () => {
       const userId = session?.user?.id;
-      const isAuthenticated = session !== null && !!userId;
-      if (!isAuthenticated) {
+      if (status === "loading") {
+        return;
+      }
+      if (status !== "authenticated" || !userId) {
         return;
       }
 
       try {
         const cloudAuthToken = getAuthToken() || undefined;
-        if (!cloudAuthToken) {
-          return;
-        }
 
-        await fetch("/api/dingtalk/listener/init", {
+        const response = await fetch("/api/dingtalk/listener/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cloudAuthToken }),
         });
+        if (!response.ok) {
+          console.warn(
+            "[FeishuListenerInit] DingTalk listener init failed:",
+            response.status,
+          );
+        }
       } catch {
-        // Silent (no error handling)
+        console.warn(
+          "[FeishuListenerInit] DingTalk listener init request failed",
+        );
       }
     }, 3000);
 
@@ -109,13 +124,13 @@ export function DingTalkListenerInit() {
         clearTimeout(initTimeoutRef.current);
       }
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, status]);
 
   return null;
 }
 
 export function QQBotListenerInit() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -123,35 +138,35 @@ export function QQBotListenerInit() {
       return;
     }
 
-    const isTauri =
-      typeof window !== "undefined" &&
-      // @ts-ignore - __TAURI__ is injected by Tauri
-      (window as any).__TAURI__;
-
-    if (!isTauri) {
+    if (!shouldInitBotListeners()) {
       return;
     }
 
     initTimeoutRef.current = setTimeout(async () => {
       const userId = session?.user?.id;
-      const isAuthenticated = session !== null && !!userId;
-      if (!isAuthenticated) {
+      if (status === "loading") {
+        return;
+      }
+      if (status !== "authenticated" || !userId) {
         return;
       }
 
       try {
         const cloudAuthToken = getAuthToken() || undefined;
-        if (!cloudAuthToken) {
-          return;
-        }
 
-        await fetch("/api/qqbot/listener/init", {
+        const response = await fetch("/api/qqbot/listener/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cloudAuthToken }),
         });
+        if (!response.ok) {
+          console.warn(
+            "[FeishuListenerInit] QQBot listener init failed:",
+            response.status,
+          );
+        }
       } catch {
-        // Silent (no error handling)
+        console.warn("[FeishuListenerInit] QQBot listener init request failed");
       }
     }, 3000);
 
@@ -160,13 +175,13 @@ export function QQBotListenerInit() {
         clearTimeout(initTimeoutRef.current);
       }
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, status]);
 
   return null;
 }
 
 export function WeixinListenerInit() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const initTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -174,35 +189,37 @@ export function WeixinListenerInit() {
       return;
     }
 
-    const isTauri =
-      typeof window !== "undefined" &&
-      // @ts-ignore - __TAURI__ is injected by Tauri
-      (window as any).__TAURI__;
-
-    if (!isTauri) {
+    if (!shouldInitBotListeners()) {
       return;
     }
 
     initTimeoutRef.current = setTimeout(async () => {
       const userId = session?.user?.id;
-      const isAuthenticated = session !== null && !!userId;
-      if (!isAuthenticated) {
+      if (status === "loading") {
+        return;
+      }
+      if (status !== "authenticated" || !userId) {
         return;
       }
 
       try {
         const cloudAuthToken = getAuthToken() || undefined;
-        if (!cloudAuthToken) {
-          return;
-        }
 
-        await fetch("/api/weixin/listener/init", {
+        const response = await fetch("/api/weixin/listener/init", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ cloudAuthToken }),
         });
+        if (!response.ok) {
+          console.warn(
+            "[FeishuListenerInit] Weixin listener init failed:",
+            response.status,
+          );
+        }
       } catch {
-        // Silent (no error handling)
+        console.warn(
+          "[FeishuListenerInit] Weixin listener init request failed",
+        );
       }
     }, 3000);
 
@@ -211,7 +228,7 @@ export function WeixinListenerInit() {
         clearTimeout(initTimeoutRef.current);
       }
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, status]);
 
   return null;
 }

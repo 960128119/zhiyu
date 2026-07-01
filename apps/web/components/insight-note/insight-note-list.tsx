@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Button, Input } from "@openloomi/ui";
-import { ScrollArea } from "@openloomi/ui";
+import { Button, Input } from "@openzhiyu/ui";
+import { ScrollArea } from "@openzhiyu/ui";
 import { useTranslation } from "react-i18next";
 import { formatDistanceToNow } from "date-fns";
 import { zhCN, enUS } from "date-fns/locale";
@@ -12,7 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,8 +22,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@openloomi/ui";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@openzhiyu/ui";
 import { toast } from "@/components/toast";
 import { InsightNoteModal } from "./insight-note-modal";
 import { MarkdownWithCitations } from "@/components/markdown-with-citations";

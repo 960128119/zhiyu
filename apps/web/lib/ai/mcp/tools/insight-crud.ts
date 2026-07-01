@@ -6,16 +6,15 @@ import { tool } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import type { Session } from "next-auth";
 import {
-  getBotsByUserId,
   getInsightByIdForUser,
   updateInsightById,
   insertInsightRecords,
-  createBot as createBotRecord,
   deleteInsightsByIds,
-  saveChatInsights,
 } from "@/lib/db/queries";
+import { createBot as createBotRecord, getBotsByUserId } from "@/lib/db/bot-queries";
+import { saveChatInsights } from "@/lib/db/insight-queries";
 import type { GeneratedInsightPayload } from "@/lib/insights/types";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import {
   normalizeTask,
   normalizeImportance,
@@ -92,16 +91,16 @@ export function createInsightCrudTools(
         "4. EXAMPLE WITH COMPLETE CHAT CONTEXT:",
         "   User: 'I need to give a demo to the client tomorrow'",
         "   Assistant: 'Sure, what is the demo about? What needs to be prepared?'",
-        "   User: 'A demo of openloomi's features, need to show scenario-based features'",
+        "   User: 'A demo of openzhiyu's features, need to show scenario-based features'",
         "   Assistant: 'Got it, I'll create a todo item to track this'",
         "   ",
         "   CORRECT createInsight call:",
         "   - title: 'Prepare client product demo'",
-        "   - description: 'Need to prepare openloomi scenario-based feature demo for client'",
+        "   - description: 'Need to prepare openzhiyu scenario-based feature demo for client'",
         "   - details: [",
         "     {content: 'I need to give a demo to the client tomorrow', person: 'User'},",
         "     {content: 'Sure, what is the demo about? What needs to be prepared?', person: 'Assistant'},",
-        "     {content: 'A demo of openloomi features, need to show scenario-based features', person: 'User'},",
+        "     {content: 'A demo of openzhiyu features, need to show scenario-based features', person: 'User'},",
         "     {content: 'Got it, I will create a todo item to track this', person: 'Assistant'}",
         "   ]",
         "",
@@ -747,21 +746,21 @@ export function createInsightCrudTools(
         "- Don't just add details/timeline without modifying title/description, otherwise user won't see changes on insight detail page",
         "",
         "【Typical Error Example】❌",
-        "- User says: 'Update progress, openloomi shipped 10 bugs today'",
+        "- User says: 'Update progress, openzhiyu shipped 10 bugs today'",
         "- Error: Only updates details and timeline, doesn't update title/description",
         "- Result: Title and description on insight detail page still show old content, user doesn't perceive the update",
         "",
         "【Correct Example】✅ - Incremental Update",
-        "- User says: 'Update progress, openloomi shipped 10 bugs today'",
+        "- User says: 'Update progress, openzhiyu shipped 10 bugs today'",
         "- Principle: **Incrementally append** new content on top of existing title/description",
         "- Example: Original title='Daily sync team progress update'",
         "- Correct: {insightId: 'xxx', updates: {",
-        "  details: [{content: 'openloomi shipped 10 bugs today'}],",
-        "  title: 'Daily sync team progress update | openloomi shipped 10 bugs',",
-        "  description: 'Daily sync team member progress. Latest: openloomi shipped 10 bugs today'",
+        "  details: [{content: 'openzhiyu shipped 10 bugs today'}],",
+        "  title: 'Daily sync team progress update | openzhiyu shipped 10 bugs',",
+        "  description: 'Daily sync team member progress. Latest: openzhiyu shipped 10 bugs today'",
         "}}",
         "- Or more concise: {insightId: 'xxx', updates: {",
-        "  details: [{content: 'openloomi shipped 10 bugs today'}],",
+        "  details: [{content: 'openzhiyu shipped 10 bugs today'}],",
         "  title: 'Daily sync team progress update (10 bugs)',",
         "}}",
         "",

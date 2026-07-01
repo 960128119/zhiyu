@@ -164,12 +164,28 @@ export const StructuredExecutionOutputSchema = z
 // ---------------------------------------------------------------------------
 
 export interface ExecutionTraceEvent {
-  type: "task_received" | "tool_used" | "tool_result" | "completed" | "error";
+  type:
+    | "task_received"
+    | "workspace_prepared"
+    | "agent_configured"
+    | "context_prepared"
+    | "budget_configured"
+    | "budget_exceeded"
+    | "prompt_built"
+    | "permission_decision"
+    | "tool_used"
+    | "tool_result"
+    | "model_text"
+    | "completed"
+    | "error";
   title?: string;
   detail?: string;
   toolName?: string;
+  toolUseId?: string;
   status?: "running" | "completed" | "error";
   timestamp?: string;
+  durationMs?: number;
+  metadata?: Record<string, unknown>;
 }
 
 export interface ExecutionReportInput {

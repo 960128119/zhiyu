@@ -9,8 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
-import { Button, Input, Label } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { Button, Input, Label } from "@openzhiyu/ui";
 import { toast } from "@/components/toast";
 import { RemixIcon } from "@/components/remix-icon";
 
@@ -149,7 +149,7 @@ export function MessengerAuthForm({
             id="messenger-page-name"
             value={pageName}
             onChange={(e) => setPageName(e.target.value)}
-            placeholder="openloomi Page"
+            placeholder="openzhiyu Page"
           />
         </div>
         <div className="space-y-2">

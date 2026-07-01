@@ -11,7 +11,7 @@ import {
   countTokens,
   getOptimalChunkSize,
   estimateChunkCount,
-} from "@openloomi/rag";
+} from "@openzhiyu/rag";
 
 describe("rag-chunking", () => {
   describe("chunkText", () => {

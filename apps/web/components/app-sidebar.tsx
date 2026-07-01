@@ -3,14 +3,14 @@
 import { RemixIcon } from "@/components/remix-icon";
 import { useMobileDetection } from "@/hooks/use-mobile-detection";
 import { generateUUID } from "@/lib/utils";
-import { useCustomEvent } from "@openloomi/hooks/use-custom-event";
-import { Button } from "@openloomi/ui";
+import { useCustomEvent } from "@openzhiyu/hooks/use-custom-event";
+import { Button } from "@openzhiyu/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
@@ -31,7 +31,7 @@ import { saveLanguage } from "@/i18n";
 import { guestRegex } from "@/lib/env/constants";
 import { isTauri } from "@/lib/tauri";
 import { cn, fetcher, getHomePath } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@openloomi/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@openzhiyu/ui";
 import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { useLocalStorage } from "usehooks-ts";
@@ -93,16 +93,16 @@ export function AppSidebar() {
   // Use custom hooks for localStorage sync
   const [contextTimeFilter, setContextTimeFilter] = useLocalStorage<
     "all" | "24h" | "today"
-  >("openloomi_focusTimeFilter", "24h");
+  >("openzhiyu_focusTimeFilter", "24h");
 
   const [categoryStats, setCategoryStats] = useLocalStorage<
     Record<string, number>
-  >("openloomi_categoryStats", {});
+  >("openzhiyu_categoryStats", {});
 
   // Total insights count (not affected by filter conditions)
   const [totalCategoryStats, setTotalCategoryStats] = useLocalStorage<
     Record<string, number>
-  >("openloomi_totalCategoryStats", {});
+  >("openzhiyu_totalCategoryStats", {});
 
   const [plan, setPlan] = useState<string | null>(null);
   const { profile } = useUserProfile();
@@ -212,7 +212,7 @@ export function AppSidebar() {
 
   // Listen for category stats updates from EventsPanel
   useCustomEvent<Record<string, number>>(
-    "openloomi:categoryStatsUpdate",
+    "openzhiyu:categoryStatsUpdate",
     (stats) => {
       if (stats) {
         setCategoryStats(stats);
@@ -222,7 +222,7 @@ export function AppSidebar() {
 
   // Listen for total category stats updates (unfiltered count) from EventsPanel
   useCustomEvent<Record<string, number>>(
-    "openloomi:totalCategoryStatsUpdate",
+    "openzhiyu:totalCategoryStatsUpdate",
     (stats) => {
       if (stats) {
         setTotalCategoryStats(stats);
@@ -328,7 +328,7 @@ export function AppSidebar() {
     const currentPage = searchParams?.get("page");
     const isProfileSettingsPage =
       currentPage === "profile" ||
-      currentPage === "openloomi-soul" ||
+      currentPage === "openzhiyu-soul" ||
       currentPage === "ai-api-settings" ||
       currentPage === "account-settings" ||
       currentPage === "profile-edit" ||
@@ -505,10 +505,10 @@ export function AppSidebar() {
       if (!isSidebarMinimal) setIsCollapsed(false);
     };
 
-    window.addEventListener("openloomi:open-sidebar", handleOpenSidebar);
+    window.addEventListener("openzhiyu:open-sidebar", handleOpenSidebar);
 
     return () => {
-      window.removeEventListener("openloomi:open-sidebar", handleOpenSidebar);
+      window.removeEventListener("openzhiyu:open-sidebar", handleOpenSidebar);
     };
   }, [isSidebarMinimal]);
 
@@ -573,7 +573,7 @@ export function AppSidebar() {
                     type="button"
                     variant="ghost"
                     className={cn(
-                      // Settings: Back / Language / Log out — same color as main content area text-muted-foreground hint text (including hover)
+                      // Settings controls share the muted foreground treatment used by the main content area.
                       "w-full rounded-md transition-colors text-muted-foreground hover:bg-sidebar-hover hover:text-muted-foreground",
                       effectiveCollapsed
                         ? "size-8 p-0 mx-auto justify-center"
@@ -585,7 +585,7 @@ export function AppSidebar() {
                         if (isMobile) {
                           setIsCollapsed(true);
                           window.dispatchEvent(
-                            new CustomEvent("openloomi:close-sidebar"),
+                            new CustomEvent("openzhiyu:close-sidebar"),
                           );
                         }
                       });
@@ -607,10 +607,12 @@ export function AppSidebar() {
                     <div className="pl-3 size-8 flex items-center justify-center bg-transparent border-0 cursor-pointer hover:bg-sidebar-hover rounded-md">
                       <Image
                         src="/images/logo_web.png"
-                        alt="openloomi Logo"
+                        alt="openzhiyu Logo"
                         width={24}
                         height={24}
                         className="object-contain"
+                        priority
+                        style={{ height: "auto" }}
                       />
                     </div>
                     <div className="flex-1" />
@@ -622,7 +624,7 @@ export function AppSidebar() {
                       onClick={() => {
                         setIsCollapsed(true);
                         window.dispatchEvent(
-                          new CustomEvent("openloomi:close-sidebar"),
+                          new CustomEvent("openzhiyu:close-sidebar"),
                         );
                       }}
                       aria-label={t("toggleSidebar")}
@@ -653,10 +655,12 @@ export function AppSidebar() {
                   >
                     <Image
                       src="/images/logo_web.png"
-                      alt="openloomi Logo"
+                      alt="openzhiyu Logo"
                       width={24}
                       height={24}
                       className="object-contain"
+                      priority
+                      style={{ height: "auto" }}
                     />
                   </button>
                 )}
@@ -701,7 +705,7 @@ export function AppSidebar() {
                                       setIsCollapsed(true);
                                       window.dispatchEvent(
                                         new CustomEvent(
-                                          "openloomi:close-sidebar",
+                                          "openzhiyu:close-sidebar",
                                         ),
                                       );
                                     }
@@ -778,7 +782,7 @@ export function AppSidebar() {
                                       });
                                       window.dispatchEvent(
                                         new CustomEvent(
-                                          "openloomi:close-sidebar",
+                                          "openzhiyu:close-sidebar",
                                         ),
                                       );
                                     }
@@ -847,7 +851,7 @@ export function AppSidebar() {
                                         setIsCollapsed(true);
                                         window.dispatchEvent(
                                           new CustomEvent(
-                                            "openloomi:close-sidebar",
+                                            "openzhiyu:close-sidebar",
                                           ),
                                         );
                                       }
@@ -883,7 +887,7 @@ export function AppSidebar() {
                           );
                         })()}
 
-                      {/* Connectors (linked accounts / integrations) — same unlock as Library */}
+                      {/* Connectors - linked accounts and integrations, same unlock as Library */}
                       {isNavVisible("workspace") && (
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -910,7 +914,7 @@ export function AppSidebar() {
                                     setIsCollapsed(true);
                                     window.dispatchEvent(
                                       new CustomEvent(
-                                        "openloomi:close-sidebar",
+                                        "openzhiyu:close-sidebar",
                                       ),
                                     );
                                   }
@@ -950,70 +954,8 @@ export function AppSidebar() {
                         </Tooltip>
                       )}
 
-                      {/* Scheduled Jobs - above search, use router.push to ensure reliable Tauri/client navigation */}
-                      {isNavVisible("scheduled-jobs") && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className={cn(
-                                "w-full gap-2 px-3 py-2 h-auto rounded-md transition-colors flex items-center",
-                                isCollapsed
-                                  ? "justify-center"
-                                  : "justify-start",
-                                pathname === "/scheduled-jobs"
-                                  ? "text-primary"
-                                  : "text-sidebar-foreground hover:bg-sidebar-hover hover:text-sidebar-hover-foreground",
-                              )}
-                              onClick={() => {
-                                // Use startTransition to prioritize navigation
-                                startTransition(() => {
-                                  router.push("/scheduled-jobs");
-                                  if (isMobile) {
-                                    setIsCollapsed(true);
-                                    window.dispatchEvent(
-                                      new CustomEvent(
-                                        "openloomi:close-sidebar",
-                                      ),
-                                    );
-                                  }
-                                });
-                              }}
-                              aria-current={
-                                pathname === "/scheduled-jobs"
-                                  ? "page"
-                                  : undefined
-                              }
-                            >
-                              <RemixIcon
-                                name="robot_3"
-                                size={SIDEBAR_NAV_ICON_SIZE}
-                                filled={pathname === "/scheduled-jobs"}
-                                className={
-                                  pathname === "/scheduled-jobs"
-                                    ? "text-primary"
-                                    : ""
-                                }
-                              />
-                              {!isCollapsed && (
-                                <span
-                                  className={cn(
-                                    "truncate font-normal",
-                                    pathname === "/scheduled-jobs"
-                                      ? "text-primary"
-                                      : "text-sidebar-foreground",
-                                  )}
-                                >
-                                  {t("nav.agent", "Agent")}
-                                </span>
-                              )}
-                            </Button>
-                          </TooltipTrigger>
-                        </Tooltip>
-                      )}
-
-                      {/* Loops - native loop runtime dashboard */}
-                      {isNavVisible("scheduled-jobs") && (
+                      {/* Automatic Tasks - native loop runtime dashboard */}
+                      {isNavVisible("workspace") && (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -1034,7 +976,7 @@ export function AppSidebar() {
                                     setIsCollapsed(true);
                                     window.dispatchEvent(
                                       new CustomEvent(
-                                        "openloomi:close-sidebar",
+                                        "openzhiyu:close-sidebar",
                                       ),
                                     );
                                   }
@@ -1045,7 +987,7 @@ export function AppSidebar() {
                               }
                             >
                               <RemixIcon
-                                name="target"
+                                name="robot_3"
                                 size={SIDEBAR_NAV_ICON_SIZE}
                                 filled={pathname === "/loops"}
                                 className={
@@ -1061,7 +1003,7 @@ export function AppSidebar() {
                                       : "text-sidebar-foreground",
                                   )}
                                 >
-                                  循环
+                                  {t("nav.automaticTasks", "Automatic Tasks")}
                                 </span>
                               )}
                             </Button>
@@ -1096,7 +1038,7 @@ export function AppSidebar() {
                                     setIsCollapsed(true);
                                     window.dispatchEvent(
                                       new CustomEvent(
-                                        "openloomi:close-sidebar",
+                                        "openzhiyu:close-sidebar",
                                       ),
                                     );
                                   }

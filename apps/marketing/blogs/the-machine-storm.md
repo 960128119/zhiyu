@@ -88,9 +88,9 @@ Both fears are legitimate. Both are pointing at something real.
 
 We're in the first group — people who build machines. The choice we've made is what to build them for: giving everyone access to the second.
 
-That's what OpenLoomi is. Not another specialization of the production machine for a narrow vertical. Not a chat interface with a clever wrapper. Not another SaaS product organized around 2022's idea of what software should feel like.
+That's what OpenZhiyu is. Not another specialization of the production machine for a narrow vertical. Not a chat interface with a clever wrapper. Not another SaaS product organized around 2022's idea of what software should feel like.
 
-OpenLoomi is a machine for individuals and small teams — engineered to let you operate at a level of systematic AI leverage that, until now, has only been accessible to well-resourced organizations. The goal is straightforward: make sure that when this storm reshapes who can create what, the people we serve are still creating.
+OpenZhiyu is a machine for individuals and small teams — engineered to let you operate at a level of systematic AI leverage that, until now, has only been accessible to well-resourced organizations. The goal is straightforward: make sure that when this storm reshapes who can create what, the people we serve are still creating.
 
 Not replaced. Not watching from the sidelines. Still in it.
 
@@ -120,7 +120,7 @@ The question is about position: where do you stand in relation to the machines? 
 
 What it does respond to is having your own machine. One that runs for you, configured around your work, deployed with enough consistency that it compounds.
 
-We built OpenLoomi to be that machine. Not because we think everyone should become an AI engineer. But because we believe that operating with the leverage of a well-configured machine is no longer optional — and it shouldn't only be available to people who already have the resources to build one.
+We built OpenZhiyu to be that machine. Not because we think everyone should become an AI engineer. But because we believe that operating with the leverage of a well-configured machine is no longer optional — and it shouldn't only be available to people who already have the resources to build one.
 
 The storm is already here. Our commitment is simple: the people who shape what gets built next shouldn't only be the ones who started with the most resources. That's what we're building toward — and we're not stopping until it's true.
 

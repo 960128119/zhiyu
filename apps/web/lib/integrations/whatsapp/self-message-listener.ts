@@ -6,17 +6,19 @@
  * one ourselves that captures messages via messages.upsert events.
  */
 
-import { loadIntegrationCredentials } from "@/lib/db/queries";
-import { getIntegrationAccountsByUserId } from "@/lib/db/queries";
+import {
+  getIntegrationAccountsByUserId,
+  loadIntegrationCredentials,
+} from "@/lib/db/integration-queries";
 import { WhatsAppAdapter, activeAdapters } from "@/lib/integrations/whatsapp";
 import type { WASocket } from "@whiskeysockets/baileys";
 import type { WAMessage } from "@whiskeysockets/baileys/lib/Types/Message";
 import { downloadMediaMessage } from "@whiskeysockets/baileys/lib/Utils/messages";
 import { whatsappClientRegistry } from "./client-registry";
 import { handleAgentRuntime } from "./runtime";
-import { WhatsAppConversationStore } from "@openloomi/integrations/whatsapp/conversation-store";
+import { WhatsAppConversationStore } from "@openzhiyu/integrations/whatsapp/conversation-store";
 import { getAppMemoryDir } from "@/lib/utils/path";
-import { markdownToWhatsApp } from "@openloomi/integrations/whatsapp/markdown";
+import { markdownToWhatsApp } from "@openzhiyu/integrations/whatsapp/markdown";
 import { createTaskSession } from "@/lib/files/workspace/sessions";
 import { DEFAULT_AI_MODEL, AI_PROXY_BASE_URL } from "@/lib/env/constants";
 
@@ -25,7 +27,7 @@ const whatsappConversationStore = new WhatsAppConversationStore(
   getAppMemoryDir(),
 );
 
-const AI_SUFFIX = "(By openloomi AI)";
+const AI_SUFFIX = "(By openzhiyu AI)";
 const WHATSAPP_MAX_ATTACHMENT_BYTES = 100 * 1024 * 1024;
 const POLL_INTERVAL_MS = 3000;
 const POLL_MESSAGE_COUNT = 10;

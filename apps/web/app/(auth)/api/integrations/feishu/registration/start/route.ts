@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHash } from "node:crypto";
 
 import { auth } from "@/app/(auth)/auth";
 import {
@@ -40,6 +41,17 @@ export async function POST() {
   try {
     await initAppRegistration("feishu");
     const begin = await beginAppRegistration("feishu");
+    const deviceCodeHash = createHash("sha256")
+      .update(begin.deviceCode)
+      .digest("hex")
+      .slice(0, 12);
+    console.log(
+      "[Feishu registration start] userId=%s userCode=%s deviceHash=%s qrUrl=%s",
+      session.user.id,
+      begin.userCode ?? "-",
+      deviceCodeHash,
+      begin.qrUrl,
+    );
     const deadlineMs = Date.now() + begin.expireInSec * 1000;
     const payload: FeishuRegistrationCookiePayload = {
       v: 1,

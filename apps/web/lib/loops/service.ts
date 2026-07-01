@@ -238,6 +238,17 @@ export async function archiveLoop(
   return updateLoop(userId, loopId, { status: "archived" });
 }
 
+export async function deleteLoop(
+  userId: string,
+  loopId: string,
+): Promise<boolean> {
+  const [deleted] = await db
+    .delete(loops)
+    .where(and(eq(loops.userId, userId), eq(loops.id, loopId)))
+    .returning({ id: loops.id });
+
+  return Boolean(deleted);
+}
 export async function createLoopRun(
   input: CreateLoopRunInput,
 ): Promise<LoopRun> {

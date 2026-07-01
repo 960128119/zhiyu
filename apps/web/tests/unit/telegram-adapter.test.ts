@@ -3,8 +3,8 @@
  *
  * Tests for:
  * - markdownToTelegramHtml converter
- * - openloomiMessageToTgText utility
- * - tgMessageToopenloomiMessage utility
+ * - openzhiyuMessageToTgText utility
+ * - tgMessageToopenzhiyuMessage utility
  */
 import { describe, test, expect } from "vitest";
 import { Api } from "telegram/tl";
@@ -12,7 +12,7 @@ import bigInt from "big-integer";
 
 describe("markdownToTelegramHtml", async () => {
   const { markdownToTelegramHtml } =
-    await import("@openloomi/integrations/telegram");
+    await import("@openzhiyu/integrations/telegram");
 
   test("converts plain text unchanged", async () => {
     expect(markdownToTelegramHtml("Hello world")).toBe("Hello world");
@@ -71,22 +71,22 @@ describe("markdownToTelegramHtml", async () => {
   });
 });
 
-describe("openloomiMessageToTgText", async () => {
-  const { openloomiMessageToTgText } =
-    await import("@openloomi/integrations/telegram");
+describe("openzhiyuMessageToTgText", async () => {
+  const { openzhiyuMessageToTgText } =
+    await import("@openzhiyu/integrations/telegram");
 
   test("converts plain string message", async () => {
-    expect(openloomiMessageToTgText("Hello")).toBe("Hello");
+    expect(openzhiyuMessageToTgText("Hello")).toBe("Hello");
   });
 
   test("converts message with text property", async () => {
-    expect(openloomiMessageToTgText({ text: "Hello world" })).toBe(
+    expect(openzhiyuMessageToTgText({ text: "Hello world" })).toBe(
       "Hello world",
     );
   });
 
   test("converts At mention to Telegram format", async () => {
-    expect(openloomiMessageToTgText({ target: "username" })).toBe("@username");
+    expect(openzhiyuMessageToTgText({ target: "username" })).toBe("@username");
   });
 
   test("converts nested message nodes", async () => {
@@ -97,17 +97,17 @@ describe("openloomiMessageToTgText", async () => {
         { text: ", how are you?" },
       ],
     };
-    expect(openloomiMessageToTgText(message)).toBe("Hello @user, how are you?");
+    expect(openzhiyuMessageToTgText(message)).toBe("Hello @user, how are you?");
   });
 
   test("returns empty string for unknown message type", async () => {
-    expect(openloomiMessageToTgText({ unknown: "property" } as any)).toBe("");
+    expect(openzhiyuMessageToTgText({ unknown: "property" } as any)).toBe("");
   });
 });
 
-describe("tgMessageToopenloomiMessage", async () => {
-  const { tgMessageToopenloomiMessage } =
-    await import("@openloomi/integrations/telegram");
+describe("tgMessageToopenzhiyuMessage", async () => {
+  const { tgMessageToopenzhiyuMessage } =
+    await import("@openzhiyu/integrations/telegram");
 
   test("converts basic text message", async () => {
     // Use 'message' property which is what the Api.Message class uses
@@ -118,7 +118,7 @@ describe("tgMessageToopenloomiMessage", async () => {
       peerId: new Api.PeerUser({ userId: bigInt(123) }),
     });
 
-    const result = tgMessageToopenloomiMessage(tgMessage);
+    const result = tgMessageToopenzhiyuMessage(tgMessage);
     expect(result).toContain("Hello world");
   });
 
@@ -130,7 +130,7 @@ describe("tgMessageToopenloomiMessage", async () => {
       media: new Api.MessageMediaPhoto({}),
     });
 
-    const result = tgMessageToopenloomiMessage(tgMessage);
+    const result = tgMessageToopenzhiyuMessage(tgMessage);
     expect(result).toContain("[Media content]");
   });
 
@@ -148,7 +148,7 @@ describe("tgMessageToopenloomiMessage", async () => {
       ],
     });
 
-    const result = tgMessageToopenloomiMessage(tgMessage);
+    const result = tgMessageToopenzhiyuMessage(tgMessage);
     // Result is ['Hello @username', { target: 'username' }]
     expect(result).toContain("Hello @username");
     expect(result).toContainEqual({ target: "username" });

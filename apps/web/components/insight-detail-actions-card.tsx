@@ -5,13 +5,13 @@ import { useTranslation } from "react-i18next";
 import { RemixIcon } from "@/components/remix-icon";
 import type { Insight } from "@/lib/db/schema";
 import type { InsightTaskItem } from "@/lib/ai/subagents/insights";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { cn } from "@/lib/utils";
 import { InsightDetailActions } from "./insight-detail-actions";
 

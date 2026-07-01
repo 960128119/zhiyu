@@ -18,11 +18,11 @@ import {
 } from "@/lib/db/queries";
 import type { IntegrationAccount } from "@/lib/db/schema";
 import { handleAgentRuntime } from "./handlers";
-import { TelegramConversationStore } from "@openloomi/integrations/telegram/conversation-store";
+import { TelegramConversationStore } from "@openzhiyu/integrations/telegram/conversation-store";
 import { getAppMemoryDir } from "@/lib/utils/path";
 import { createTaskSession } from "@/lib/files/workspace/sessions";
 import { getReceivedAndExecutingMessage } from "./saved-messages-i18n";
-import { markdownToTelegramHtml } from "@openloomi/integrations/telegram/markdown";
+import { markdownToTelegramHtml } from "@openzhiyu/integrations/telegram/markdown";
 import { DEFAULT_AI_MODEL, AI_PROXY_BASE_URL } from "@/lib/env/constants";
 
 // Singleton instance for Telegram conversation history
@@ -33,7 +33,7 @@ const telegramConversationStore = new TelegramConversationStore(
 // Development environment logging switch
 const DEBUG = process.env.NODE_ENV === "development";
 // AI reply identifier suffix
-const AI_SUFFIX = "(By openloomi AI)";
+const AI_SUFFIX = "(By openzhiyu AI)";
 
 // Extended message type to include properties that gramjs types don't properly expose
 interface TelegramMessageExtended {

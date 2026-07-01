@@ -1,5 +1,5 @@
-import { AppError } from "@openloomi/shared/errors";
-import { getUser } from "@/lib/db/queries";
+import { AppError } from "@openzhiyu/shared/errors";
+import { getUser } from "@/lib/db/user-queries";
 
 export async function GET(
   _: Request,

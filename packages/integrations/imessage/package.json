@@ -1,5 +1,5 @@
 {
-  "name": "@openloomi/integrations-imessage",
+  "name": "@openzhiyu/integrations-imessage",
   "version": "0.5.1",
   "private": true,
   "type": "module",
@@ -8,12 +8,12 @@
     "./adapter": "./src/adapter.ts"
   },
   "dependencies": {
-    "@openloomi/integrations-channels": "workspace:*",
-    "@openloomi/shared": "workspace:*",
+    "@openzhiyu/integrations-channels": "workspace:*",
+    "@openzhiyu/shared": "workspace:*",
     "@photon-ai/imessage-kit": "^2.1.2"
   },
   "devDependencies": {
-    "@openloomi/config": "workspace:*",
+    "@openzhiyu/config": "workspace:*",
     "typescript": "^5.6.3"
   },
   "scripts": {

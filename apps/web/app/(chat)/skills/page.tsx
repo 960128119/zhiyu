@@ -1,6 +1,6 @@
 "use client";
 
-import { PageSectionHeader } from "@openloomi/ui";
+import { PageSectionHeader } from "@openzhiyu/ui";
 import {
   SkillsPanel,
   AddSkillDropdown,
@@ -38,7 +38,7 @@ export default function SkillsPage() {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [directories, setDirectories] = useState<{
     agent: string;
-    openloomi: string;
+    openzhiyu: string;
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [openingFolder, setOpeningFolder] = useState(false);
@@ -146,7 +146,7 @@ export default function SkillsPage() {
         <p className="text-muted-foreground">
           {t(
             "agent.panels.workspacePanel.skillsTauriOnly",
-            "Skills are only available in the openloomi desktop app.",
+            "Skills are only available in the openzhiyu desktop app.",
           )}
         </p>
       </div>
@@ -160,7 +160,7 @@ export default function SkillsPage() {
           onOpenLocalFolder={handleOpenLocalFolder}
           onCreateSkill={handleCreateSkill}
           openingFolder={openingFolder}
-          disabled={!directories?.openloomi || isLoading}
+          disabled={!directories?.openzhiyu || isLoading}
         />
       </PageSectionHeader>
       <SkillsPanel

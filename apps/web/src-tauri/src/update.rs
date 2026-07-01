@@ -1,4 +1,4 @@
-// Copyright 2026 openloomi Team. All rights reserved.
+// Copyright 2026 openzhiyu Team. All rights reserved.
 //
 // Use of this source code is governed by a license that can be
 // found in the LICENSE file in the root of this source tree.
@@ -91,24 +91,24 @@ fn get_platform_download_filename(version: &str) -> Option<String> {
     #[cfg(target_os = "macos")]
     {
         return if cfg!(target_arch = "aarch64") {
-            Some(format!("openloomi_{}_macOS_aarch64.dmg", v))
+            Some(format!("openzhiyu_{}_macOS_aarch64.dmg", v))
         } else {
-            Some(format!("openloomi_{}_macOS_x64.dmg", v))
+            Some(format!("openzhiyu_{}_macOS_x64.dmg", v))
         };
     }
 
     #[cfg(target_os = "linux")]
     {
         return if cfg!(target_arch = "aarch64") {
-            Some(format!("openloomi_{}_linux_arm64.deb", v))
+            Some(format!("openzhiyu_{}_linux_arm64.deb", v))
         } else {
-            Some(format!("openloomi_{}_linux_amd64.deb", v))
+            Some(format!("openzhiyu_{}_linux_amd64.deb", v))
         };
     }
 
     #[cfg(target_os = "windows")]
     {
-        return Some(format!("openloomi_{}_windows_x64-setup.exe", v));
+        return Some(format!("openzhiyu_{}_windows_x64-setup.exe", v));
     }
 
     #[allow(unreachable_code)]
@@ -123,7 +123,7 @@ fn auto_install_platform(download_path: &std::path::Path) -> Result<(), String> 
     use std::fs;
     use std::process::Command;
 
-    let temp_mount = std::env::temp_dir().join("openloomi_update_mount");
+    let temp_mount = std::env::temp_dir().join("openzhiyu_update_mount");
     let mount_str = temp_mount.to_string_lossy().to_string();
     let dmg_str = download_path.to_string_lossy().to_string();
 
@@ -263,7 +263,7 @@ fn get_app_relaunch_path() -> Option<String> {
 
     #[cfg(target_os = "macos")]
     {
-        // exe path: .../openloomi.app/Contents/MacOS/openloomi
+        // exe path: .../openzhiyu.app/Contents/MacOS/openzhiyu
         // Need to go up 3 levels to reach .app bundle itself, so open command can correctly launch the app
         return exe
             .parent()
@@ -291,12 +291,12 @@ pub async fn do_check_for_update() -> Result<UpdateCheckResult, String> {
     let current_version = env!("CARGO_PKG_VERSION");
 
     let client = reqwest::Client::builder()
-        .user_agent("openloomi-App")
+        .user_agent("openzhiyu-App")
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
 
     let mut req = client
-        .get("https://api.github.com/repos/melandlabs/openloomi/tags")
+        .get("https://api.github.com/repos/melandlabs/openzhiyu/tags")
         .header("Accept", "application/vnd.github+json");
     if let Ok(token) = std::env::var("GITHUB_TOKEN") {
         if !token.is_empty() {
@@ -337,7 +337,7 @@ pub async fn do_check_for_update() -> Result<UpdateCheckResult, String> {
 
     // Check if a release exists for this tag before showing update
     let release_url = format!(
-        "https://api.github.com/repos/melandlabs/openloomi/releases/tags/{}",
+        "https://api.github.com/repos/melandlabs/openzhiyu/releases/tags/{}",
         latest_tag
     );
     let mut release_req = client
@@ -385,7 +385,7 @@ pub async fn do_check_for_update() -> Result<UpdateCheckResult, String> {
 
     let download_url = if !download_filename.is_empty() {
         format!(
-            "https://github.com/melandlabs/openloomi/releases/download/{}/{}",
+            "https://github.com/melandlabs/openzhiyu/releases/download/{}/{}",
             latest_tag, download_filename
         )
     } else {
@@ -398,7 +398,7 @@ pub async fn do_check_for_update() -> Result<UpdateCheckResult, String> {
         current_version: current_version.to_string(),
         download_url,
         release_url: format!(
-            "https://github.com/melandlabs/openloomi/releases/tag/{}",
+            "https://github.com/melandlabs/openzhiyu/releases/tag/{}",
             latest_tag
         ),
         file_size,
@@ -430,7 +430,7 @@ pub async fn start_update_download(download_url: String, file_size: u64) -> Resu
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("openloomi-App")
+        .user_agent("openzhiyu-App")
         .timeout(Duration::from_secs(120))
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;
@@ -718,7 +718,7 @@ pub async fn download_and_install_update(
     );
 
     let client = reqwest::Client::builder()
-        .user_agent("openloomi-App")
+        .user_agent("openzhiyu-App")
         .timeout(Duration::from_secs(120))
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {}", e))?;

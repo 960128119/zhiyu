@@ -1,7 +1,7 @@
 /**
  * FileIngester implementation for apps/web
  *
- * Implements the FileIngester interface from @openloomi/integrations/core
+ * Implements the FileIngester interface from @openzhiyu/integrations/core
  * using the external-ingest module from apps/web.
  */
 
@@ -12,7 +12,7 @@ import type {
   IngestedAttachment,
   AttachmentDownloadPayload,
   UserType as CoreUserType,
-} from "@openloomi/integrations/core";
+} from "@openzhiyu/integrations/core";
 import {
   ingestExternalAttachment,
   type ExternalAttachmentIngestOptions,

@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import { reorderInsightTabs } from "@/lib/db/queries";
+import { reorderInsightTabs } from "@/lib/db/insight-queries";
 
 export async function PUT(request: NextRequest) {
   const session = await auth();

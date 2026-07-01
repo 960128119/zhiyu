@@ -9,8 +9,8 @@ import {
   startIMessageSelfListener as startIMessageSelfListenerSdk,
   stopIMessageSelfListener as stopIMessageSelfListenerSdk,
 } from "./self-message-listener";
-import { isIMessageAvailable } from "@openloomi/integrations/imessage";
-import { getIntegrationAccountsByUserId } from "@/lib/db/queries";
+import { isIMessageAvailable } from "@openzhiyu/integrations/imessage";
+import { getIntegrationAccountsByUserId } from "@/lib/db/integration-queries";
 
 /**
  * Initialize iMessage self-message listener

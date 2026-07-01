@@ -1,13 +1,13 @@
 import { auth } from "@/app/(auth)/auth";
-import { saveMessages, saveChat, getChatById } from "@/lib/db/queries";
+import { saveMessages, saveChat, getChatById } from "@/lib/db/chat-queries";
 import { NextResponse } from "next/server";
 import { generateTitleFromUserMessage } from "@/app/(chat)/actions";
 import { syncChatToFilesystem } from "@/lib/ai/memory/chat-sync";
 import { isTauriMode } from "@/lib/env";
 import { setAIUserContextFromRequest } from "@/lib/ai/request-context";
 import { clearAIUserContext } from "@/lib/ai";
-import type { ChatMessage } from "@openloomi/shared";
-import type { Attachment } from "@openloomi/shared";
+import type { ChatMessage } from "@openzhiyu/shared";
+import type { Attachment } from "@openzhiyu/shared";
 
 /**
  * Save Native Agent messages to database

@@ -4,7 +4,7 @@ import type { FileStorageProvider } from "@/lib/files/config";
 
 import { db } from "./queries";
 import { userFileUsage, userFiles } from "./schema";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 
 type StorageQuota = {
   quotaBytes: number;

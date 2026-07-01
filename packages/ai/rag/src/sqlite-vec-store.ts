@@ -14,6 +14,7 @@ import type {
   IVectorStore,
   VectorSearchFilter,
   VectorSearchResult,
+  VectorStoreCapabilities,
   VectorStoreSearchOptions,
   VectorStoreStats,
 } from "./vector-service";
@@ -28,6 +29,7 @@ export interface SchemaModule {
 
 export interface SQLiteVecStoreOptions {
   collectionName?: string;
+  synchronous?: "OFF" | "NORMAL" | "FULL";
 }
 
 interface StoredVectorRecord {
@@ -39,14 +41,17 @@ interface StoredVectorRecord {
   dimensions: number;
 }
 
-const DEFAULT_COLLECTION_NAME = "openloomi_rag_chunks";
+const DEFAULT_COLLECTION_NAME = "openzhiyu_rag_chunks";
 const SEARCH_OVERFETCH_MULTIPLIER = 8;
+const DEFAULT_SQLITE_SYNCHRONOUS = "NORMAL";
 
 export class SQLiteVecStore implements IVectorStore {
   private readonly db: Database.Database;
   private readonly collectionName: string;
   private readonly recordsTableName: string;
   private readonly vectorTablePrefix: string;
+  private readonly statementCache = new Map<string, Database.Statement>();
+  private readonly existingVectorDimensions = new Set<number>();
 
   constructor(
     dbPath: string,
@@ -55,12 +60,14 @@ export class SQLiteVecStore implements IVectorStore {
   ) {
     this.collectionName = options.collectionName || DEFAULT_COLLECTION_NAME;
     const safeCollectionName = sanitizeIdentifier(this.collectionName);
-    this.recordsTableName = `openloomi_vec_${safeCollectionName}_records`;
-    this.vectorTablePrefix = `openloomi_vec_${safeCollectionName}_d`;
+    this.recordsTableName = `openzhiyu_vec_${safeCollectionName}_records`;
+    this.vectorTablePrefix = `openzhiyu_vec_${safeCollectionName}_d`;
 
     this.db = new Database(dbPath);
     this.db.pragma("journal_mode = WAL");
-    this.db.pragma("synchronous = FULL");
+    this.db.pragma(
+      `synchronous = ${options.synchronous ?? DEFAULT_SQLITE_SYNCHRONOUS}`,
+    );
 
     try {
       sqliteVec.load(this.db);
@@ -72,6 +79,20 @@ export class SQLiteVecStore implements IVectorStore {
     }
 
     this.initializeRecordsTable();
+  }
+
+  getCapabilities(): VectorStoreCapabilities {
+    return {
+      backend: "sqlite-vec",
+      nativeMetadataFilters: false,
+      nativeUserFilter: false,
+      nativeTimeRangeFilter: false,
+      includeEmbeddings: true,
+      deleteOlderThan: true,
+      stats: true,
+      multiDimensions: true,
+      persistent: true,
+    };
   }
 
   async addChunk(chunk: DocumentChunk): Promise<void> {
@@ -94,26 +115,26 @@ export class SQLiteVecStore implements IVectorStore {
 
         const dimensions = chunk.embedding.length;
         this.ensureVectorTable(dimensions);
-        this.db
-          .prepare(
-            `
-              INSERT INTO ${this.recordsTableName} (
-                id, document_id, content, metadata, embedding, dimensions,
-                updated_at
-              )
-              VALUES (
-                @id, @documentId, @content, @metadata, @embedding, @dimensions,
-                @updatedAt
-              )
-              ON CONFLICT(id) DO UPDATE SET
-                document_id = excluded.document_id,
-                content = excluded.content,
-                metadata = excluded.metadata,
-                embedding = excluded.embedding,
-                dimensions = excluded.dimensions,
-                updated_at = excluded.updated_at
-            `,
-          )
+        this.statement(
+          "upsert-record",
+          `
+            INSERT INTO ${this.recordsTableName} (
+              id, document_id, content, metadata, embedding, dimensions,
+              updated_at
+            )
+            VALUES (
+              @id, @documentId, @content, @metadata, @embedding, @dimensions,
+              @updatedAt
+            )
+            ON CONFLICT(id) DO UPDATE SET
+              document_id = excluded.document_id,
+              content = excluded.content,
+              metadata = excluded.metadata,
+              embedding = excluded.embedding,
+              dimensions = excluded.dimensions,
+              updated_at = excluded.updated_at
+          `,
+        )
           .run({
             id: chunk.id,
             documentId: chunk.documentId,
@@ -127,14 +148,14 @@ export class SQLiteVecStore implements IVectorStore {
         // vec0 upsert support differs between extension versions. Delete then
         // insert is deterministic and remains inside the surrounding transaction.
         this.deleteVector(dimensions, chunk.id);
-        this.db
-          .prepare(
-            `
-              INSERT INTO ${this.getVectorTableName(dimensions)}
-                (embedding, record_id)
-              VALUES (?, ?)
-            `,
-          )
+        this.statement(
+          `insert-vector:${dimensions}`,
+          `
+            INSERT INTO ${this.getVectorTableName(dimensions)}
+              (embedding, record_id)
+            VALUES (?, ?)
+          `,
+        )
           .run(floatArrayToBuffer(chunk.embedding), chunk.id);
       }
     });
@@ -165,16 +186,16 @@ export class SQLiteVecStore implements IVectorStore {
 
     const limit = Math.max(1, Math.floor(options.limit ?? 10));
     const scanLimit = Math.max(limit, limit * SEARCH_OVERFETCH_MULTIPLIER);
-    const nearest = this.db
-      .prepare(
-        `
-          SELECT record_id, distance
-          FROM ${this.getVectorTableName(dimensions)}
-          WHERE embedding MATCH ?
-          ORDER BY distance
-          LIMIT ?
-        `,
-      )
+    const nearest = this.statement(
+      `search-vector:${dimensions}`,
+      `
+        SELECT record_id, distance
+        FROM ${this.getVectorTableName(dimensions)}
+        WHERE embedding MATCH ?
+        ORDER BY distance
+        LIMIT ?
+      `,
+    )
       .all(floatArrayToBuffer(queryEmbedding), scanLimit) as Array<{
       record_id: string;
       distance: number;
@@ -212,14 +233,14 @@ export class SQLiteVecStore implements IVectorStore {
   }
 
   async deleteDocument(documentId: string): Promise<void> {
-    const records = this.db
-      .prepare(
-        `
-          SELECT id, dimensions
-          FROM ${this.recordsTableName}
-          WHERE document_id = ?
-        `,
-      )
+    const records = this.statement(
+      "select-records-by-document",
+      `
+        SELECT id, dimensions
+        FROM ${this.recordsTableName}
+        WHERE document_id = ?
+      `,
+    )
       .all(documentId) as Array<{ id: string; dimensions: number }>;
 
     const deleteRecords = this.db.transaction(
@@ -227,8 +248,10 @@ export class SQLiteVecStore implements IVectorStore {
         for (const record of items) {
           this.deleteVector(record.dimensions, record.id);
         }
-        this.db
-          .prepare(`DELETE FROM ${this.recordsTableName} WHERE document_id = ?`)
+        this.statement(
+          "delete-records-by-document",
+          `DELETE FROM ${this.recordsTableName} WHERE document_id = ?`,
+        )
           .run(documentId);
       },
     );
@@ -239,8 +262,10 @@ export class SQLiteVecStore implements IVectorStore {
     timestamp: number,
     timestampField = "timestamp",
   ): Promise<number> {
-    const records = this.db
-      .prepare(`SELECT id, metadata, dimensions FROM ${this.recordsTableName}`)
+    const records = this.statement(
+      "select-records-for-retention",
+      `SELECT id, metadata, dimensions FROM ${this.recordsTableName}`,
+    )
       .all() as Array<{
       id: string;
       metadata: string | null;
@@ -254,7 +279,8 @@ export class SQLiteVecStore implements IVectorStore {
     });
 
     const deleteExpired = this.db.transaction((items: typeof expired) => {
-      const deleteRecord = this.db.prepare(
+      const deleteRecord = this.statement(
+        "delete-record-by-id",
         `DELETE FROM ${this.recordsTableName} WHERE id = ?`,
       );
       for (const record of items) {
@@ -267,29 +293,31 @@ export class SQLiteVecStore implements IVectorStore {
   }
 
   async getDocumentCount(): Promise<number> {
-    const result = this.db
-      .prepare(
-        `SELECT COUNT(DISTINCT document_id) AS count FROM ${this.recordsTableName}`,
-      )
+    const result = this.statement(
+      "count-documents",
+      `SELECT COUNT(DISTINCT document_id) AS count FROM ${this.recordsTableName}`,
+    )
       .get() as { count: number };
     return result.count;
   }
 
   async getChunkCount(): Promise<number> {
-    const result = this.db
-      .prepare(`SELECT COUNT(*) AS count FROM ${this.recordsTableName}`)
+    const result = this.statement(
+      "count-chunks",
+      `SELECT COUNT(*) AS count FROM ${this.recordsTableName}`,
+    )
       .get() as { count: number };
     return result.count;
   }
 
   async getStats(): Promise<VectorStoreStats> {
-    const result = this.db
-      .prepare(
-        `
-          SELECT COUNT(*) AS count, MAX(dimensions) AS dimensions
-          FROM ${this.recordsTableName}
-        `,
-      )
+    const result = this.statement(
+      "stats",
+      `
+        SELECT COUNT(*) AS count, MAX(dimensions) AS dimensions
+        FROM ${this.recordsTableName}
+      `,
+    )
       .get() as { count: number; dimensions: number | null };
     return {
       count: result.count,
@@ -303,15 +331,24 @@ export class SQLiteVecStore implements IVectorStore {
       for (const tableName of vectorTables) {
         this.db.exec(`DROP TABLE IF EXISTS ${tableName}`);
       }
-      this.db.prepare(`DELETE FROM ${this.recordsTableName}`).run();
+      this.statement(
+        "clear-records",
+        `DELETE FROM ${this.recordsTableName}`,
+      ).run();
     });
     clearAll();
+    this.existingVectorDimensions.clear();
+    this.statementCache.clear();
   }
 
   close(): void {
     if (this.db.open) {
       this.db.close();
     }
+  }
+
+  getSQLitePragma(name: "journal_mode" | "synchronous"): unknown {
+    return this.db.pragma(name, { simple: true });
   }
 
   private initializeRecordsTable(): void {
@@ -340,16 +377,24 @@ export class SQLiteVecStore implements IVectorStore {
         record_id TEXT PRIMARY KEY
       )
     `);
+    this.existingVectorDimensions.add(dimensions);
   }
 
   private vectorTableExists(dimensions: number): boolean {
-    return Boolean(
-      this.db
-        .prepare(
-          "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
-        )
-        .get(this.getVectorTableName(dimensions)),
+    if (this.existingVectorDimensions.has(dimensions)) {
+      return true;
+    }
+
+    const exists = Boolean(
+      this.statement(
+        "vector-table-exists",
+        "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+      ).get(this.getVectorTableName(dimensions)),
     );
+    if (exists) {
+      this.existingVectorDimensions.add(dimensions);
+    }
+    return exists;
   }
 
   private getVectorTableName(dimensions: number): string {
@@ -361,17 +406,19 @@ export class SQLiteVecStore implements IVectorStore {
 
   private listVectorTables(): string[] {
     return (
-      this.db
-        .prepare(
-          "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE ?",
-        )
+      this.statement(
+        "list-vector-tables",
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE ?",
+      )
         .all(`${this.vectorTablePrefix}%`) as Array<{ name: string }>
     ).map((row) => row.name);
   }
 
   private getRecord(id: string): StoredVectorRecord | undefined {
-    return this.db
-      .prepare(`SELECT * FROM ${this.recordsTableName} WHERE id = ?`)
+    return this.statement(
+      "select-record-by-id",
+      `SELECT * FROM ${this.recordsTableName} WHERE id = ?`,
+    )
       .get(id) as StoredVectorRecord | undefined;
   }
 
@@ -380,10 +427,10 @@ export class SQLiteVecStore implements IVectorStore {
       return [];
     }
     const placeholders = ids.map(() => "?").join(", ");
-    return this.db
-      .prepare(
-        `SELECT * FROM ${this.recordsTableName} WHERE id IN (${placeholders})`,
-      )
+    return this.statement(
+      `select-records-by-ids:${ids.length}`,
+      `SELECT * FROM ${this.recordsTableName} WHERE id IN (${placeholders})`,
+    )
       .all(...ids) as StoredVectorRecord[];
   }
 
@@ -391,11 +438,20 @@ export class SQLiteVecStore implements IVectorStore {
     if (!this.vectorTableExists(dimensions)) {
       return;
     }
-    this.db
-      .prepare(
-        `DELETE FROM ${this.getVectorTableName(dimensions)} WHERE record_id = ?`,
-      )
+    this.statement(
+      `delete-vector:${dimensions}`,
+      `DELETE FROM ${this.getVectorTableName(dimensions)} WHERE record_id = ?`,
+    )
       .run(id);
+  }
+
+  private statement(key: string, sql: string): Database.Statement {
+    let cached = this.statementCache.get(key);
+    if (!cached) {
+      cached = this.db.prepare(sql);
+      this.statementCache.set(key, cached);
+    }
+    return cached;
   }
 }
 

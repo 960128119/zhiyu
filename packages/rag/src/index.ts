@@ -1,5 +1,5 @@
 /**
- * @openloomi/rag - RAG pipeline utilities: chunking, embeddings, and vector stores.
+ * @openzhiyu/rag - RAG pipeline utilities: chunking, embeddings, and vector stores.
  */
 
 export {

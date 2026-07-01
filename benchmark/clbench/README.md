@@ -72,7 +72,7 @@ pnpm benchmark -- --dataset dataset/clbench.jsonl --benchmark clbench --output r
 Evaluations are checkpointed to:
 
 ```
-~/.openloomi/data/memory/bench/checkpoints/clbench/
+~/.openzhiyu/data/memory/bench/checkpoints/clbench/
 ```
 
 Each task's result is saved individually for resume support.
@@ -133,5 +133,5 @@ src/
 
 - Node.js 18+
 - pnpm
-- OpenLoomi server running on port 3515 (or auto-discovered)
+- OpenZhiyu server running on port 3515 (or auto-discovered)
 - OpenRouter API key for rubric evaluation

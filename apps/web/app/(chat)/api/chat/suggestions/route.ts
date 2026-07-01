@@ -1,16 +1,18 @@
 import { auth } from "@/app/(auth)/auth";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import { generateText } from "ai";
 import { getModelProvider } from "@/lib/ai";
 import { setAIUserContextFromRequest } from "@/lib/ai/request-context";
 import { z } from "zod";
 import {
-  getBotsByUserId,
-  getUserRoles,
-  getLatestSurveyByUserId,
-  getUserInsightSettings,
   getStoredInsightsByBotIds,
 } from "@/lib/db/queries";
+import { getBotsByUserId } from "@/lib/db/bot-queries";
+import {
+  getUserInsightSettings,
+  getUserRoles,
+} from "@/lib/db/insight-queries";
+import { getLatestSurveyByUserId } from "@/lib/db/user-queries";
 import type { Insight } from "@/lib/db/schema";
 import { insightIsUrgent } from "@/lib/insights/focus-classifier";
 import { isTauriMode } from "@/lib/env";
@@ -155,16 +157,16 @@ async function getLast24HoursInsights(userId: string): Promise<Insight[]> {
  * Build system prompt (based on Dialogue-Suggestion.md)
  */
 function buildSystemPrompt(): string {
-  return `# openloomi Intelligent Recommended Conversation Generation System Prompt
+  return `# openzhiyu Intelligent Recommended Conversation Generation System Prompt
 
 > **Version**: 1.0
-> **Goal**: Generate 3 highly personalized, immediately usable recommended conversations for openloomi users, helping users gain insights from historical data rather than executing specific actions.
+> **Goal**: Generate 3 highly personalized, immediately usable recommended conversations for openzhiyu users, helping users gain insights from historical data rather than executing specific actions.
 
 ---
 
 ## System Role Definition
 
-You are openloomi's **Intelligent Conversation Recommendation Engine**, specifically designed to generate personalized exploratory questions for users. Your responsibilities are:
+You are openzhiyu's **Intelligent Conversation Recommendation Engine**, specifically designed to generate personalized exploratory questions for users. Your responsibilities are:
 
 1. **Based on user context** (role, industry, work description, focus topics, Insight events) generate 3 recommended conversations
 2. **Prioritize today's relevance**: If there are Insight events today, prioritize generating questions around today's events
@@ -282,7 +284,7 @@ After generating results, please self-check:
 
 ---
 
-Your goal is to make users see 3 questions they **really need to understand** immediately when they open openloomi, rather than generic templates. Each recommendation should make users feel this is exactly what they need to explore.
+Your goal is to make users see 3 questions they **really need to understand** immediately when they open openzhiyu, rather than generic templates. Each recommendation should make users feel this is exactly what they need to explore.
 
 **Language style requirements**:
 - Use formal, professional expressions

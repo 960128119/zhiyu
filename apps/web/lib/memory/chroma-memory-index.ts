@@ -1,13 +1,13 @@
-import { buildMemoryRecordEmbeddingDocument } from "@openloomi/ai/memory";
+import { buildMemoryRecordEmbeddingDocument } from "@openzhiyu/ai/memory";
 import {
   rawMessageToMemoryRecord,
   type RawMessage,
-} from "@openloomi/indexeddb";
-import { ChromaVectorStore } from "@openloomi/rag";
-import type { DocumentChunk } from "@openloomi/rag/vector-service";
+} from "@openzhiyu/indexeddb";
+import type { ChromaVectorStore } from "@openzhiyu/rag/chroma-store";
+import type { DocumentChunk } from "@openzhiyu/rag/vector-service";
 
-const DEFAULT_RAW_MESSAGES_COLLECTION = "openloomi_raw_messages";
-const DEFAULT_INSIGHTS_COLLECTION = "openloomi_insights";
+const DEFAULT_RAW_MESSAGES_COLLECTION = "openzhiyu_raw_messages";
+const DEFAULT_INSIGHTS_COLLECTION = "openzhiyu_insights";
 const RAW_VECTOR_BACKEND_ENV_KEYS = [
   "RAW_MESSAGE_VECTOR_STORE_BACKEND",
   "MEMORY_VECTOR_STORE_BACKEND",
@@ -89,7 +89,8 @@ function getInsightsCollectionName(): string {
   return process.env.CHROMA_INSIGHTS_COLLECTION || DEFAULT_INSIGHTS_COLLECTION;
 }
 
-function getChromaStore(collectionName: string): ChromaVectorStore {
+async function getChromaStore(collectionName: string): Promise<ChromaVectorStore> {
+  const { ChromaVectorStore } = await import("@openzhiyu/rag/chroma-store");
   return new ChromaVectorStore({
     url: process.env.CHROMA_URL,
     collectionName,
@@ -184,7 +185,7 @@ export async function upsertRawMessagesToChroma(
     return 0;
   }
 
-  const store = getChromaStore(getRawMessagesCollectionName());
+  const store = await getChromaStore(getRawMessagesCollectionName());
   await store.addChunks(chunks);
   return chunks.length;
 }
@@ -207,7 +208,7 @@ export async function searchRawMessagesWithChroma(input: {
     return [];
   }
 
-  const store = getChromaStore(getRawMessagesCollectionName());
+  const store = await getChromaStore(getRawMessagesCollectionName());
   const results = await store.similaritySearch(
     input.queryEmbedding,
     Math.max(input.limit * 5, input.limit),
@@ -277,7 +278,7 @@ export async function upsertInsightsToChroma(
     return 0;
   }
 
-  const store = getChromaStore(getInsightsCollectionName());
+  const store = await getChromaStore(getInsightsCollectionName());
   await store.addChunks(chunks);
   return chunks.length;
 }
@@ -296,7 +297,7 @@ export async function searchInsightsWithChroma(input: {
 
   const botIdSet =
     input.botIds && input.botIds.length > 0 ? new Set(input.botIds) : null;
-  const store = getChromaStore(getInsightsCollectionName());
+  const store = await getChromaStore(getInsightsCollectionName());
   const results = await store.similaritySearch(
     input.queryEmbedding,
     Math.max(input.limit * 5, input.limit),

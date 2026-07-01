@@ -659,6 +659,41 @@
       "when": 1780012800000,
       "tag": "0103_user_llm_api_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 94,
+      "version": "7",
+      "when": 1780100000000,
+      "tag": "0104_add_temporal_validity_and_living_connections",
+      "breakpoints": true
+    },
+    {
+      "idx": 95,
+      "version": "7",
+      "when": 1780200000000,
+      "tag": "0105_add_loop_runtime_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1780300000000,
+      "tag": "0106_add_loop_approval_requests",
+      "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1780400000000,
+      "tag": "0107_add_survey_work_description",
+      "breakpoints": true
+    },
+    {
+      "idx": 98,
+      "version": "7",
+      "when": 1780500000000,
+      "tag": "0096_credential_rotation",
+      "breakpoints": true
     }
   ]
 }

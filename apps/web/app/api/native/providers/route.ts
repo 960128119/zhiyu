@@ -5,8 +5,8 @@
  */
 
 import { NextResponse } from "next/server";
-import { getAgentRegistry } from "@openloomi/ai/agent/registry";
-import { getAllAgentMetadata } from "@openloomi/ai/agent/registry";
+import { getAgentRegistry } from "@openzhiyu/ai/agent/registry";
+import { getAllAgentMetadata } from "@openzhiyu/ai/agent/registry";
 import { claudePlugin } from "@/lib/ai/extensions";
 
 // Register Claude Agent plugin

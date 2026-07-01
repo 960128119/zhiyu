@@ -13,7 +13,7 @@ import {
 } from "@/components/insight-badge";
 import { RemixIcon } from "@/components/remix-icon";
 import { formatTimeForTable } from "./events-panel-utils";
-import { coerceDate } from "@openloomi/shared";
+import { coerceDate } from "@openzhiyu/shared";
 import { useInsightPagination } from "@/hooks/use-insight-data";
 import { useInsightWeights } from "@/hooks/use-insight-weights";
 import { Spinner } from "@/components/spinner";
@@ -423,7 +423,7 @@ export function FocusTableView({
           "insight.noDataPlaceholder.line1",
           "When there are new tracked events, {{name}} will keep an eye on them for you.",
           {
-            name: "openloomi",
+            name: "openzhiyu",
           },
         )}
       </div>

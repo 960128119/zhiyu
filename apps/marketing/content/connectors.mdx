@@ -1,16 +1,16 @@
 ---
 title: "Connectors"
-description: "Connect your messaging platforms, email, and productivity tools to OpenLoomi"
+description: "Connect your messaging platforms, email, and productivity tools to OpenZhiyu"
 icon: "FaPlug"
 ---
 
 # Connectors
 
-Link your platforms or subscribe to content you care about — OpenLoomi keeps watch so you don't have to.
+Link your platforms or subscribe to content you care about — OpenZhiyu keeps watch so you don't have to.
 
-To add a connector, open **Settings → Connectors** and click **+ Add New Connector**. OpenLoomi will guide you through the authorization process for each platform.
+To add a connector, open **Settings → Connectors** and click **+ Add New Connector**. OpenZhiyu will guide you through the authorization process for each platform.
 
-> 🔒 **Privacy by design**: OpenLoomi only reads messages to generate insights. It does not store raw message content on its servers — data is processed locally or encrypted in transit.
+> 🔒 **Privacy by design**: OpenZhiyu only reads messages to generate insights. It does not store raw message content on its servers — data is processed locally or encrypted in transit.
 
 ## Supported Platforms
 
@@ -85,7 +85,7 @@ The table below compares what each connector supports across key capabilities. U
 
 ## Authorization Modes Explained
 
-OpenLoomi supports two distinct authorization modes for messaging platforms. Understanding the difference helps you choose the right platform for your workflow.
+OpenZhiyu supports two distinct authorization modes for messaging platforms. Understanding the difference helps you choose the right platform for your workflow.
 
 ### Bot Token Mode — Feishu, DingTalk, QQ
 
@@ -97,7 +97,7 @@ These platforms use **enterprise self-built applications** with bot credentials 
 | DingTalk | Client ID + Secret | Messages sent **directly to bot** or **@bot in group** | Find bot → private chat, or @mention bot in group |
 | QQ       | App ID + Token     | Messages sent **directly to bot** or **@bot in group** | Find bot → private chat, or @mention bot in group |
 
-**How it works:** You create a bot app on the platform, obtain credentials, and connect it to OpenLoomi. Users can either:
+**How it works:** You create a bot app on the platform, obtain credentials, and connect it to OpenZhiyu. Users can either:
 
 1. Find your bot in the messaging app and send messages directly to it (private chat)
 2. Add the bot to a group and @mention it — the bot will respond to messages directed at it
@@ -113,7 +113,7 @@ These platforms connect to a **user's personal account** via QR code or phone ve
 | Telegram | QR code / Phone     | **Saved Messages** (user messages themselves) | Send message to yourself |
 | WhatsApp | QR code / Pair code | All personal account chats                    | Send message to yourself |
 
-**How it works:** After logging into your personal account, OpenLoomi reads messages sent to your own account (Saved Messages / 自己发给自己). When you send a message to yourself, OpenLoomi reads it, generates an AI response, and you continue the conversation in the same chat.
+**How it works:** After logging into your personal account, OpenZhiyu reads messages sent to your own account (Saved Messages / 自己发给自己). When you send a message to yourself, OpenZhiyu reads it, generates an AI response, and you continue the conversation in the same chat.
 
 ### Key Differences
 
@@ -132,13 +132,13 @@ These platforms connect to a **user's personal account** via QR code or phone ve
 ## How to
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/connectors.png" />
+  <img src="/img/openzhiyu/connectors.png" />
 </div>
 
 <br />
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/connectors-dialog.png" />
+  <img src="/img/openzhiyu/connectors-dialog.png" />
 </div>
 
 ## Platform Setup Details
@@ -148,15 +148,15 @@ These platforms connect to a **user's personal account** via QR code or phone ve
 After clicking **[Connect Telegram]**, you'll be redirected to Telegram's authorization page.
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/telegram-login.png" alt="OpenLoomi Telegram Login" />
+  <img src="/img/openzhiyu/telegram-login.png" alt="OpenZhiyu Telegram Login" />
 </div>
 
 1. Enter your phone number
 
 <div style={{ textAlign: "center" }}>
   <img
-    src="/img/openloomi/telegram-login-phone.png"
-    alt="OpenLoomi Telegram Login Phone"
+    src="/img/openzhiyu/telegram-login-phone.png"
+    alt="OpenZhiyu Telegram Login Phone"
   />
 </div>
 
@@ -164,8 +164,8 @@ After clicking **[Connect Telegram]**, you'll be redirected to Telegram's author
 
 <div style={{ textAlign: "center" }}>
   <img
-    src="/img/openloomi/telegram-login-code.png"
-    alt="OpenLoomi Telegram Login Code"
+    src="/img/openzhiyu/telegram-login-code.png"
+    alt="OpenZhiyu Telegram Login Code"
   />
 </div>
 
@@ -173,8 +173,8 @@ After clicking **[Connect Telegram]**, you'll be redirected to Telegram's author
 
 <div style={{ textAlign: "center" }}>
   <img
-    src="/img/openloomi/telegram-login-password.png"
-    alt="OpenLoomi Telegram Login Password"
+    src="/img/openzhiyu/telegram-login-password.png"
+    alt="OpenZhiyu Telegram Login Password"
   />
 </div>
 
@@ -182,36 +182,36 @@ Or choose to authorize by **scanning a QR code** in the Telegram app
 
 <div style={{ textAlign: "center" }}>
   <img
-    src="/img/openloomi/telegram-login-qr-code.png"
-    alt="OpenLoomi Telegram Login QR Code"
+    src="/img/openzhiyu/telegram-login-qr-code.png"
+    alt="OpenZhiyu Telegram Login QR Code"
   />
 </div>
 
 Or choose to authorize by **quick login** in the Telegram app if you have official telegram desktop installed locally, you can use your existing session to login without phone number or verification code
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/telegram-login-quick.png" />
+  <img src="/img/openzhiyu/telegram-login-quick.png" />
 </div>
 
 ### Slack
 
-After clicking **[Connect Slack]**, you'll be redirected to Slack's authorization page. Click **[Install OpenLoomi]** to add OpenLoomi to your workspace.
+After clicking **[Connect Slack]**, you'll be redirected to Slack's authorization page. Click **[Install OpenZhiyu]** to add OpenZhiyu to your workspace.
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/slack-auth.png" alt="OpenLoomi Slack Auth" />
+  <img src="/img/openzhiyu/slack-auth.png" alt="OpenZhiyu Slack Auth" />
 </div>
 
-> Note: Only workspace owners can install OpenLoomi currently.
+> Note: Only workspace owners can install OpenZhiyu currently.
 
 ### Discord
 
-After clicking **[Connect Discord]**, select a Discord server to install OpenLoomi.
+After clicking **[Connect Discord]**, select a Discord server to install OpenZhiyu.
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/discord-auth.png" alt="OpenLoomi Discord Auth" />
+  <img src="/img/openzhiyu/discord-auth.png" alt="OpenZhiyu Discord Auth" />
 </div>
 
-> Note: Only Discord server managers can install OpenLoomi currently.
+> Note: Only Discord server managers can install OpenZhiyu currently.
 
 ### WhatsApp
 
@@ -219,8 +219,8 @@ After clicking **[Connect WhatsApp]**, scan the QR code in the WhatsApp app to c
 
 <div style={{ textAlign: "center" }}>
   <img
-    src="/img/openloomi/whatsapp-login-qr-code.png"
-    alt="OpenLoomi WhatsApp Login"
+    src="/img/openzhiyu/whatsapp-login-qr-code.png"
+    alt="OpenZhiyu WhatsApp Login"
   />
 </div>
 
@@ -228,8 +228,8 @@ Or use a **phone pair code** to link WhatsApp without scanning:
 
 <div style={{ textAlign: "center" }}>
   <img
-    src="/img/openloomi/whatsapp-login-phone.png"
-    alt="OpenLoomi WhatsApp Login"
+    src="/img/openzhiyu/whatsapp-login-phone.png"
+    alt="OpenZhiyu WhatsApp Login"
   />
 </div>
 
@@ -247,13 +247,13 @@ iMessage integration is **only available on macOS**.
 **How to grant permissions:**
 
 - Go to **System Settings > Privacy & Security > Full Disk Access**
-- Add the running app (Terminal, Node, or OpenLoomi)
+- Add the running app (Terminal, Node, or OpenZhiyu)
 - Restart the app after granting permissions
 
-> 💡 Your message data stays on your local device. OpenLoomi only reads recent messages when you use it to generate insights.
+> 💡 Your message data stays on your local device. OpenZhiyu only reads recent messages when you use it to generate insights.
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/imessage-login.png" />
+  <img src="/img/openzhiyu/imessage-login.png" />
 </div>
 
 ### QQ
@@ -266,19 +266,19 @@ QQ integration uses a **bot mode** via a persistent WebSocket connection. Unlike
 2. Create a new bot application and obtain your **Bot App ID** and **Bot Token**
 3. Enable the message receive permissions for your bot
 
-**Connect in OpenLoomi:**
+**Connect in OpenZhiyu:**
 
 1. Click **+ Add New Connector** and select **QQ**
 2. Enter your **Bot App ID** and **Bot Token**
-3. Click **Connect** — OpenLoomi establishes a long-lived WebSocket connection to your bot
+3. Click **Connect** — OpenZhiyu establishes a long-lived WebSocket connection to your bot
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/qq-config.png" />
+  <img src="/img/openzhiyu/qq-config.png" />
 </div>
 
-Once connected, users who message your QQ bot will have their conversations processed by OpenLoomi. OpenLoomi replies **as the bot**.
+Once connected, users who message your QQ bot will have their conversations processed by OpenZhiyu. OpenZhiyu replies **as the bot**.
 
-> 💡 QQ integration is in bot mode — OpenLoomi reads messages sent to your bot, not your personal QQ account.
+> 💡 QQ integration is in bot mode — OpenZhiyu reads messages sent to your bot, not your personal QQ account.
 
 ### Lark/Feishu
 
@@ -347,16 +347,16 @@ Go to **Credentials & Basic Info** and copy your:
 - **App ID** (starts with `cli_`)
 - **App Secret**
 
-**Step 5 — Connect in OpenLoomi:**
+**Step 5 — Connect in OpenZhiyu:**
 
-1. In OpenLoomi, go to **Settings → Connectors → + Add New Connector** → select **Lark/Feishu**
+1. In OpenZhiyu, go to **Settings → Connectors → + Add New Connector** → select **Lark/Feishu**
 2. Enter your **App ID** and **App Secret**
 3. Click **Connect**
 
 <div style={{ textAlign: "center" }}>
   <img
-    src="/img/openloomi/feishu-config.png"
-    alt="OpenLoomi Lark/Feishu connector config"
+    src="/img/openzhiyu/feishu-config.png"
+    alt="OpenZhiyu Lark/Feishu connector config"
   />
 </div>
 
@@ -389,17 +389,17 @@ DingTalk integration uses a **Stream mode bot** — a long-lived WebSocket conne
 4. Obtain your **Client ID (AppKey)** and **Client Secret (AppSecret)**
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/dingtalk-config.png" alt="OpenLoomi Weixin Login" />
+  <img src="/img/openzhiyu/dingtalk-config.png" alt="OpenZhiyu Weixin Login" />
 </div>
 
-**Connect in OpenLoomi:**
+**Connect in OpenZhiyu:**
 
 1. Click **+ Add New Connector** and select **DingTalk**
 2. Enter your **Client ID (AppKey)** and **Client Secret (AppSecret)**
 3. Optionally set a display name for your bot
-4. Click **Connect** — OpenLoomi establishes a long-lived WebSocket connection to your bot
+4. Click **Connect** — OpenZhiyu establishes a long-lived WebSocket connection to your bot
 
-> 💡 Stream mode means OpenLoomi connects directly via WebSocket — no server or domain setup needed. Once connected, you can chat with your bot directly in DingTalk.
+> 💡 Stream mode means OpenZhiyu connects directly via WebSocket — no server or domain setup needed. Once connected, you can chat with your bot directly in DingTalk.
 
 ### Weixin
 
@@ -407,8 +407,8 @@ After clicking **[Connect Weixin]**, scan the QR code in the Weixin app to compl
 
 <div style={{ textAlign: "center" }}>
   <img
-    src="/img/openloomi/wechat-login-qr-code.png"
-    alt="OpenLoomi Weixin Login"
+    src="/img/openzhiyu/wechat-login-qr-code.png"
+    alt="OpenZhiyu Weixin Login"
   />
 </div>
 
@@ -417,7 +417,7 @@ After clicking **[Connect Weixin]**, scan the QR code in the Weixin app to compl
 After clicking **[Connect Gmail]**, enter your email address and an [App Password](https://support.google.com/accounts/answer/185833) to authorize. (Regular Gmail password won't work — App Passwords require 2-Step Verification to be enabled.)
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/gmail-login.png" alt="OpenLoomi Gmail Login" />
+  <img src="/img/openzhiyu/gmail-login.png" alt="OpenZhiyu Gmail Login" />
 </div>
 
 ### Outlook
@@ -425,7 +425,7 @@ After clicking **[Connect Gmail]**, enter your email address and an [App Passwor
 After clicking **[Connect Outlook]**, enter your email address and app password to authorize.
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/outlook-login.png" alt="OpenLoomi Outlook Login" />
+  <img src="/img/openzhiyu/outlook-login.png" alt="OpenZhiyu Outlook Login" />
 </div>
 
 ### X
@@ -433,7 +433,7 @@ After clicking **[Connect Outlook]**, enter your email address and app password 
 After clicking **[Connect X]**, complete the OAuth authorization flow to link your X account.
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/x-auth.png" alt="OpenLoomi X Auth" />
+  <img src="/img/openzhiyu/x-auth.png" alt="OpenZhiyu X Auth" />
 </div>
 
 ### RSS
@@ -441,17 +441,17 @@ After clicking **[Connect X]**, complete the OAuth authorization flow to link yo
 After clicking **[RSS]**, you can add individual RSS links or upload an OPML file for batch import.
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/rss.png" alt="OpenLoomi RSS Integration" />
+  <img src="/img/openzhiyu/rss.png" alt="OpenZhiyu RSS Integration" />
 </div>
 
 ---
 
 ## Disconnect / Revoke Access
 
-If you no longer want OpenLoomi to access a connected platform, you can disconnect it at any time.
+If you no longer want OpenZhiyu to access a connected platform, you can disconnect it at any time.
 
 <div style={{ textAlign: "center" }}>
-  <img src="/img/openloomi/connectors-unbind.png" alt="Disconnect platform" />
+  <img src="/img/openzhiyu/connectors-unbind.png" alt="Disconnect platform" />
 </div>
 
 1. Go to **Settings → Connectors**
@@ -461,7 +461,7 @@ If you no longer want OpenLoomi to access a connected platform, you can disconne
 
 Once disconnected:
 
-- OpenLoomi will immediately stop reading new messages from that platform
+- OpenZhiyu will immediately stop reading new messages from that platform
 - Previously synced data is retained until manually deleted
 - You can reconnect at any time by repeating the connection steps
 

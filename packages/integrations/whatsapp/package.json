@@ -1,5 +1,5 @@
 {
-  "name": "@openloomi/integrations-whatsapp",
+  "name": "@openzhiyu/integrations-whatsapp",
   "version": "0.5.1",
   "private": true,
   "type": "module",
@@ -10,11 +10,11 @@
     "./client-registry": "./src/client-registry.ts"
   },
   "dependencies": {
-    "@openloomi/ai": "workspace:*",
+    "@openzhiyu/ai": "workspace:*",
     "@whiskeysockets/baileys": "^7.0.0-rc.9"
   },
   "devDependencies": {
-    "@openloomi/config": "workspace:*",
+    "@openzhiyu/config": "workspace:*",
     "typescript": "^5.6.3"
   },
   "scripts": {

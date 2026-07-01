@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { deleteTgBotBySessionAndUserId } from "@/lib/db/queries";
+import { deleteTgBotBySessionAndUserId } from "@/lib/db/bot-queries";
 import { auth } from "@/app/(auth)/auth";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 
 export async function POST(request: NextRequest) {
   try {

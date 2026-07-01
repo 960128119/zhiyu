@@ -1,11 +1,11 @@
-# @openloomi/insights
+# @openzhiyu/insights
 
 Pure algorithm and filter logic for insight/event management.
 
 ## Installation
 
 ```sh
-pnpm add @openloomi/insights
+pnpm add @openzhiyu/insights
 ```
 
 ## Exports

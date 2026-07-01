@@ -1,5 +1,5 @@
 /**
- * @openloomi/rag - RAG pipeline utilities: chunking, embeddings, and vector stores.
+ * @openzhiyu/rag - RAG pipeline utilities: chunking, embeddings, and vector stores.
  */
 
 export {
@@ -26,9 +26,13 @@ export {
   searchVectorStore,
   deleteDocumentFromVectorStore,
   getVectorStoreStats,
+  getVectorStoreCapabilities,
+  FALLBACK_VECTOR_STORE_CAPABILITIES,
   configureVectorService,
   type IVectorStore,
   type SearchResult,
+  type VectorStoreBackend,
+  type VectorStoreCapabilities,
   type VectorSearchFilter,
   type VectorStoreSearchOptions,
   type VectorStoreStats,
@@ -93,6 +97,8 @@ export {
 } from "./chroma-store";
 
 export {
+  PG_VECTOR_STORE_CAPABILITIES,
+  getPGVectorCapabilities,
   getPGVectorStore,
   processDocumentWithPGVector,
   searchWithPGVector,

@@ -1,7 +1,7 @@
 /**
  * MCP Config Loader
  *
- * Loads MCP server configuration from ~/.openloomi/mcp.json
+ * Loads MCP server configuration from ~/.openzhiyu/mcp.json
  * Uses mtime-based caching to avoid re-reading unchanged files
  */
 
@@ -9,7 +9,7 @@ import fs from "node:fs/promises";
 import fsSync from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { FileCache } from "@openloomi/shared";
+import { FileCache } from "@openzhiyu/shared";
 
 // Module-level file cache for MCP configs (5 minute TTL for safety)
 const mcpFileCache = new FileCache<Record<string, McpServerConfig>>();
@@ -39,14 +39,14 @@ export type McpServerConfig =
   | McpSSEServerConfig;
 
 /**
- * Get the MCP config path (default: ~/.openloomi/mcp.json)
- * Override by setting OPENLOOMI_MCP_CONFIG_PATH environment variable.
+ * Get the MCP config path (default: ~/.openzhiyu/mcp.json)
+ * Override by setting OPENZHIYU_MCP_CONFIG_PATH environment variable.
  */
 export function getMcpConfigPath(): string {
-  if (process.env.OPENLOOMI_MCP_CONFIG_PATH) {
-    return process.env.OPENLOOMI_MCP_CONFIG_PATH;
+  if (process.env.OPENZHIYU_MCP_CONFIG_PATH) {
+    return process.env.OPENZHIYU_MCP_CONFIG_PATH;
   }
-  return path.join(os.homedir(), ".openloomi", "mcp.json");
+  return path.join(os.homedir(), ".openzhiyu", "mcp.json");
 }
 
 /**
@@ -113,7 +113,7 @@ export interface McpConfig {
 }
 
 /**
- * Load MCP servers configuration from ~/.openloomi/mcp.json
+ * Load MCP servers configuration from ~/.openzhiyu/mcp.json
  * Uses mtime-based caching to avoid re-reading unchanged files
  *
  * @param mcpConfig Optional config to control loading
@@ -140,7 +140,7 @@ export async function loadMcpServers(
     }
 
     // Load and cache
-    const servers = await loadMcpServersFromFile(configPath, "openloomi");
+    const servers = await loadMcpServersFromFile(configPath, "openzhiyu");
     mcpFileCache.set(configPath, stats.mtimeMs, servers);
     return servers;
   } catch {

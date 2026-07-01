@@ -9,8 +9,8 @@ import { auth } from "@/app/(auth)/auth";
 import { db } from "@/lib/db/queries";
 import { insight, insightNotes, bot } from "@/lib/db/schema";
 import { eq, desc, and } from "drizzle-orm";
-import { AppError } from "@openloomi/shared/errors";
-import { getBotsByUserId, createBot } from "@/lib/db/queries";
+import { AppError } from "@openzhiyu/shared/errors";
+import { createBot, getBotsByUserId } from "@/lib/db/bot-queries";
 import type { InsertInsightNote } from "@/lib/db/schema";
 
 export type LibraryNoteItem = {

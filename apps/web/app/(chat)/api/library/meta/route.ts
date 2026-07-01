@@ -4,12 +4,10 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
-import {
-  getChatById,
-  getChatInsightIds,
-  getInsightByIdForUser,
-} from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { getChatById } from "@/lib/db/chat-queries";
+import { getInsightByIdForUser } from "@/lib/db/queries";
+import { getChatInsightIds } from "@/lib/db/insight-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 
 export type LibraryMetaChat = {
   title: string;

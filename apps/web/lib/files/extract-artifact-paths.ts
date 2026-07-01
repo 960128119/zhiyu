@@ -44,11 +44,11 @@ function buildArtifactPathPatterns(): RegExp[] {
   return [
     new RegExp(`/Users/[^/\\\\]+/Desktop/.+?\\.(${ext})${b}`, "gi"),
     new RegExp(
-      `/Users/[^/\\\\]+/\\.openloomi/data/memory/.+?\\.(${ext})${b}`,
+      `/Users/[^/\\\\]+/\\.openzhiyu/data/memory/.+?\\.(${ext})${b}`,
       "gi",
     ),
     new RegExp(
-      `/Users/[^/\\\\]+/\\.openloomi/sessions/[^/\\\\]+(?:/[^/\\\\]+)?/.+?\\.(${ext})${b}`,
+      `/Users/[^/\\\\]+/\\.openzhiyu/sessions/[^/\\\\]+(?:/[^/\\\\]+)?/.+?\\.(${ext})${b}`,
       "gi",
     ),
     new RegExp(`/(?:Users|home)/[^/\\\\].+?\\.(${ext})${b}`, "gi"),
@@ -57,11 +57,11 @@ function buildArtifactPathPatterns(): RegExp[] {
       "gi",
     ),
     new RegExp(
-      `[A-Za-z]:(?:\\\\|/)Users(?:\\\\|/)[^/\\\\\\n\\r]+(?:\\\\|/)\\.openloomi(?:\\\\|/)sessions(?:\\\\|/)[^/\\\\\\n\\r]+(?:\\\\|/)(?:[^/\\\\\\n\\r]+(?:\\\\|/))?.+?\\.(${ext})${b}`,
+      `[A-Za-z]:(?:\\\\|/)Users(?:\\\\|/)[^/\\\\\\n\\r]+(?:\\\\|/)\\.openzhiyu(?:\\\\|/)sessions(?:\\\\|/)[^/\\\\\\n\\r]+(?:\\\\|/)(?:[^/\\\\\\n\\r]+(?:\\\\|/))?.+?\\.(${ext})${b}`,
       "gi",
     ),
     new RegExp(
-      `[A-Za-z]:(?:\\\\|/)Users(?:\\\\|/)[^/\\\\\\n\\r]+(?:\\\\|/)\\.openloomi(?:\\\\|/)data(?:\\\\|/)memory(?:\\\\|/).+?\\.(${ext})${b}`,
+      `[A-Za-z]:(?:\\\\|/)Users(?:\\\\|/)[^/\\\\\\n\\r]+(?:\\\\|/)\\.openzhiyu(?:\\\\|/)data(?:\\\\|/)memory(?:\\\\|/).+?\\.(${ext})${b}`,
       "gi",
     ),
   ];

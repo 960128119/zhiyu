@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import {
-  getDocument,
-  getDocumentChunks,
-  deleteDocument,
-} from "@/lib/ai/rag/langchain-service";
+  handleDeleteRagDocument,
+  handleGetRagDocument,
+} from "@openzhiyu/runtime-api/rag";
+import { ragRuntimeDeps } from "@/lib/runtime-api/rag";
 
 /**
  * GET /api/rag/documents/[documentId]
@@ -21,44 +21,12 @@ export async function GET(
 
   try {
     const { documentId } = await params;
-
-    const document = await getDocument(documentId);
-
-    if (!document) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 },
-      );
-    }
-
-    // Verify document ownership (IDOR protection)
-    if (document.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 },
-      );
-    }
-
-    // Get chunks for this document
-    const chunks = await getDocumentChunks(documentId);
-
-    return NextResponse.json({
-      document: {
-        id: document.id,
-        fileName: document.fileName,
-        contentType: document.contentType,
-        blobPath: document.blobPath,
-        sizeBytes: Number(document.sizeBytes),
-        totalChunks: document.totalChunks,
-        uploadedAt: document.uploadedAt,
-        chunks: chunks.map((chunk: any) => ({
-          id: chunk.id,
-          chunkIndex: chunk.chunkIndex,
-          content: chunk.content,
-          createdAt: chunk.createdAt,
-        })),
-      },
-    });
+    const result = await handleGetRagDocument(
+      ragRuntimeDeps,
+      session.user,
+      documentId,
+    );
+    return NextResponse.json(result.body, { status: result.status });
   } catch (error) {
     console.error("RAG document fetch error:", error);
     return NextResponse.json(
@@ -86,30 +54,12 @@ export async function DELETE(
 
   try {
     const { documentId } = await params;
-
-    const document = await getDocument(documentId);
-
-    if (!document) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 },
-      );
-    }
-
-    // Verify document ownership (IDOR protection)
-    if (document.userId !== session.user.id) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 },
-      );
-    }
-
-    await deleteDocument(documentId);
-
-    return NextResponse.json({
-      success: true,
-      message: "Document deleted from strategy memory",
-    });
+    const result = await handleDeleteRagDocument(
+      ragRuntimeDeps,
+      session.user,
+      documentId,
+    );
+    return NextResponse.json(result.body, { status: result.status });
   } catch (error) {
     console.error("RAG document delete error:", error);
     return NextResponse.json(

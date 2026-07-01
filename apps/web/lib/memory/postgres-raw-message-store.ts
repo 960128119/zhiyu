@@ -34,7 +34,7 @@ import type {
   RawMessageQuery,
   RawMessageStats,
   RawMessageStorageManager,
-} from "@openloomi/indexeddb/storage";
+} from "@openzhiyu/indexeddb/storage";
 
 interface PostgresRawMessageSemanticSearchInput {
   userId: string;

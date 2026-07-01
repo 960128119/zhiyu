@@ -1,17 +1,16 @@
 import { auth } from "@/app/(auth)/auth";
 import {
   upsertInsightsByBotId,
-  getBotWithAccountById,
-  getUserInsightSettings,
   getStoredInsightsByBotId,
-  updateBot,
   getFailedGroupsToRetry,
 } from "../db/queries";
-import type { BotWithAccount } from "../db/queries";
+import { getBotWithAccountById, updateBot } from "../db/bot-queries";
+import { getUserInsightSettings } from "../db/insight-queries";
+import type { BotWithAccount } from "../db/bot-queries";
 import {
   timeBeforeHours,
   timeBeforeMinutes,
-} from "@openloomi/integrations/channels/sources/types";
+} from "@openzhiyu/integrations/channels/sources/types";
 import { userInsightSettingsToPrompt } from "./settings";
 import { deduplicateInsightsByGroup } from "./timeline";
 import { getInsightsByBotId } from "./processor";

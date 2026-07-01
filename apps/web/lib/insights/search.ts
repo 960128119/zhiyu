@@ -2,14 +2,10 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db, insight, insightEmbeddings } from "@/lib/db";
 import { isTauriMode } from "@/lib/env/constants";
 import {
-  isInsightChromaEnabled,
-  searchInsightsWithChroma,
-} from "@/lib/memory/chroma-memory-index";
-import {
   isInsightSQLiteVecEnabled,
   searchInsightsWithSQLiteVec,
 } from "@/lib/memory/sqlite-vector-index";
-import { getEmbeddingProviderType } from "@openloomi/rag";
+import { getEmbeddingProviderType } from "@openzhiyu/rag/embedding-provider";
 
 const DEFAULT_LIMIT = 10;
 const DEFAULT_THRESHOLD = 0.7;
@@ -18,6 +14,7 @@ const DEFAULT_SQLITE_CANDIDATE_LIMIT = 5_000;
 export interface InsightSemanticSearchInput {
   userId: string;
   query: string;
+  queryEmbedding?: number[];
   limit?: number;
   threshold?: number;
   botIds?: string[];
@@ -82,6 +79,29 @@ function clampThreshold(threshold: number | undefined): number {
   return Math.min(1, Math.max(-1, threshold ?? DEFAULT_THRESHOLD));
 }
 
+function isInsightChromaBackendEnabled(): boolean {
+  const keys = [
+    "INSIGHT_VECTOR_STORE_BACKEND",
+    "MEMORY_VECTOR_STORE_BACKEND",
+    "VECTOR_STORE_BACKEND",
+  ];
+  return keys.some((key) => process.env[key]?.trim().toLowerCase() === "chroma");
+}
+
+async function searchInsightsWithChromaBackend(input: {
+  userId: string;
+  queryEmbedding: number[];
+  limit: number;
+  threshold: number;
+  botIds?: string[];
+  includeArchived?: boolean;
+}) {
+  const { searchInsightsWithChroma } = await import(
+    "@/lib/memory/chroma-memory-index"
+  );
+  return searchInsightsWithChroma(input);
+}
+
 function hasEmbeddingProviderConfig(authToken?: string): boolean {
   if (getEmbeddingProviderType() === "local") {
     return true;
@@ -103,7 +123,7 @@ async function embedQuery(
   }
 
   const { UniversalEmbeddings } =
-    await import("@openloomi/rag/universal-embeddings");
+    await import("@openzhiyu/rag/universal-embeddings");
   const embeddings = new UniversalEmbeddings(authToken);
   return embeddings.embedQuery(query);
 }
@@ -309,11 +329,12 @@ export async function searchInsightsSemantically(
 
   const limit = clampLimit(input.limit);
   const threshold = clampThreshold(input.threshold);
-  const queryEmbedding = await embedQuery(query, input.authToken);
+  const queryEmbedding =
+    input.queryEmbedding ?? (await embedQuery(query, input.authToken));
 
-  if (isInsightChromaEnabled()) {
+  if (isInsightChromaBackendEnabled()) {
     try {
-      const results = await searchInsightsWithChroma({
+      const results = await searchInsightsWithChromaBackend({
         userId: input.userId,
         queryEmbedding,
         limit,

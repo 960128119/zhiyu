@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/app/(auth)/auth";
-import { listIntegrationCatalogEntries } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { listIntegrationCatalogEntries } from "@/lib/db/bot-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 
 export async function GET(request: Request) {
   const session = await auth();

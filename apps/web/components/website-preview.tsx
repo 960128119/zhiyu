@@ -77,7 +77,7 @@ export function WebsitePreview({
 
         // Extract taskId from path if available
         const sessionMatch = filePath.match(
-          /\/\.openloomi\/sessions\/([^\/]+)/,
+          /\/\.openzhiyu\/sessions\/([^\/]+)/,
         );
         if (sessionMatch) {
           setExtractedTaskId(sessionMatch[1]);

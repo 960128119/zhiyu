@@ -1,6 +1,7 @@
 import { auth } from "@/app/(auth)/auth";
-import { getChatById, getVotesByChatId, voteMessage } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { getChatById } from "@/lib/db/chat-queries";
+import { getVotesByChatId, voteMessage } from "@/lib/db/queries";
+import { AppError } from "@openzhiyu/shared/errors";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

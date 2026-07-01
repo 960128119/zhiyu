@@ -1,5 +1,5 @@
 {
-  "name": "@openloomi/benchmark-longmemeval",
+  "name": "@openzhiyu/benchmark-longmemeval",
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",

@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { Button, Textarea } from "@openloomi/ui";
+import { Button, Textarea } from "@openzhiyu/ui";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { toast } from "@/components/toast";
 import { useTranslation } from "react-i18next";
 import { RemixIcon } from "@/components/remix-icon";

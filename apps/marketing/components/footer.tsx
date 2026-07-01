@@ -64,29 +64,29 @@ export function Footer({
   const finalShowBackgroundImage =
     variant !== undefined ? false : (showBackgroundImage ?? false);
   const useUnifiedStyle = true;
-  const appDomain = "https://app.openloomi.ai";
+  const appDomain = "https://app.openzhiyu.ai";
 
   const [showWechatQR, setShowWechatQR] = useState(false);
 
   const downloadLinks = {
     macOS: {
       arm64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_macOS_aarch64.dmg",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_macOS_aarch64.dmg",
       amd64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_macOS_amd64.dmg",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_macOS_amd64.dmg",
     },
     linux: {
       amd64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_linux_amd64.deb",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_linux_amd64.deb",
       arm64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_linux_aarch64.deb",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_linux_aarch64.deb",
     },
     windows: {
       amd64:
-        "https://github.com/melandlabs/openloomi/releases/download/v0.5.0/openloomi_0.5.0_windows_amd64.exe",
+        "https://github.com/melandlabs/openzhiyu/releases/download/v0.5.0/openzhiyu_0.5.0_windows_amd64.exe",
       arm64: null,
     },
-    github: "https://github.com/melandlabs/openloomi/releases",
+    github: "https://github.com/melandlabs/openzhiyu/releases",
   };
 
   const detectPlatform = () => {
@@ -166,7 +166,7 @@ export function Footer({
         },
         {
           name: "GitHub",
-          href: "https://github.com/melandlabs/openloomi",
+          href: "https://github.com/melandlabs/openzhiyu",
           icon: <RemixIcon name="github" variant="line" size="size-4" />,
         },
         {
@@ -245,7 +245,7 @@ export function Footer({
                 <Link href="/" className="flex items-center gap-2 mb-3">
                   <Image
                     src="/img/logo-full-dark.png"
-                    alt="OpenLoomi"
+                    alt="OpenZhiyu"
                     className="hidden md:block object-contain"
                     width={127}
                     height={28}
@@ -253,7 +253,7 @@ export function Footer({
                   />
                   <Image
                     src="/img/logo.svg"
-                    alt="OpenLoomi"
+                    alt="OpenZhiyu"
                     className="block md:hidden h-7 w-auto object-contain"
                     width={28}
                     height={28}
@@ -355,10 +355,10 @@ export function Footer({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="bg-primary-gradient text-primary-foreground px-6 py-3 rounded-lg shadow-sm font-medium transition-all transform flex items-center gap-2 hover:brightness-95"
-                      aria-label={t("hero.downloadopenloomi")}
+                      aria-label={t("hero.downloadopenzhiyu")}
                     >
                       <RemixIcon name="download" size="size-4" />
-                      {t("hero.downloadopenloomi")}
+                      {t("hero.downloadopenzhiyu")}
                     </a>
                   )}
                 </div> */}

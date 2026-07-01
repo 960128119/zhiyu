@@ -11,8 +11,8 @@ import { homedir } from "node:os";
 import AdmZip from "adm-zip";
 import { APP_DIR_NAME } from "@/lib/env/config/constants";
 
-// Get openloomi skills directory path
-function getopenloomiSkillsDir(): string {
+// Get openzhiyu skills directory path
+function getopenzhiyuSkillsDir(): string {
   const homeDir = homedir();
   const skillsDir = join(homeDir, APP_DIR_NAME, "skills");
   if (!existsSync(skillsDir)) {
@@ -259,7 +259,7 @@ export async function POST(request: NextRequest) {
       files = formData.getAll("files") as File[];
     }
 
-    const skillsDir = getopenloomiSkillsDir();
+    const skillsDir = getopenzhiyuSkillsDir();
     const results: Array<{ name: string; success: boolean; error?: string }> = [];
 
     // Handle path-based import (from Tauri dialog)

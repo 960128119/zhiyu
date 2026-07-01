@@ -14,13 +14,6 @@ import {
   deleteJob as deleteCronJob,
   toggleJob,
 } from "@/lib/cron/service";
-import { executeJob } from "@/lib/cron/executor";
-import { startJobExecution, completeJobExecution } from "@/lib/cron/service";
-import { createJobExecutionStreamResponse } from "@/lib/cron/stream-response";
-import { isTauriMode } from "@/lib/env";
-import { AI_PROXY_BASE_URL } from "@/lib/env/constants";
-import type { JobExecutionContext } from "@/lib/cron/types";
-import { runScheduledJobLoop } from "@/lib/loops";
 
 export const dynamic = "force-dynamic";
 
@@ -115,209 +108,16 @@ export async function POST(
 
     const url = new URL(request.url);
     const action = url.searchParams.get("action");
-    const shouldStream = url.searchParams.get("stream") === "true";
     const { id } = await params;
 
-    // Parse body for execute action
-    let body: Record<string, unknown> = {};
     if (action === "execute") {
-      try {
-        body = await request.json();
-      } catch {
-        body = {};
-      }
-    }
-
-    if (action === "execute") {
-      // Manually execute the job
-      console.log("[ScheduledJobs] Executing job:", id);
-      const job = await getJob(session.user.id, id);
-      if (!job) {
-        console.error("[ScheduledJobs] Job not found:", id);
-        return NextResponse.json({ error: "Job not found" }, { status: 404 });
-      }
-
-      if (job.lastStatus === "running") {
-        return NextResponse.json(
-          { error: "Job is already running" },
-          { status: 409 },
-        );
-      }
-
-      console.log("[ScheduledJobs] Job details:", {
-        id: job.id,
-        name: job.name,
-        jobType: job.jobType,
-        jobConfig: job.jobConfig,
-      });
-
-      // Extract characterId from jobConfig if this job belongs to a character
-      let characterIdFromJob: string | undefined;
-      try {
-        const parsedConfig =
-          typeof job.jobConfig === "string"
-            ? JSON.parse(job.jobConfig)
-            : (job.jobConfig as Record<string, unknown>);
-        characterIdFromJob = parsedConfig?.characterId as string | undefined;
-      } catch {
-        // ignore parse errors
-      }
-
-      const context: JobExecutionContext = {
-        userId: session.user.id,
-        jobId: job.id,
-        executionId: crypto.randomUUID(),
-        triggeredBy: "manual" as const,
-        ...(characterIdFromJob && { characterId: characterIdFromJob }),
-        timezone: job.timezone,
-        modelConfig: {
-          baseUrl: AI_PROXY_BASE_URL,
-          ...(body.modelConfig || {}),
+      return NextResponse.json(
+        {
+          error:
+            "Legacy scheduled job execution is disabled. Run native OpenZhiyu Loops from /loops.",
         },
-      };
-
-      await startJobExecution(context);
-
-      // Serialize jobConfig to string for executeJob
-      const jobConfigStr =
-        typeof job.jobConfig === "string"
-          ? job.jobConfig
-          : JSON.stringify(job.jobConfig);
-
-      console.log("[ScheduledJobs] Executing with config:", jobConfigStr);
-
-      // Check if running in Tauri mode (using environment variable)
-      const isTauriRequest = isTauriMode();
-
-      console.log("[ScheduledJobs] Request environment:", {
-        isTauriRequest,
-        deploymentMode: process.env.DEPLOYMENT_MODE,
-        isTauri: process.env.IS_TAURI,
-      });
-
-      if (shouldStream) {
-        const userMessageId = crypto.randomUUID();
-        const assistantMessageId = crypto.randomUUID();
-        let fallbackMessage = "";
-        try {
-          const parsedConfig = JSON.parse(jobConfigStr) as { handler?: string };
-          fallbackMessage =
-            typeof parsedConfig.handler === "string"
-              ? parsedConfig.handler
-              : "";
-        } catch {
-          // ignore malformed config, executeJob will handle it
-        }
-        const messageText = job.description || fallbackMessage;
-
-        return createJobExecutionStreamResponse(async (send) => {
-          send({
-            type: "execution_start",
-            chatId: context.jobId,
-            executionId: context.executionId,
-            message: messageText,
-            userMessageId,
-            assistantMessageId,
-          });
-
-          try {
-            const result = await runScheduledJobLoop({
-              job,
-              context,
-              jobConfigStr,
-              jobDescription: job.description || undefined,
-              execute: () =>
-                executeJob(
-                  context,
-                  jobConfigStr,
-                  job.description || undefined,
-                  {
-                    userMessageId,
-                    assistantMessageId,
-                    onAgentEvent: send,
-                  },
-                ),
-            });
-            await completeJobExecution(context, result);
-            send({
-              type: "execution_done",
-              executionId: context.executionId,
-              status: result.status,
-            });
-          } catch (error) {
-            const errorMessage =
-              error instanceof Error ? error.message : String(error);
-            await completeJobExecution(context, {
-              status: "error",
-              error: errorMessage,
-              output: "",
-              duration: 0,
-            });
-            send({ type: "error", content: errorMessage });
-            send({
-              type: "execution_done",
-              executionId: context.executionId,
-              status: "error",
-            });
-          }
-        });
-      }
-
-      // Execute job asynchronously - don't wait for completion
-      // This allows the UI to update immediately
-      console.log("[ScheduledJobs] Starting async execution...");
-      runScheduledJobLoop({
-        job,
-        context,
-        jobConfigStr,
-        jobDescription: job.description || undefined,
-        execute: () =>
-          executeJob(context, jobConfigStr, job.description || undefined),
-      })
-        .then(async (result) => {
-          console.log(
-            "[ScheduledJobs] Execution completed, updating database:",
-            {
-              executionId: context.executionId,
-              status: result.status,
-              hasResult: !!result.result,
-              hasChatId: !!result.result?.chatId,
-            },
-          );
-          try {
-            await completeJobExecution(context, result);
-          } catch (dbError) {
-            console.error(
-              "[ScheduledJobs] Failed to update database:",
-              dbError,
-            );
-          }
-        })
-        .catch((error) => {
-          console.error("[ScheduledJobs] Execution failed:", error);
-          // Still mark as completed with error
-          completeJobExecution(context, {
-            status: "error",
-            error: error instanceof Error ? error.message : String(error),
-            output: "",
-            duration: 0,
-          })
-            .then(() => {})
-            .catch((dbError) => {
-              console.error(
-                "[ScheduledJobs] Failed to mark as error:",
-                dbError,
-              );
-            });
-        });
-
-      // Return immediately with execution ID
-      return NextResponse.json({
-        success: true,
-        executionId: context.executionId,
-        jobId: context.jobId,
-        message: "Job execution started",
-      });
+        { status: 410 },
+      );
     }
 
     if (action === "enable") {

@@ -7,11 +7,13 @@ import {
   type ChromaVectorStoreOptions,
 } from "./chroma-store";
 import { getSQLiteVecStore, type SchemaModule } from "./sqlite-vec-store";
+import { getVectorStoreCapabilities } from "./vector-service";
 import type {
   DocumentChunk,
   IVectorStore,
   VectorSearchFilter,
   VectorSearchResult,
+  VectorStoreCapabilities,
 } from "./vector-service";
 
 const DEFAULT_SEARCH_LIMIT = 10;
@@ -69,6 +71,7 @@ export interface UnifiedVectorSearchStats {
   dimensions: number;
   backend: VectorStoreConfig["type"];
   embeddingModel: string;
+  capabilities: VectorStoreCapabilities;
 }
 
 export interface UnifiedVectorSearchServiceOptions {
@@ -239,6 +242,7 @@ export class UnifiedVectorSearchService {
       ...stats,
       backend: this.backend ?? "custom",
       embeddingModel: this.embeddingProvider.getModelName(),
+      capabilities: getVectorStoreCapabilities(store),
     };
   }
 

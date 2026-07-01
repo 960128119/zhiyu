@@ -6,7 +6,7 @@ import { cache } from "react";
 import {
   deleteMessagesByChatIdAfterTimestamp,
   getMessageById,
-} from "@/lib/db/queries";
+} from "@/lib/db/chat-queries";
 import { auth } from "@/app/(auth)/auth";
 import { getCloudUrl } from "@/lib/auth/cloud-proxy";
 import {
@@ -17,17 +17,12 @@ import {
 const COOKIE_CONFIRMATION_MAX_AGE = 60 * 24 * 60 * 60; // 60 days
 
 export async function setCookiePreference(value: string) {
-  const session = await auth();
-  if (!session?.user) {
-    throw new Error("Unauthorized");
-  }
-
   const cookieStore = await cookies();
   cookieStore.set("user-cookie:confirm", value, {
     path: "/",
     maxAge: COOKIE_CONFIRMATION_MAX_AGE,
     sameSite: "lax",
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
   });
 }
 

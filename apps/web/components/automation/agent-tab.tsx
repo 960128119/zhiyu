@@ -2,15 +2,15 @@
 
 import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
 import { useTranslation } from "react-i18next";
-import { ScrollArea } from "@openloomi/ui";
-import { Button, Input } from "@openloomi/ui";
+import { ScrollArea } from "@openzhiyu/ui";
+import { Button, Input } from "@openzhiyu/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { toast } from "@/components/toast";
 

@@ -8,16 +8,16 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { Button, Input, Label } from "@openloomi/ui";
+import { Button, Input, Label } from "@openzhiyu/ui";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { toast } from "@/components/toast";
 import type { InsightFilterCondition } from "@/lib/insights/filter-schema";
@@ -32,7 +32,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { useIntegrations } from "@/hooks/use-integrations";
 import {
   getSupportedFilterFields,

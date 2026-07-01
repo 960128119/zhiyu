@@ -1,0 +1,14 @@
+{
+  "name": "@openzhiyu/runtime-worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./jobs": "./src/jobs.ts"
+  },
+  "scripts": {
+    "dev": "tsx ./src/index.ts",
+    "build": "echo no build needed"
+  }
+}

@@ -1,5 +1,5 @@
 /**
- * @openloomi/ai - Routing: intelligent model call routing
+ * @openzhiyu/ai - Routing: intelligent model call routing
  */
 
 export {

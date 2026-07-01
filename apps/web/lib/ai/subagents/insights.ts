@@ -2,14 +2,14 @@ import { generateText, type ModelMessage } from "ai";
 import { getModelProvider } from "@/lib/ai";
 import { z } from "zod";
 import { jsonrepair } from "jsonrepair";
-import type { Platform } from "@openloomi/integrations/channels/sources/types";
+import type { Platform } from "@openzhiyu/integrations/channels/sources/types";
 import { writeFileSync } from "node:fs";
 import { isDevelopmentEnvironment } from "@/lib/env/constants";
-import { extractJsonFromMarkdown } from "@openloomi/ai";
+import { extractJsonFromMarkdown } from "@openzhiyu/ai";
 import { isTauriMode } from "@/lib/env";
 
 // Re-export InsightTaskItem for backward compatibility with existing imports
-export type { InsightTaskItem } from "@openloomi/insights";
+export type { InsightTaskItem } from "@openzhiyu/insights";
 
 const maxConversationRounds = 5;
 const maxInputChunkLength = 40000;
@@ -713,7 +713,7 @@ Judge based on impact scope and business value, output one of the following valu
         },
         {
           "action": "ask",
-          "reason": "Ask openloomi for more information about..."
+          "reason": "Ask openzhiyu for more information about..."
         }
       ]
     }

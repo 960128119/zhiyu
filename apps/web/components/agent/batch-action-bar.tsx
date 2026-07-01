@@ -1,10 +1,10 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@openloomi/hooks/use-is-mobile";
+import { useIsMobile } from "@openzhiyu/hooks/use-is-mobile";
 import "../../i18n";
 
 export interface BatchActionBarProps {

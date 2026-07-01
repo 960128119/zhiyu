@@ -1,1 +1,1 @@
-export * from "@openloomi/insights";
+export * from "@openzhiyu/insights";

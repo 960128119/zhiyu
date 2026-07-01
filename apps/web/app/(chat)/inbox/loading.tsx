@@ -1,4 +1,4 @@
-import { Skeleton } from "@openloomi/ui";
+import { Skeleton } from "@openzhiyu/ui";
 
 const skeletonItems = Array.from({ length: 8 });
 

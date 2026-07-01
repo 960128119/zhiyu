@@ -1,7 +1,7 @@
 /**
  * CL-bench and CL-bench-Life Evaluators.
  *
- * Uses OpenLoomi's /api/native/agent for answering questions.
+ * Uses OpenZhiyu's /api/native/agent for answering questions.
  * CL-bench: Professional tasks with low reasoning effort.
  * CL-bench-Life: Everyday life tasks with high reasoning effort.
  */
@@ -50,7 +50,7 @@ abstract class BaseCLBenchEvaluator {
     this.reasoningEffort = reasoningEffort;
     this.checkpointDir = join(
       homedir(),
-      ".openloomi",
+      ".openzhiyu",
       "data",
       "memory",
       "bench",

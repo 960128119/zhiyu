@@ -20,9 +20,9 @@ import {
   weixinSendImageMessage,
   weixinSendFileMessage,
   CDN_BASE_URL,
-} from "@openloomi/integrations/weixin/ilink-client";
-import type { WeixinIlinkCredentials } from "@openloomi/integrations/weixin/ilink-client";
-import { WeixinConversationStore } from "@openloomi/integrations/weixin/conversation-store";
+} from "@openzhiyu/integrations/weixin/ilink-client";
+import type { WeixinIlinkCredentials } from "@openzhiyu/integrations/weixin/ilink-client";
+import { WeixinConversationStore } from "@openzhiyu/integrations/weixin/conversation-store";
 import { getAppMemoryDir } from "@/lib/utils/path";
 import { weixinLogger } from "@/lib/utils/logger";
 import { createTaskSession } from "@/lib/files/workspace/sessions";
@@ -158,7 +158,7 @@ async function weixinSendFileFailureNotice(
 ): Promise<void> {
   try {
     const { weixinSendTextMessage } = await import(
-      "@openloomi/integrations/weixin/ilink-client"
+      "@openzhiyu/integrations/weixin/ilink-client"
     );
     await weixinSendTextMessage({
       credentials,
@@ -309,7 +309,7 @@ async function processWeixinInboundMessage(
     const userContent = text || allMediaHints.join("\n");
 
     const prompt = [
-      "You are the openloomi assistant. Help the user based on the following cross-platform message summaries.",
+      "You are the openzhiyu assistant. Help the user based on the following cross-platform message summaries.",
       "When information is insufficient, say so instead of making up content.",
       "If the user sent media (image/voice/file/video) without text, acknowledge what was received and respond appropriately.",
       "",

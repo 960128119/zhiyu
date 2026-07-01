@@ -1,25 +1,25 @@
 import { App, LogLevel } from "@slack/bolt";
 import { createReadStream } from "node:fs";
 import { basename } from "node:path";
-import { MessagePlatformAdapter } from "@openloomi/integrations/channels";
+import { MessagePlatformAdapter } from "@openzhiyu/integrations/channels";
 import type {
   Messages,
   At,
   Image,
   Message,
-} from "@openloomi/integrations/channels";
-import type { Attachment } from "@openloomi/shared";
+} from "@openzhiyu/integrations/channels";
+import type { Attachment } from "@openzhiyu/shared";
 import type { UserType } from "@/app/(auth)/auth";
 import { ingestExternalAttachment } from "@/lib/files/external-ingest";
 import {
   delay,
   timeBeforeHours,
   type ExtractedMessageInfo,
-} from "@openloomi/shared";
+} from "@openzhiyu/shared";
 import type {
   MessageEvent,
   MessageTarget,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 
 const DEBUG = process.env.DEBUG_SLACK === "true";
 
@@ -1009,7 +1009,7 @@ export class SlackAdapter extends MessagePlatformAdapter {
   }
 }
 
-export function slackMessageToopenloomiMessage(
+export function slackMessageToopenzhiyuMessage(
   message: any,
   bot_self?: string,
 ): Messages {

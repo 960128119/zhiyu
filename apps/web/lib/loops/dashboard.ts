@@ -25,6 +25,36 @@ export interface LoopRunDashboardSummary {
   actionGuardBlocked: boolean;
   modelCheckerEnabled: boolean;
   modelCheckerReason: string | null;
+  executionTrace: LoopRunTraceSummary;
+}
+
+export interface LoopRunTraceStep {
+  type: string;
+  title: string;
+  detail: string | null;
+  toolName: string | null;
+  status: string | null;
+  timestamp: string | null;
+}
+
+export interface LoopRunTraceSummary {
+  events: LoopRunTraceStep[];
+  toolCallCount: number;
+  failedToolCallCount: number;
+  permissionDecisionCount: number;
+  durationMs: number | null;
+}
+
+export interface LoopSpaceSummary {
+  triggerLabel: string;
+  contextLabel: string;
+  deliveryLabel: string | null;
+  plannerAgent: string;
+  executorAgent: string;
+  verifierAgent: string;
+  harness: string;
+  externalWriteMode: "auto" | "manual_approval" | "none";
+  permissionLabel: string;
 }
 
 export interface LoopDashboardSummary {
@@ -43,6 +73,7 @@ export interface LoopDashboardSummary {
   nextScheduledRunAt: string | null;
   lastScheduledRunAt: string | null;
   schedulerStatus: string | null;
+  spaceSummary: LoopSpaceSummary;
   latestRun: LoopRunDashboardSummary | null;
   updatedAt: Date;
   createdAt: Date;
@@ -69,6 +100,127 @@ function getNestedRecord(
   key: string,
 ): Record<string, unknown> {
   return asRecord(value[key]);
+}
+
+function stringValue(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function numberValue(value: unknown): number | null {
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+
+function summarizeExecutionTrace(
+  verification: Record<string, unknown>,
+): LoopRunTraceSummary {
+  const trace = asRecord(verification.executionTrace);
+  const events = Array.isArray(trace.events)
+    ? trace.events
+        .map((event): LoopRunTraceStep | null => {
+          const record = asRecord(event);
+          const type = stringValue(record.type);
+          if (!type) return null;
+          return {
+            type,
+            title: stringValue(record.title) ?? type,
+            detail: stringValue(record.detail),
+            toolName: stringValue(record.toolName),
+            status: stringValue(record.status),
+            timestamp: stringValue(record.timestamp),
+          };
+        })
+        .filter((event): event is LoopRunTraceStep => Boolean(event))
+    : [];
+
+  const inferredToolCallCount = events.filter(
+    (event) => event.type === "tool_used",
+  ).length;
+  const inferredFailedToolCallCount = events.filter(
+    (event) => event.type === "tool_result" && event.status === "error",
+  ).length;
+  const inferredPermissionDecisionCount = events.filter(
+    (event) => event.type === "permission_decision",
+  ).length;
+
+  return {
+    events: events.slice(0, 20),
+    toolCallCount: numberValue(trace.toolCallCount) ?? inferredToolCallCount,
+    failedToolCallCount:
+      numberValue(trace.failedToolCallCount) ?? inferredFailedToolCallCount,
+    permissionDecisionCount:
+      numberValue(trace.permissionDecisionCount) ??
+      inferredPermissionDecisionCount,
+    durationMs: numberValue(trace.durationMs),
+  };
+}
+
+function triggerLabel(triggerConfig: Record<string, unknown>): string {
+  const type = triggerConfig.type;
+  if (type === "cron") {
+    return `Cron ${stringValue(triggerConfig.expression) ?? ""}`.trim();
+  }
+  if (type === "interval") {
+    return `每 ${triggerConfig.minutes ?? "?"} 分钟`;
+  }
+  if (type === "once") {
+    return `单次 ${stringValue(triggerConfig.at) ?? ""}`.trim();
+  }
+  if (type === "manual") return "手动触发";
+  if (type === "scheduled_job") return "旧版定时任务";
+  return "原生 Loop";
+}
+
+function buildLoopSpaceSummary(input: {
+  loop: Loop;
+  state: LoopState | null;
+}): LoopSpaceSummary {
+  const stateJson = asRecord(input.state?.stateJson);
+  const loopSpec = asRecord(stateJson.loopSpec);
+  const metadata = asRecord(loopSpec.metadata);
+  const agents = asRecord(metadata.agents);
+  const delivery = asRecord(metadata.delivery);
+  const weather = asRecord(metadata.weather);
+  const approval = asRecord(input.loop.approvalPolicy);
+  const context = asRecord(input.loop.contextConfig);
+
+  const recipientName = stringValue(delivery.recipientName);
+  const platform = stringValue(delivery.platform);
+  const city = stringValue(weather.city);
+  const externalWrites = stringValue(approval.externalWrites);
+  const deliveryLabel =
+    platform === "wechat_desktop" && recipientName
+      ? `微信：${recipientName}`
+      : platform
+        ? platform
+        : null;
+  const externalWriteMode =
+    externalWrites === "allow"
+      ? "auto"
+      : externalWrites === "require_approval"
+        ? "manual_approval"
+        : "none";
+
+  return {
+    triggerLabel: triggerLabel(input.loop.triggerConfig),
+    contextLabel:
+      city ?? stringValue(context.instructions) ?? "按任务说明收集上下文",
+    deliveryLabel,
+    plannerAgent:
+      stringValue(agents.planner) ??
+      (metadata.createdFrom === "natural_language"
+        ? "natural-language-planner"
+        : "template-planner"),
+    executorAgent: stringValue(agents.executor) ?? "native-loop-executor",
+    verifierAgent: stringValue(agents.verifier) ?? "loop-verifier",
+    harness: stringValue(metadata.harness) ?? "loop-run-harness",
+    externalWriteMode,
+    permissionLabel:
+      externalWriteMode === "auto"
+        ? "按任务自动执行"
+        : externalWriteMode === "manual_approval"
+          ? "执行前需要审批"
+          : "禁止外部写入",
+  };
 }
 
 export function summarizeLoopRun(run: LoopRun): LoopRunDashboardSummary {
@@ -106,6 +258,7 @@ export function summarizeLoopRun(run: LoopRun): LoopRunDashboardSummary {
     modelCheckerEnabled: modelChecker.enabled === true,
     modelCheckerReason:
       typeof modelChecker.reason === "string" ? modelChecker.reason : null,
+    executionTrace: summarizeExecutionTrace(verification),
   };
 }
 
@@ -183,6 +336,10 @@ export function summarizeLoop(input: {
       typeof stateJson.schedulerStatus === "string"
         ? stateJson.schedulerStatus
         : null,
+    spaceSummary: buildLoopSpaceSummary({
+      loop: input.loop,
+      state: input.state,
+    }),
     latestRun,
     updatedAt: input.loop.updatedAt,
     createdAt: input.loop.createdAt,

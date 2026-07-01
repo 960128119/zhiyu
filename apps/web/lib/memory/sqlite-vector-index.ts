@@ -1,5 +1,5 @@
 import { isTauriMode, TAURI_DB_PATH } from "@/lib/env";
-import type { VectorSearchResult } from "@openloomi/rag/vector-service";
+import type { VectorSearchResult } from "@openzhiyu/rag/vector-service";
 
 export interface SQLiteInsightVectorInput {
   insightId: string;
@@ -45,10 +45,10 @@ export function isInsightSQLiteVecEnabled(): boolean {
 }
 
 async function getInsightSQLiteVecStore() {
-  const { getSQLiteVecStore } = await import("@openloomi/rag/sqlite-vec-store");
+  const { getSQLiteVecStore } = await import("@openzhiyu/rag/sqlite-vec-store");
   return await getSQLiteVecStore(TAURI_DB_PATH, undefined, {
     collectionName:
-      process.env.SQLITE_VEC_INSIGHTS_COLLECTION || "openloomi_insights",
+      process.env.SQLITE_VEC_INSIGHTS_COLLECTION || "openzhiyu_insights",
   });
 }
 

@@ -5,9 +5,9 @@ import {
   updateUserInsightSettings,
   upsertUserRole,
   removeUserRole,
-  getLatestSurveyByUserId,
-} from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+} from "@/lib/db/insight-queries";
+import { getLatestSurveyByUserId } from "@/lib/db/user-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 import { formatToLocalTime } from "@/lib/utils";
 import { NextResponse } from "next/server";
 import { z } from "zod";

@@ -1,16 +1,16 @@
 import { google, type people_v1, type gmail_v1 } from "googleapis";
 import type { GaxiosResponseWithHTTP2 } from "googleapis-common";
 import type { OAuth2Client } from "google-auth-library";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import {
   updateIntegrationAccount,
   type BotWithAccount,
 } from "@/lib/db/queries";
 import { getApplicationBaseUrl } from "@/lib/env";
 import type { ExtractEmailInfo } from "../email";
-import type { Attachment } from "@openloomi/shared";
+import type { Attachment } from "@openzhiyu/shared";
 import { ingestAttachmentForUser } from "@/lib/integrations/utils/attachments";
-import { cleanEmailForLLM, buildSnippet } from "@openloomi/integrations/utils";
+import { cleanEmailForLLM, buildSnippet } from "@openzhiyu/integrations/utils";
 import type { UserType } from "@/app/(auth)/auth";
 
 const GMAIL_MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;

@@ -6,21 +6,26 @@
 import {
   getUserInsightSettings,
   updateUserInsightSettings,
-} from "../db/queries";
+} from "../db/insight-queries";
 import { runWeeklyInsightMaintenance } from "@/lib/insights/maintenance";
 import { runInsightEmbeddingDream } from "@/lib/insights/dream";
 import { getRawMessageManager } from "@/lib/memory/raw-message-store";
-import { upsertRawMessagesToChroma } from "@/lib/memory/chroma-memory-index";
 import {
   getInsightEmbeddingModelName,
   hasInsightEmbeddingProviderConfig,
 } from "@/lib/insights/embedding-service";
-import { UniversalEmbeddings } from "@openloomi/rag/universal-embeddings";
+import { UniversalEmbeddings } from "@openzhiyu/rag/universal-embeddings";
 import {
   runRawMessageEmbeddingDream,
   type RawMessage,
-} from "@openloomi/indexeddb";
+} from "@openzhiyu/indexeddb";
 
+async function upsertRawMessagesToChromaBackend(messages: RawMessage[]) {
+  const { upsertRawMessagesToChroma } = await import(
+    "@/lib/memory/chroma-memory-index"
+  );
+  return upsertRawMessagesToChroma(messages);
+}
 const INSIGHT_EMBEDDING_DREAM_INTERVAL = 24 * 60 * 60 * 1000;
 const RAW_MESSAGE_EMBEDDING_DREAM_INTERVAL = 24 * 60 * 60 * 1000;
 const WEEKLY_MAINTENANCE_INTERVAL = 7 * 24 * 60 * 60 * 1000;
@@ -194,7 +199,7 @@ export async function runRawMessageEmbeddingDreamIfDue(
     embeddingModel,
     embeddings.getDimensions(),
   );
-  const chromaSynced = await upsertRawMessagesToChroma(chromaReadyMessages);
+  const chromaSynced = await upsertRawMessagesToChromaBackend(chromaReadyMessages);
 
   console.log("[LocalScheduler] Raw message embedding dream completed", {
     scanned: result.scanned,

@@ -6,8 +6,8 @@ import {
   upsertIntegrationAccount,
 } from "@/lib/db/queries";
 import { decryptPayload } from "@/lib/db/serialization";
-import { AppError } from "@openloomi/shared/errors";
-import { HubspotClient } from "@openloomi/integrations/hubspot";
+import { AppError } from "@openzhiyu/shared/errors";
+import { HubspotClient } from "@openzhiyu/integrations/hubspot";
 
 export const runtime = "nodejs";
 

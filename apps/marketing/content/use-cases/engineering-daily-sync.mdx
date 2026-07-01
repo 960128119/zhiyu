@@ -26,7 +26,7 @@ Engineering teams waste hours every week pulling commit logs, writing status rep
 
 ### Configure the PD Prompt
 
-Paste the automation prompt into OpenLoomi. It defines the nightly workflow: commit fetching, report compilation, email delivery, and Linear sync.
+Paste the automation prompt into OpenZhiyu. It defines the nightly workflow: commit fetching, report compilation, email delivery, and Linear sync.
 
 ---
 
@@ -47,7 +47,7 @@ Both tasks are created with tracking enabled for full observability.
 
 ### Every 10 PM: PD Daily Sync Runs
 
-OpenLoomi executes the full pipeline — fetching commits, compiling the report, and syncing issues — then generates structured artifacts for each output.
+OpenZhiyu executes the full pipeline — fetching commits, compiling the report, and syncing issues — then generates structured artifacts for each output.
 
 ### Execution Complete
 
@@ -59,7 +59,7 @@ The sync produces two structured artifacts — the daily dev report and the issu
 
 ## Tracking Every Execution
 
-OpenLoomi's tracking panel shows exactly how many times each task has run, against which repositories:
+OpenZhiyu's tracking panel shows exactly how many times each task has run, against which repositories:
 
 ---
 
@@ -79,13 +79,13 @@ OpenLoomi's tracking panel shows exactly how many times each task has run, again
 
 **Option 1: Copy & Paste (Easiest)**
 
-Open OpenLoomi and paste this:
+Open OpenZhiyu and paste this:
 
 ```
 Please pull all commits from my GitHub repo every night at 10 PM, compile a report, and send it to my email. Also, monitor all new issues created that day, rewrite them in detail, and sync them to Linear.
 ```
 
-OpenLoomi will automatically create the scheduled tasks for you!
+OpenZhiyu will automatically create the scheduled tasks for you!
 
 ---
 

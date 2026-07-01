@@ -9,11 +9,11 @@
 -- =============================================================================
 
 -- Add valid_from column (when this insight becomes relevant/valid)
-ALTER TABLE "Insight" ADD COLUMN "valid_from" TIMESTAMPTZ;
+ALTER TABLE "Insight" ADD COLUMN IF NOT EXISTS "valid_from" TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS "insight_valid_from_idx" ON "Insight" ("valid_from");
 
 -- Add valid_to column (when this insight expires/becomes irrelevant)
-ALTER TABLE "Insight" ADD COLUMN "valid_to" TIMESTAMPTZ;
+ALTER TABLE "Insight" ADD COLUMN IF NOT EXISTS "valid_to" TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS "insight_valid_to_idx" ON "Insight" ("valid_to");
 
 -- Composite index for as-of queries (time-travel)
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS "insight_connections" (
     "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     "insight_id_a" UUID NOT NULL REFERENCES "Insight"("id") ON DELETE CASCADE,
     "insight_id_b" UUID NOT NULL REFERENCES "Insight"("id") ON DELETE CASCADE,
-    "user_id" UUID NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+    "user_id" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
     "strength" NUMERIC(10, 6) NOT NULL DEFAULT 0.1,
     "co_access_count" INTEGER NOT NULL DEFAULT 0,
     "last_strengthened_at" TIMESTAMPTZ,
@@ -53,7 +53,7 @@ CREATE INDEX IF NOT EXISTS "insight_connection_last_strengthened_idx" ON "insigh
 
 CREATE TABLE IF NOT EXISTS "entities" (
     "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    "user_id" UUID NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+    "user_id" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE,
     "entity_type" VARCHAR(30) NOT NULL, -- "person" | "group" | "concept" | "project" | "company"
     "canonical_name" TEXT NOT NULL,
     "aliases" TEXT[] NOT NULL DEFAULT '{}',

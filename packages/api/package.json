@@ -1,5 +1,5 @@
 {
-  "name": "@openloomi/api",
+  "name": "@openzhiyu/api",
   "version": "0.5.1",
   "private": true,
   "type": "module",
@@ -7,7 +7,7 @@
     ".": "./src/index.ts"
   },
   "devDependencies": {
-    "@openloomi/config": "workspace:*",
+    "@openzhiyu/config": "workspace:*",
     "typescript": "^5.6.3"
   },
   "scripts": {

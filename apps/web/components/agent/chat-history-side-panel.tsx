@@ -7,8 +7,8 @@
 
 import { useTranslation } from "react-i18next";
 import "../../i18n";
-import { Button, Input } from "@openloomi/ui";
-import { ScrollArea } from "@openloomi/ui";
+import { Button, Input } from "@openzhiyu/ui";
+import { ScrollArea } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";

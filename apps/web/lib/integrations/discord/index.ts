@@ -10,24 +10,24 @@ import {
   type Message as DiscordMessage,
 } from "discord.js";
 import { once } from "node:events";
-import { MessagePlatformAdapter } from "@openloomi/integrations/channels";
+import { MessagePlatformAdapter } from "@openzhiyu/integrations/channels";
 import type {
   Messages,
   At,
   Image,
   Message,
-} from "@openloomi/integrations/channels";
-import type { Attachment } from "@openloomi/shared";
+} from "@openzhiyu/integrations/channels";
+import type { Attachment } from "@openzhiyu/shared";
 import type { UserType } from "@/app/(auth)/auth";
 import { ingestAttachmentForUser } from "@/lib/integrations/utils/attachments";
 import {
   timeBeforeHoursMs,
   type ExtractedMessageInfo,
-} from "@openloomi/integrations/channels/sources/types";
+} from "@openzhiyu/integrations/channels/sources/types";
 import type {
   MessageEvent,
   MessageTarget,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 
 const DEBUG = process.env.DEBUG_DISCORD === "true";
 
@@ -490,7 +490,7 @@ export class DiscordAdapter extends MessagePlatformAdapter {
   }
 }
 
-export function discordMessageToopenloomiMessage(
+export function discordMessageToopenzhiyuMessage(
   message: DiscordMessage,
   bot_self?: string,
 ): Messages {

@@ -2,10 +2,10 @@
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { Spinner } from "@/components/spinner";
 import { PreviewAttachment } from "@/components/preview-attachment";
-import type { Attachment } from "@openloomi/shared";
+import type { Attachment } from "@openzhiyu/shared";
 import {
   useIntegrations,
   type IntegrationId,
@@ -20,8 +20,8 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@openloomi/ui";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@openzhiyu/ui";
 import { RichTextEditor } from "@/components/rich-text-editor-dynamic";
 import type { SendReplyInput } from "../send-reply";
 import {

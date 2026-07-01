@@ -3,7 +3,7 @@ import {
   getRawMessageManager,
   getRawMessageStorageBackend,
 } from "@/lib/memory/raw-message-store";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 import type { NextRequest } from "next/server";
 
 /**

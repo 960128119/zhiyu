@@ -4,7 +4,7 @@ import {
   estimateConversationTokens,
   getConversationBucket,
   prepareConversationWindows,
-} from "@openloomi/ai/agent/context";
+} from "@openzhiyu/ai/agent/context";
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;

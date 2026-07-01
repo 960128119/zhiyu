@@ -31,7 +31,7 @@ interface UseCaseCardProps {
 
 /**
  * Use case card component
- * Displays title, description, role, and image to showcase OpenLoomi use cases
+ * Displays title, description, role, and image to showcase OpenZhiyu use cases
  */
 export const UseCaseCard = ({
   title,

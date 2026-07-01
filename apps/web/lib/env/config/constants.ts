@@ -1,7 +1,7 @@
 /**
  * Application Constants
  *
- * Centralized configuration constants for openloomi.
+ * Centralized configuration constants for openzhiyu.
  * All hardcoded values should be defined here for easy management.
  */
 
@@ -13,10 +13,10 @@ import { join } from "node:path";
 // ============================================================================
 
 /** Application name */
-export const APP_NAME = "openloomi";
+export const APP_NAME = "openzhiyu";
 
 /** Application data directory name (used in home directory) */
-export const APP_DIR_NAME = ".openloomi";
+export const APP_DIR_NAME = ".openzhiyu";
 
 /** Claude Code directory name (system config) */
 export const CLAUDE_DIR_NAME = ".claude";
@@ -62,8 +62,8 @@ export const MCP_CONFIG_FILE_NAME = "mcp.json";
 
 /** Config file search paths (relative) */
 export const CONFIG_SEARCH_PATHS = [
-  "./openloomi.config.json",
-  "./config/openloomi.json",
+  "./openzhiyu.config.json",
+  "./config/openzhiyu.json",
 ];
 
 // ============================================================================
@@ -119,7 +119,7 @@ export function getHomeDir(): string {
   return homedir();
 }
 
-/** Get openloomi app data directory */
+/** Get openzhiyu app data directory */
 export function getAppDir(): string {
   return join(homedir(), APP_DIR_NAME);
 }
@@ -129,8 +129,8 @@ export function getClaudeDir(): string {
   return join(homedir(), CLAUDE_DIR_NAME);
 }
 
-/** Get openloomi skills directory */
-export function getopenloomiSkillsDir(): string {
+/** Get openzhiyu skills directory */
+export function getopenzhiyuSkillsDir(): string {
   return join(getAppDir(), SKILLS_DIR_NAME);
 }
 
@@ -142,13 +142,13 @@ export function getClaudeSkillsDir(): string {
 /** Get all skills directories to search */
 export function getAllSkillsDirs(): { name: string; path: string }[] {
   return [
-    { name: "openloomi", path: getopenloomiSkillsDir() },
+    { name: "openzhiyu", path: getopenzhiyuSkillsDir() },
     { name: "claude", path: getClaudeSkillsDir() },
   ];
 }
 
-/** Get openloomi MCP config path */
-export function getopenloomiMcpConfigPath(): string {
+/** Get openzhiyu MCP config path */
+export function getopenzhiyuMcpConfigPath(): string {
   return join(getAppDir(), MCP_CONFIG_FILE_NAME);
 }
 
@@ -160,7 +160,7 @@ export function getClaudeSettingsPath(): string {
 /** Get all MCP config paths to search */
 export function getAllMcpConfigPaths(): { name: string; path: string }[] {
   return [
-    { name: "openloomi", path: getopenloomiMcpConfigPath() },
+    { name: "openzhiyu", path: getopenzhiyuMcpConfigPath() },
     { name: "claude", path: getClaudeSettingsPath() },
   ];
 }

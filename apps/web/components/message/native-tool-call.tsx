@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { isImageFile } from "@/components/file-icons";
@@ -49,6 +49,177 @@ function stripAnsi(text: string): string {
   const ESC = String.fromCharCode(27);
   const ansiRegex = new RegExp(`(${ESC}\\[[0-9;]*m|\\[[0-9;]*m)`, "g");
   return text.replace(ansiRegex, "");
+}
+
+type WechatPreviewAction = {
+  recipientName: string;
+  message: string;
+  confirmToken: string;
+  expiresInSeconds?: number;
+  messageHash?: string;
+};
+
+function getToolBaseName(toolName: string) {
+  return toolName.includes("__") ? toolName.split("__").pop() || toolName : toolName;
+}
+
+function parseJsonMaybe(value: unknown): unknown {
+  if (typeof value !== "string") return value;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+function parseWechatPreviewAction(
+  toolName: string,
+  toolOutput: unknown,
+): WechatPreviewAction | null {
+  if (getToolBaseName(toolName) !== "wechatDesktopPreviewMessage") {
+    return null;
+  }
+
+  const parsedOutput = parseJsonMaybe(toolOutput);
+  const textPayload =
+    Array.isArray(parsedOutput) &&
+    parsedOutput[0] &&
+    typeof parsedOutput[0] === "object" &&
+    "text" in parsedOutput[0] &&
+    typeof (parsedOutput[0] as { text?: unknown }).text === "string"
+      ? parseJsonMaybe((parsedOutput[0] as { text: string }).text)
+      : parsedOutput;
+
+  const previewResult =
+    textPayload && typeof textPayload === "object"
+      ? (textPayload as { preview?: unknown }).preview
+      : null;
+  const preview =
+    previewResult && typeof previewResult === "object"
+      ? (previewResult as { preview?: unknown }).preview
+      : null;
+
+  if (
+    !previewResult ||
+    typeof previewResult !== "object" ||
+    !preview ||
+    typeof preview !== "object"
+  ) {
+    return null;
+  }
+
+  const confirmToken = (previewResult as { confirmToken?: unknown }).confirmToken;
+  const expiresInSeconds = (previewResult as { expiresInSeconds?: unknown })
+    .expiresInSeconds;
+  const recipientName = (preview as { recipientName?: unknown }).recipientName;
+  const message = (preview as { message?: unknown }).message;
+  const messageHash = (preview as { messageHash?: unknown }).messageHash;
+
+  if (
+    typeof recipientName !== "string" ||
+    typeof message !== "string" ||
+    typeof confirmToken !== "string" ||
+    !recipientName ||
+    !message ||
+    !confirmToken
+  ) {
+    return null;
+  }
+
+  return {
+    recipientName,
+    message,
+    confirmToken,
+    expiresInSeconds:
+      typeof expiresInSeconds === "number" ? expiresInSeconds : undefined,
+    messageHash: typeof messageHash === "string" ? messageHash : undefined,
+  };
+}
+
+function WechatPreviewConfirm({
+  action,
+}: {
+  action: WechatPreviewAction;
+}) {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle",
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSend = async (event: MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    if (status === "sending" || status === "sent") return;
+
+    setStatus("sending");
+    setError(null);
+    try {
+      const response = await fetch("/api/wechat-desktop/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipientName: action.recipientName,
+          message: action.message,
+          confirmToken: action.confirmToken,
+        }),
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || payload?.ok === false) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+      setStatus("sent");
+    } catch (sendError) {
+      setStatus("error");
+      setError(sendError instanceof Error ? sendError.message : String(sendError));
+    }
+  };
+
+  return (
+    <div className="mt-2 rounded-md border border-emerald-200 bg-emerald-50/70 p-3 text-sm dark:border-emerald-900/50 dark:bg-emerald-950/20">
+      <div className="space-y-1 text-foreground">
+        <div>
+          <span className="text-muted-foreground">收件人：</span>
+          <span className="font-medium">{action.recipientName}</span>
+        </div>
+        <div>
+          <span className="text-muted-foreground">内容：</span>
+          <span className="whitespace-pre-wrap break-words">
+            {action.message}
+          </span>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={handleSend}
+          disabled={status === "sending" || status === "sent"}
+          className={cn(
+            "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+            status === "sent"
+              ? "bg-emerald-600/80 text-white"
+              : "bg-emerald-600 text-white hover:bg-emerald-700",
+            (status === "sending" || status === "sent") &&
+              "cursor-not-allowed opacity-80",
+          )}
+        >
+          {status === "sending"
+            ? "发送中..."
+            : status === "sent"
+              ? "已发送"
+              : "确认发送"}
+        </button>
+        {action.expiresInSeconds ? (
+          <span className="text-xs text-muted-foreground">
+            token {Math.round(action.expiresInSeconds / 60)} 分钟内有效
+          </span>
+        ) : null}
+      </div>
+      {status === "error" && error ? (
+        <div className="mt-2 text-xs text-red-600 dark:text-red-400">
+          发送失败：{error}
+        </div>
+      ) : null}
+    </div>
+  );
 }
 
 export function NativeToolCall({
@@ -208,6 +379,16 @@ export function NativeToolCall({
   // Format detailed content
   const formatDetailedContent = () => {
     const contents: React.ReactNode[] = [];
+    const wechatPreviewAction = parseWechatPreviewAction(toolName, toolOutput);
+
+    if (wechatPreviewAction) {
+      contents.push(
+        <WechatPreviewConfirm
+          key="wechat-preview-confirm"
+          action={wechatPreviewAction}
+        />,
+      );
+    }
 
     // Display Bash command
     if (toolName === "Bash" && toolInput?.command) {
@@ -320,7 +501,7 @@ export function NativeToolCall({
     }
 
     // Display tool output
-    if (toolOutput && typeof toolOutput === "string") {
+    if (!wechatPreviewAction && toolOutput && typeof toolOutput === "string") {
       // Strip ANSI escape sequences before displaying
       const cleanOutput = stripAnsi(toolOutput);
 
@@ -346,6 +527,7 @@ export function NativeToolCall({
 
   const params = formatToolParams();
   const output = formatToolOutput();
+  const hasWechatPreviewAction = !!parseWechatPreviewAction(toolName, toolOutput);
   const detailedContent = formatDetailedContent();
   /** Only show expand button when there is actually content to display after expansion */
   const hasDetails = !!detailedContent && !disableCollapse;
@@ -587,11 +769,12 @@ export function NativeToolCall({
       </div>
 
       {/* Expanded content is displayed below, not on the right side */}
-      {(isExpanded || disableCollapse) && detailedContent && (
+      {(isExpanded || disableCollapse || hasWechatPreviewAction) &&
+        detailedContent && (
         <div className="border-t border-border/60 pt-2 pb-2 px-2 mt-0">
           {detailedContent}
         </div>
-      )}
+        )}
     </div>
   );
 }

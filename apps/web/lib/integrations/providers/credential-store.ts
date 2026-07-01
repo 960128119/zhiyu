@@ -1,11 +1,11 @@
 /**
  * CredentialStore implementation for apps/web
  *
- * Provides implementations of CredentialStore interface from @openloomi/integrations/core
+ * Provides implementations of CredentialStore interface from @openzhiyu/integrations/core
  * using the database queries from apps/web.
  */
 
-import type { PlatformId } from "@openloomi/integrations/core";
+import type { PlatformId } from "@openzhiyu/integrations/core";
 import type { IntegrationId } from "@/lib/integrations/client";
 import {
   getIntegrationAccountsByUserId,
@@ -13,7 +13,7 @@ import {
   getIntegrationAccountById,
   updateIntegrationAccount,
   upsertIntegrationAccount,
-} from "@/lib/db/queries";
+} from "@/lib/db/integration-queries";
 import {
   rotateCredentials as doRotateCredentials,
   getCredentialRotationHistory,

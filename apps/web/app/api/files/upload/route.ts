@@ -15,7 +15,7 @@ import {
   getExtensionFromContentType,
   sanitizeFilename,
 } from "@/lib/files/utils";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 
 export async function POST(request: Request) {
   const session = await auth();

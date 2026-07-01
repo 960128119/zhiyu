@@ -5,7 +5,7 @@
  */
 
 import type { NextRequest } from "next/server";
-import { getAgentRegistry } from "@openloomi/ai/agent/registry";
+import { getAgentRegistry } from "@openzhiyu/ai/agent/registry";
 import { claudePlugin } from "@/lib/ai/extensions";
 
 // Set max duration for long-running agent tasks
@@ -18,11 +18,12 @@ import type {
   AgentOptions,
   FileAttachment,
   ImageAttachment,
-} from "@openloomi/ai/agent/types";
-import type { SandboxConfig } from "@openloomi/ai/agent/sandbox/types";
+} from "@openzhiyu/ai/agent/types";
+import type { SandboxConfig } from "@openzhiyu/ai/agent/sandbox/types";
 import { auth } from "@/app/(auth)/auth";
 import { promises as fs } from "node:fs";
-import { getUserInsightSettings } from "@/lib/db/queries";
+import { getMessagesByChatId } from "@/lib/db/chat-queries";
+import { getUserInsightSettings } from "@/lib/db/insight-queries";
 import path from "node:path";
 import { existsSync } from "node:fs";
 import os from "node:os";
@@ -37,6 +38,10 @@ import {
   type NativeAgentPermissionRequestEvent,
   withNativeAgentLoopGuardMetadata,
 } from "@/lib/loops";
+import {
+  previewWechatDesktopMessage,
+  sendWechatDesktopMessage,
+} from "@/lib/wechat-desktop/client";
 
 // Register Claude Agent plugin
 getAgentRegistry().register(claudePlugin);
@@ -183,6 +188,280 @@ function normalizeOptionalEnv(value: string | undefined): string | undefined {
   return trimmed;
 }
 
+type WechatDesktopPreviewDraft = {
+  recipientName: string;
+  message: string;
+  confirmToken?: string;
+};
+
+function isWechatDesktopSendConfirmationText(prompt: string) {
+  const normalized = prompt.trim().toLowerCase();
+  return /^(确认发送|确认|发送|可以发送|发吧|确认发出|确认要发送|send|confirm)$/i.test(
+    normalized,
+  );
+}
+
+function isWechatDesktopSendConfirmation(prompt: string) {
+  const normalized = prompt.trim().toLowerCase();
+  return /^(确认发送|确认|发送|可以发送|发吧|确认发出|确认要发送|send|confirm)$/i.test(
+    normalized,
+  );
+}
+
+function parseWechatDesktopPreviewDraftFromOutput(
+  output: unknown,
+): WechatDesktopPreviewDraft | null {
+  if (typeof output !== "string" || !output.trim()) return null;
+
+  try {
+    const content = JSON.parse(output);
+    const textPayload =
+      Array.isArray(content) &&
+      content[0] &&
+      typeof content[0] === "object" &&
+      "text" in content[0] &&
+      typeof content[0].text === "string"
+        ? JSON.parse(content[0].text)
+        : content;
+
+    const previewResult = textPayload?.preview;
+    const preview = previewResult?.preview;
+    const recipientName = preview?.recipientName;
+    const message = preview?.message;
+    const confirmToken = previewResult?.confirmToken;
+
+    if (
+      typeof recipientName !== "string" ||
+      typeof message !== "string" ||
+      typeof confirmToken !== "string" ||
+      !recipientName ||
+      !message ||
+      !confirmToken
+    ) {
+      return null;
+    }
+
+    return { recipientName, message, confirmToken };
+  } catch {
+    return null;
+  }
+}
+
+async function findLatestWechatDesktopPreviewDraft(chatId?: string) {
+  if (!chatId) return null;
+
+  const messages = await getMessagesByChatId({ id: chatId, limit: 50 });
+  const reversedMessages = [...messages].reverse();
+  const latestConfirmationIndex = reversedMessages.findIndex(
+    (message) =>
+      message.role === "user" &&
+      Array.isArray(message.parts) &&
+      message.parts.some(
+        (part: { text?: unknown }) =>
+          typeof (part as { text?: unknown }).text === "string" &&
+          isWechatDesktopSendConfirmationText((part as { text: string }).text),
+      ),
+  );
+  const messagesBeforeConfirmation =
+    latestConfirmationIndex >= 0
+      ? reversedMessages.slice(latestConfirmationIndex + 1)
+      : reversedMessages;
+
+  for (const message of messagesBeforeConfirmation) {
+    if (message.role !== "assistant" || !Array.isArray(message.parts)) {
+      continue;
+    }
+
+    for (const part of [...message.parts].reverse()) {
+      if (
+        !part ||
+        typeof part !== "object" ||
+        (part as { type?: unknown }).type !== "tool-native" ||
+        (part as { toolName?: unknown }).toolName !==
+          "mcp__business-tools__wechatDesktopPreviewMessage"
+      ) {
+        continue;
+      }
+
+      const draft = parseWechatDesktopPreviewDraftFromOutput(
+        (part as { toolOutput?: unknown }).toolOutput,
+      );
+      if (draft) return draft;
+    }
+  }
+
+  for (const message of messagesBeforeConfirmation) {
+    if (message.role !== "user" || !Array.isArray(message.parts)) {
+      continue;
+    }
+
+    for (const part of message.parts) {
+      const text = (part as { text?: unknown }).text;
+      if (typeof text !== "string") continue;
+      const parsed = parseWechatDesktopSendRequestText(text);
+      if (parsed) return parsed;
+    }
+  }
+
+  return null;
+}
+
+function parseWechatDesktopSendRequest(text: string): WechatDesktopPreviewDraft | null {
+  const trimmed = text.trim();
+  const patterns = [
+    /给(?<recipient>.+?)发微信[：:]\s*(?<message>.+)$/s,
+    /发微信给(?<recipient>.+?)[：:]\s*(?<message>.+)$/s,
+    /微信发给(?<recipient>.+?)[：:]\s*(?<message>.+)$/s,
+  ];
+
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern);
+    const recipientName = match?.groups?.recipient?.trim();
+    const message = match?.groups?.message?.trim();
+    if (recipientName && message) {
+      return { recipientName, message };
+    }
+  }
+
+  return null;
+}
+
+function parseWechatDesktopSendRequestText(
+  text: string,
+): WechatDesktopPreviewDraft | null {
+  const trimmed = text.trim();
+  const patterns = [
+    /^.*?(?:帮我)?给(?<recipient>.+?)发(?:微信|消息)[：:，,]\s*(?<message>.+)$/s,
+    /^.*?发(?:微信|消息)给(?<recipient>.+?)[：:，,]\s*(?<message>.+)$/s,
+    /^.*?微信发给(?<recipient>.+?)[：:，,]\s*(?<message>.+)$/s,
+  ];
+
+  for (const pattern of patterns) {
+    const match = trimmed.match(pattern);
+    const recipientName = match?.groups?.recipient?.trim();
+    const message = match?.groups?.message?.trim();
+    if (recipientName && message) {
+      return { recipientName, message };
+    }
+  }
+
+  return null;
+}
+
+function createWechatDesktopSendGenerator(input: {
+  draft: WechatDesktopPreviewDraft;
+}): AsyncGenerator<AgentMessage> {
+  return (async function* () {
+    const toolUseId = crypto.randomUUID();
+    yield {
+      type: "tool_use",
+      id: toolUseId,
+      name: "mcp__business-tools__wechatDesktopSendMessage",
+      input: {
+        recipientName: input.draft.recipientName,
+        message: input.draft.message,
+      },
+      messageId: crypto.randomUUID(),
+    };
+
+    try {
+      let result;
+      try {
+        const confirmToken =
+          input.draft.confirmToken ??
+          (
+            await previewWechatDesktopMessage({
+              recipientName: input.draft.recipientName,
+              message: input.draft.message,
+            })
+          ).confirmToken;
+
+        result = await sendWechatDesktopMessage({
+          ...input.draft,
+          confirmToken,
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        if (/does not match recipientName and message/i.test(errorMessage)) {
+          throw new Error(
+            [
+              "桌面微信发送已中止：确认 token 与收件人或内容不匹配。",
+              "这通常表示当前确认操作复用了另一条预览消息。",
+              "请重新发起预览，并确认预览里的收件人和内容完全正确后再发送。",
+            ].join("\n"),
+          );
+        }
+
+        if (!/Invalid or expired confirmToken/i.test(errorMessage)) {
+          throw error;
+        }
+
+        const refreshedPreview = await previewWechatDesktopMessage({
+          recipientName: input.draft.recipientName,
+          message: input.draft.message,
+        });
+        result = await sendWechatDesktopMessage({
+          recipientName: input.draft.recipientName,
+          message: input.draft.message,
+          confirmToken: refreshedPreview.confirmToken,
+        });
+      }
+
+      yield {
+        type: "tool_result",
+        toolUseId,
+        output: JSON.stringify({ success: true, result }, null, 2),
+        isError: false,
+        messageId: crypto.randomUUID(),
+      };
+      yield {
+        type: "text",
+        content: `已调用桌面微信发送。\n\n收件人：${input.draft.recipientName}\n内容：${input.draft.message}`,
+        messageId: crypto.randomUUID(),
+      };
+    } catch (error) {
+      yield {
+        type: "tool_result",
+        toolUseId,
+        output: JSON.stringify(
+          {
+            success: false,
+            message: error instanceof Error ? error.message : String(error),
+          },
+          null,
+          2,
+        ),
+        isError: true,
+        messageId: crypto.randomUUID(),
+      };
+      yield {
+        type: "text",
+        content: `桌面微信发送失败：${error instanceof Error ? error.message : String(error)}`,
+        messageId: crypto.randomUUID(),
+      };
+    }
+
+    yield { type: "done", messageId: crypto.randomUUID() };
+  })();
+}
+
+function resolveEnvAnthropicCompatibleConfig() {
+  const apiKey = normalizeOptionalEnv(
+    process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY,
+  );
+  const baseUrl = normalizeOptionalEnv(process.env.ANTHROPIC_BASE_URL);
+  const model = normalizeOptionalEnv(
+    process.env.ANTHROPIC_MODEL || process.env.LLM_MODEL,
+  );
+
+  if (!apiKey && !baseUrl && !model) {
+    return undefined;
+  }
+
+  return { apiKey, baseUrl, model };
+}
+
 async function createOpenAICompatibleResponse(body: AgentRequest) {
   const baseUrl = normalizeOptionalEnv(process.env.LLM_BASE_URL);
   const apiKey = normalizeOptionalEnv(process.env.LLM_API_KEY);
@@ -210,7 +489,8 @@ async function createOpenAICompatibleResponse(body: AgentRequest) {
     body: JSON.stringify({
       model,
       messages,
-      stream: false,
+      stream: true,
+      enable_thinking: true,
     }),
   });
 
@@ -224,22 +504,86 @@ async function createOpenAICompatibleResponse(body: AgentRequest) {
     );
   }
 
-  const payload = await upstream.json();
-  const content =
-    payload?.choices?.[0]?.message?.content ||
-    payload?.choices?.[0]?.text ||
-    "";
-
   const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+
   return new Response(
     new ReadableStream({
-      start(controller) {
-        controller.enqueue(
-          encoder.encode(
-            `data: ${JSON.stringify({ type: "text", content })}\n\n`,
-          ),
-        );
-        controller.close();
+      async start(controller) {
+        const reader = upstream.body?.getReader();
+        if (!reader) {
+          controller.close();
+          return;
+        }
+
+        let buffer = "";
+
+        const emit = (message: AgentMessage) => {
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify(message)}\n\n`),
+          );
+        };
+
+        const handleChunk = (rawLine: string) => {
+          const line = rawLine.trim();
+          if (!line || !line.startsWith("data:")) return;
+
+          const payload = line.slice(5).trim();
+          if (!payload || payload === "[DONE]") return;
+
+          try {
+            const parsed = JSON.parse(payload);
+            const delta = parsed?.choices?.[0]?.delta ?? {};
+            const reasoning =
+              typeof delta.reasoning_content === "string"
+                ? delta.reasoning_content
+                : "";
+            const content =
+              typeof delta.content === "string" ? delta.content : "";
+
+            if (reasoning) {
+              emit({ type: "reasoning", content: reasoning });
+            }
+            if (content) {
+              emit({ type: "text", content });
+            }
+          } catch (error) {
+            console.warn("[AgentAPI] Failed to parse OpenAI stream chunk", {
+              message: error instanceof Error ? error.message : String(error),
+            });
+          }
+        };
+
+        try {
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split(/\r?\n/);
+            buffer = lines.pop() ?? "";
+            for (const line of lines) {
+              handleChunk(line);
+            }
+          }
+
+          buffer += decoder.decode();
+          if (buffer) {
+            for (const line of buffer.split(/\r?\n/)) {
+              handleChunk(line);
+            }
+          }
+        } catch (error) {
+          emit({
+            type: "error",
+            message:
+              error instanceof Error
+                ? error.message
+                : "OpenAI-compatible stream failed",
+          });
+        } finally {
+          controller.close();
+        }
       },
     }),
     { headers: SSE_HEADERS },
@@ -750,6 +1094,7 @@ ${insightsContent}
     });
 
     const effectiveModelConfig = {
+      ...resolveEnvAnthropicCompatibleConfig(),
       ...body.modelConfig,
       ...userAnthropicConfig,
     };

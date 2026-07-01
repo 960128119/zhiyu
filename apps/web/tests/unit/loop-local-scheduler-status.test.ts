@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const nativeStatus = vi.hoisted(() => ({ runningLoopIds: ["loop-1"] }));
+const runDueNativeLoopsMock = vi.hoisted(() => vi.fn(async () => undefined));
 
 vi.mock("@/lib/cron/service", () => ({
   getDueJobs: vi.fn(async () => []),
@@ -47,7 +48,7 @@ vi.mock("@/lib/loops", () => ({
 
 vi.mock("@/lib/loops/native-scheduler", () => ({
   getNativeLoopSchedulerStatus: vi.fn(() => nativeStatus),
-  runDueNativeLoops: vi.fn(),
+  runDueNativeLoops: runDueNativeLoopsMock,
 }));
 
 vi.mock("@/lib/cron/insight-maintenance", () => ({
@@ -56,9 +57,21 @@ vi.mock("@/lib/cron/insight-maintenance", () => ({
   runRawMessageEmbeddingDreamIfDue: vi.fn(),
 }));
 
-import { getSchedulerStatus } from "@/lib/cron/local-scheduler";
+import {
+  getSchedulerStatus,
+  setSchedulerUserId,
+  startLocalScheduler,
+  stopLocalScheduler,
+} from "@/lib/cron/local-scheduler";
 
 describe("local scheduler status", () => {
+  afterEach(async () => {
+    await stopLocalScheduler();
+    setSchedulerUserId(undefined);
+    runDueNativeLoopsMock.mockClear();
+    delete process.env.ENABLE_LOCAL_SCHEDULER;
+  });
+
   it("includes native loop scheduler visibility", () => {
     expect(getSchedulerStatus()).toMatchObject({
       isRunning: false,
@@ -67,5 +80,17 @@ describe("local scheduler status", () => {
         runningLoopIds: ["loop-1"],
       },
     });
+  });
+
+  it("starts local web scheduler and checks native loops for the active user", async () => {
+    process.env.ENABLE_LOCAL_SCHEDULER = "true";
+    setSchedulerUserId("user-1");
+
+    await startLocalScheduler();
+
+    await vi.waitFor(() => {
+      expect(runDueNativeLoopsMock).toHaveBeenCalledWith({ userId: "user-1" });
+    });
+    expect(getSchedulerStatus().isRunning).toBe(true);
   });
 });

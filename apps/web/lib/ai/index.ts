@@ -1,6 +1,6 @@
 /**
- * @openloomi/ai - AI Layer barrel export
- * Re-exports from @openloomi/agent/ai package and local app-specific modules.
+ * @openzhiyu/ai - AI Layer barrel export
+ * Re-exports from @openzhiyu/agent/ai package and local app-specific modules.
  */
 
 // Package exports (tokens, pricing, compaction, providers, router)
@@ -11,8 +11,8 @@ export {
   getTotalCredits,
   INPUT_TOKENS_PER_CREDIT,
   OUTPUT_TOKENS_PER_CREDIT,
-} from "@openloomi/ai/agent/ai";
-export type { ModelType } from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
+export type { ModelType } from "@openzhiyu/ai/agent/ai";
 export {
   MODEL_PRICING,
   getModelPricing,
@@ -25,33 +25,33 @@ export {
   calculateInputCredits,
   calculateOutputCredits,
   calculateTotalCredits,
-} from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
 export {
   COMPACTION_SOFT_RATIO,
   COMPACTION_HARD_RATIO,
   COMPACTION_EMERGENCY_RATIO,
   COMPACTION_MODEL,
   buildCompactionPrompt,
-} from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
 export type {
   CompactionLevel,
   CompactionPlatform,
   CompactionResult,
-} from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
 export {
   triggerCompaction,
   triggerCompactionAsync,
-} from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
 export type {
   CompactionOptions,
   CompactionResponse,
-} from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
 export {
   prepareConversationWindows,
   estimateConversationTokens,
   getConversationBucket,
   DEFAULT_CONVERSATION_WINDOW_CONFIG,
-} from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
 export type {
   ConversationWindowMessage,
   ConversationWindowConfig,
@@ -60,7 +60,7 @@ export type {
   TokenizedConversationWindowMessage,
   ConversationWindowBucketStats,
   ConversationWindowRole,
-} from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
 export {
   getModel,
   getVLMModel,
@@ -69,15 +69,15 @@ export {
   setAIUserContext,
   clearAIUserContext,
   getAIUserContext,
-} from "@openloomi/ai/agent/ai";
-export type { AIUserContext, UserType } from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
+export type { AIUserContext, UserType } from "@openzhiyu/ai/agent/ai";
 export {
   routeModelCall,
   getRecommendedMode,
   // Note: checkCloudAIAvailability from package is excluded to avoid conflict
   // with cloud-client version below; use checkCloudAIAvailability from ./cloud-client
-} from "@openloomi/ai/agent/ai";
-export type { ModelCallOptions, ModelCallResult } from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
+export type { ModelCallOptions, ModelCallResult } from "@openzhiyu/ai/agent/ai";
 
 // Local app-specific cloud client (depends on @/lib/api/remote-client)
 export {
@@ -110,7 +110,7 @@ import {
   getModelProvider,
   getModel as getModelBase,
   getVLMModel,
-} from "@openloomi/ai/agent/ai";
+} from "@openzhiyu/ai/agent/ai";
 
 // NOTE: These are lazy getters to avoid requiring LLM_MODEL at module load time.
 // They are only evaluated when actually used (e.g., in executeJob, not in API routes).

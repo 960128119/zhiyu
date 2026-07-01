@@ -11,6 +11,7 @@ vi.mock("@/lib/cron/local-scheduler", () => ({
   stopLocalScheduler: stopLocalSchedulerMock,
   getSchedulerStatus: getSchedulerStatusMock,
   setSchedulerUserId: setSchedulerUserIdMock,
+  isLocalSchedulerAllowed: vi.fn(() => true),
 }));
 
 vi.mock("@/lib/auth/token-manager", () => ({

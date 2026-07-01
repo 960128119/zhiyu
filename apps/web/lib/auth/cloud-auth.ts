@@ -9,7 +9,7 @@
 import type { NextRequest } from "next/server";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import { verifyToken, extractToken } from "@/lib/auth/remote-auth-utils";
-import { getUserById, getUserTypeForService } from "@/lib/db/queries";
+import { getUserById, getUserTypeForService } from "@/lib/db/user-queries";
 
 export interface CloudAuthUser {
   id: string;

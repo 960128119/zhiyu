@@ -11,8 +11,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
-import { Button, Input, Label } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { Button, Input, Label } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { createIntegrationAccount } from "@/lib/integrations/client";
 import { FeishuStepsDialog } from "@/components/feishu-steps-dialog";
@@ -74,6 +74,8 @@ export function FeishuAuthForm({
   const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [userCode, setUserCode] = useState<string | null>(null);
   const pollMsRef = useRef(5000);
+  const scanStartedAtRef = useRef<number | null>(null);
+  const manualHintShownRef = useRef(false);
 
   const resetState = useCallback(() => {
     setStatus("idle");
@@ -86,6 +88,8 @@ export function FeishuAuthForm({
     setQrUrl(null);
     setUserCode(null);
     pollMsRef.current = 5000;
+    scanStartedAtRef.current = null;
+    manualHintShownRef.current = false;
     setShowManual(false);
   }, []);
 
@@ -99,6 +103,7 @@ export function FeishuAuthForm({
   useEffect(() => {
     if (!embedded && !isOpen) return;
     let cancelled = false;
+    const controller = new AbortController();
 
     const run = async () => {
       setScanPhase("loading");
@@ -108,6 +113,7 @@ export function FeishuAuthForm({
         const res = await fetch("/api/integrations/feishu/registration/start", {
           method: "POST",
           credentials: "include",
+          signal: controller.signal,
         });
         const data = (await res.json().catch(() => ({}))) as {
           qrUrl?: string;
@@ -133,8 +139,11 @@ export function FeishuAuthForm({
         setQrUrl(data.qrUrl);
         setUserCode(data.userCode ?? null);
         pollMsRef.current = (data.pollIntervalSec ?? 5) * 1000;
+        scanStartedAtRef.current = Date.now();
+        manualHintShownRef.current = false;
         setScanPhase("polling");
       } catch (e) {
+        if (controller.signal.aborted) return;
         if (!cancelled) {
           setScanPhase("unavailable");
           setShowManual(true);
@@ -148,6 +157,7 @@ export function FeishuAuthForm({
     void run();
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [isOpen, embedded, t]);
 
@@ -229,6 +239,22 @@ export function FeishuAuthForm({
             ? data.pollIntervalSec * 1000
             : pollMsRef.current;
         pollMsRef.current = nextMs;
+
+        const scanStartedAt = scanStartedAtRef.current;
+        if (
+          scanStartedAt != null &&
+          !manualHintShownRef.current &&
+          Date.now() - scanStartedAt > 90_000
+        ) {
+          manualHintShownRef.current = true;
+          setShowManual(true);
+          setErrorMessage(
+            t(
+              "auth.feishuScanTakingLong",
+              "Scan authorization is taking longer than expected. You can keep waiting, or enter App ID and App Secret manually below.",
+            ),
+          );
+        }
         schedule(nextMs);
       } catch (e) {
         if (!cancelled) {
@@ -276,7 +302,7 @@ export function FeishuAuthForm({
           name,
           description: t(
             "auth.feishuBotDescription",
-            "Chat with openloomi via Lark/Feishu",
+            "Chat with openzhiyu via Lark/Feishu",
           ),
           adapter: "feishu",
           enable: true,
@@ -464,7 +490,7 @@ export function FeishuAuthForm({
             <p className="text-sm text-muted-foreground">
               {t(
                 "auth.feishuDescription",
-                "Create an enterprise self-built app on Lark/Feishu Open Platform and enable bot capability, select Use long connection to receive events and subscribe to im.message.receive_v1, fill in the credentials below to chat with openloomi.",
+                "Create an enterprise self-built app on Lark/Feishu Open Platform and enable bot capability, select Use long connection to receive events and subscribe to im.message.receive_v1, fill in the credentials below to chat with openzhiyu.",
               )}
             </p>
             {manualFields}
@@ -502,7 +528,7 @@ export function FeishuAuthForm({
                 <p className="text-sm text-muted-foreground">
                   {t(
                     "auth.feishuDescription",
-                    "Create an enterprise self-built app on Lark/Feishu Open Platform and enable bot capability, select Use long connection to receive events and subscribe to im.message.receive_v1, fill in the credentials below to chat with openloomi.",
+                    "Create an enterprise self-built app on Lark/Feishu Open Platform and enable bot capability, select Use long connection to receive events and subscribe to im.message.receive_v1, fill in the credentials below to chat with openzhiyu.",
                   )}
                 </p>
                 {manualFields}

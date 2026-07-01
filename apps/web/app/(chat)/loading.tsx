@@ -1,4 +1,4 @@
-import { Skeleton } from "@openloomi/ui";
+import { Skeleton } from "@openzhiyu/ui";
 
 export default function ChatLoading() {
   return (

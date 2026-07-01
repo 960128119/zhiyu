@@ -4,12 +4,10 @@
  * Common agent runtime logic used by Telegram and WhatsApp
  */
 
-import type { AgentConfig, AgentOptions } from "@openloomi/ai/agent/types";
-import { getAgentRegistry } from "@openloomi/ai/agent/registry";
-import {
-  getUserTypeForService,
-  getUserInsightSettings,
-} from "@/lib/db/queries";
+import type { AgentConfig, AgentOptions } from "@openzhiyu/ai/agent/types";
+import { getAgentRegistry } from "@openzhiyu/ai/agent/registry";
+import { getUserTypeForService } from "@/lib/db/user-queries";
+import { getUserInsightSettings } from "@/lib/db/insight-queries";
 import { registerPlugins } from "./register-plugins";
 import { triggerCompactionAsync } from "@/lib/ai";
 import type { CompactionPlatform } from "@/lib/ai";
@@ -17,8 +15,8 @@ import {
   prepareConversationWindows,
   type ConversationWindowMessage,
 } from "@/lib/ai";
-import { sanitizeCompactionMessages } from "@openloomi/ai/agent";
-import { saveCompactionSummary } from "@openloomi/ai/store";
+import { sanitizeCompactionMessages } from "@openzhiyu/ai/agent";
+import { saveCompactionSummary } from "@openzhiyu/ai/store";
 import { getAppMemoryDir } from "@/lib/utils/path";
 import { getUserLlmProviderConfig } from "@/lib/ai/user-llm-api-settings";
 import { stripMalformedToolCalls } from "@/lib/utils/tool-names";
@@ -438,7 +436,7 @@ IMPORTANT CAPABILITIES:
 - You can READ, WRITE, COPY files from anywhere on the system
 - To SEND a file to the user: Copy it to your workDir (${options.workDir || "default directory"})
 - Any file in workDir will be AUTOMATICALLY sent to the user via ${platform.toUpperCase()}
-- When the user asks you to remind them or notify them at a specific time, you MUST explicitly state in the timer/scheduler that the notification will be sent via ${platform.toUpperCase()}. Few-shot examples:
+- When the user asks you to remind them, notify them, or run work at a specific time, use the native OpenZhiyu Loop task tools and explicitly state that the notification/result will be sent via ${platform.toUpperCase()}. Few-shot examples:
   - User: "Remind me to call John at 3pm" → Response: "I'll remind you to call John at 3pm via ${platform.toUpperCase()}"
   - User: "Notify me when the file is ready" → Response: "I'll notify you via ${platform.toUpperCase()} when the file is ready"
   - User: "Tell me the weather tomorrow morning" → Response: "I'll send you the weather update via ${platform.toUpperCase()} tomorrow morning"

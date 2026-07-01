@@ -1,8 +1,8 @@
 import type { DetailData } from "@/lib/ai/subagents/insights";
 import type { GeneratedInsightPayload } from "@/lib/insights/transform";
-import type { HubspotDeal } from "@openloomi/integrations/hubspot";
-import type { OutlookCalendarEvent } from "@openloomi/integrations/calendar";
-import type { GoogleDocSummary } from "@openloomi/integrations/google-docs";
+import type { HubspotDeal } from "@openzhiyu/integrations/hubspot";
+import type { OutlookCalendarEvent } from "@openzhiyu/integrations/calendar";
+import type { GoogleDocSummary } from "@openzhiyu/integrations/google-docs";
 
 export function normalizeHubId(value: unknown): number | null {
   if (typeof value === "number") {

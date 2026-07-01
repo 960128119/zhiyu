@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { RemixIcon } from "@/components/remix-icon";
-import { Button, Input, Label } from "@openloomi/ui";
+import { Button, Input, Label } from "@openzhiyu/ui";
 import { useTranslation } from "react-i18next";
 import { toast } from "./toast";
 import { openUrl } from "@/lib/tauri";

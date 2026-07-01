@@ -466,7 +466,7 @@ const SignalFlowDiagram: React.FC = () => {
         <Icons.GoogleDrive />
       </OrbitingCircles>
 
-      {/* Center OpenLoomi Logo */}
+      {/* Center OpenZhiyu Logo */}
       <div
         className="absolute left-1/2 top-1/2 z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
         onMouseEnter={() => setIsHovered(true)}
@@ -480,7 +480,7 @@ const SignalFlowDiagram: React.FC = () => {
         >
           <Image
             src="/img/Logo.png"
-            alt="OpenLoomi"
+            alt="OpenZhiyu"
             width={64}
             height={64}
             className="object-contain opacity-80"

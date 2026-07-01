@@ -4,19 +4,19 @@ import { createTransport } from "nodemailer";
 import type { SentMessageInfo } from "nodemailer";
 import type { Attachment as NodemailerAttachment } from "nodemailer/lib/mailer";
 import { Buffer } from "node:buffer";
-import { MessagePlatformAdapter } from "@openloomi/integrations/channels";
+import { MessagePlatformAdapter } from "@openzhiyu/integrations/channels";
 import type {
   Messages,
   Message,
   Image,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 import {
   type MessageEvent,
   type MessageTarget,
   PrivateMessageEvent,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 import { type AddressObject, type ParsedMail, simpleParser } from "mailparser";
-import type { Attachment } from "@openloomi/shared";
+import type { Attachment } from "@openzhiyu/shared";
 import { ingestAttachmentForUser } from "@/lib/integrations/utils/attachments";
 import type { UserType } from "@/app/(auth)/auth";
 import {
@@ -24,13 +24,13 @@ import {
   buildSnippet,
   cleanupMarkdown,
   htmlToPlainText,
-} from "@openloomi/integrations/utils";
+} from "@openzhiyu/integrations/utils";
 
 export {
   stripQuotedText,
   isBoilerplate,
   buildSnippet,
-} from "@openloomi/integrations/utils";
+} from "@openzhiyu/integrations/utils";
 export { isPromotionalEmail };
 
 const GMAIL_MAX_ATTACHMENT_BYTES = 25 * 1024 * 1024;

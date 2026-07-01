@@ -80,10 +80,26 @@ describe("SQLiteVecStore", () => {
       store.close();
     }
   });
+
+  it("uses WAL-friendly NORMAL synchronous mode by default", () => {
+    const store = createStore("pragma");
+    try {
+      expect(store.getSQLitePragma("synchronous")).toBe(1);
+      expect(store.getCapabilities()).toMatchObject({
+        backend: "sqlite-vec",
+        includeEmbeddings: true,
+        deleteOlderThan: true,
+        stats: true,
+        multiDimensions: true,
+      });
+    } finally {
+      store.close();
+    }
+  });
 });
 
 function createStore(testName: string): SQLiteVecStore {
-  const directory = mkdtempSync(join(tmpdir(), "openloomi-sqlite-vec-"));
+  const directory = mkdtempSync(join(tmpdir(), "openzhiyu-sqlite-vec-"));
   tempDirectories.push(directory);
   return new SQLiteVecStore(join(directory, "vectors.db"), undefined, {
     collectionName: `test_${testName}`,

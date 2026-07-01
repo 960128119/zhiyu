@@ -2,7 +2,7 @@
  * QQBot Conversation Store
  *
  * File-backed per-day in-memory store for conversation history with AI.
- * Data persists to ~/.openloomi/data/memory/channels/qqbot/YYYY-MM-DD.json
+ * Data persists to ~/.openzhiyu/data/memory/channels/qqbot/YYYY-MM-DD.json
  *
  * Token trimming is handled by handleAgentRuntime (40K budget) — not here.
  */
@@ -12,12 +12,12 @@ import {
   loadChannelDay,
   clearChannelConversationFromAllDays,
   clearAllChannelForUser,
-} from "@openloomi/ai/store";
+} from "@openzhiyu/ai/store";
 import { join } from "node:path";
 import { homedir } from "node:os";
 
 function getAppMemoryDir(): string {
-  return join(homedir(), ".openloomi", "data", "memory");
+  return join(homedir(), ".openzhiyu", "data", "memory");
 }
 
 interface ConversationMessage {

@@ -1,6 +1,6 @@
 import { auth } from "@/app/(auth)/auth";
 import { getDailyMessageStatsByUserId } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { AppError } from "@openzhiyu/shared/errors";
 
 /**
  * Get user's message statistics from the past 24 hours

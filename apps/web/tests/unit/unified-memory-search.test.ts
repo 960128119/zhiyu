@@ -32,7 +32,7 @@ vi.mock("@/lib/memory/chroma-memory-index", () => ({
   searchRawMessagesWithChroma: searchRawMessagesWithChromaMock,
 }));
 
-vi.mock("@openloomi/rag/universal-embeddings", () => ({
+vi.mock("@openzhiyu/rag/universal-embeddings", () => ({
   UniversalEmbeddings: vi.fn().mockImplementation(function (this: {
     embedQuery: typeof universalEmbedQueryMock;
   }) {
@@ -81,6 +81,9 @@ describe("unified memory search", () => {
     searchMessagesSemanticallyMock.mockResolvedValue([]);
     searchSimilarChunksMock.mockResolvedValue([]);
     universalEmbedQueryMock.mockResolvedValue([0.1, 0.2]);
+    delete process.env.RAW_MESSAGE_VECTOR_STORE_BACKEND;
+    delete process.env.MEMORY_VECTOR_STORE_BACKEND;
+    delete process.env.VECTOR_STORE_BACKEND;
   });
 
   it("normalizes sources and clamps numeric options", () => {
@@ -172,6 +175,7 @@ describe("unified memory search", () => {
     expect(searchInsightsSemanticallyMock).toHaveBeenCalledWith({
       userId: "user-1",
       query: "project feedback",
+      queryEmbedding: [0.1, 0.2],
       limit: 10,
       threshold: 0.7,
       botIds: ["bot-1"],
@@ -185,9 +189,11 @@ describe("unified memory search", () => {
         limit: 10,
         threshold: 0.7,
         documentIds: ["doc-1"],
+        queryEmbedding: [0.1, 0.2],
       },
       "token",
     );
+    expect(universalEmbedQueryMock).toHaveBeenCalledTimes(1);
     expect(output.results.map((result) => result.type)).toEqual([
       "insight",
       "knowledge",
@@ -352,6 +358,7 @@ describe("unified memory search", () => {
     expect(searchInsightsSemanticallyMock).toHaveBeenCalledWith({
       userId: "user-1",
       query: "Alpha contract risk and core equipment",
+      queryEmbedding: [0.1, 0.2],
       limit: 4,
       threshold: 0.6,
       botIds: ["bot-a", "bot-b"],
@@ -365,9 +372,11 @@ describe("unified memory search", () => {
         limit: 4,
         threshold: 0.6,
         documentIds: ["doc-alpha"],
+        queryEmbedding: [0.1, 0.2],
       },
       "token",
     );
+    expect(universalEmbedQueryMock).toHaveBeenCalledTimes(1);
 
     // This is the important #71 behavior: three isolated sources come back
     // through one semantic result contract and are globally ranked by score.
@@ -399,6 +408,7 @@ describe("unified memory search", () => {
   it("does not use database semantic fallback when Chroma returns no matches", async () => {
     isRawMessageStorageAvailableMock.mockReturnValue(true);
     isRawMessageChromaEnabledMock.mockReturnValue(true);
+    process.env.RAW_MESSAGE_VECTOR_STORE_BACKEND = "chroma";
 
     const output = await searchUnifiedMemory({
       userId: "user-1",
@@ -423,6 +433,7 @@ describe("unified memory search", () => {
   it("falls back to database semantic search when Chroma raw memory search fails", async () => {
     isRawMessageStorageAvailableMock.mockReturnValue(true);
     isRawMessageChromaEnabledMock.mockReturnValue(true);
+    process.env.RAW_MESSAGE_VECTOR_STORE_BACKEND = "chroma";
     searchRawMessagesWithChromaMock.mockRejectedValue(
       new Error("Chroma temporarily unavailable"),
     );

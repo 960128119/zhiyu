@@ -1,6 +1,6 @@
-# Contributing to OpenLoomi
+# Contributing to OpenZhiyu
 
-Thank you for your interest in contributing to OpenLoomi!
+Thank you for your interest in contributing to OpenZhiyu!
 
 ## Development Setup
 
@@ -15,8 +15,8 @@ Thank you for your interest in contributing to OpenLoomi!
 
 ```bash
 # Clone the repository
-git clone https://github.com/melandlabs/openloomi.git
-cd openloomi
+git clone https://github.com/melandlabs/openzhiyu.git
+cd openzhiyu
 
 # Install dependencies
 pnpm install
@@ -42,7 +42,7 @@ pnpm dev
 ## Project Structure
 
 ```
-openloomi/
+openzhiyu/
 ├── apps/
 │   ├── web/              # Desktop app (Tauri + Next.js)
 │   └── marketing/        # Marketing site
@@ -177,7 +177,7 @@ When working on packages in `packages/` directory:
 pnpm build:packages
 
 # Build a specific package
-pnpm --filter @openloomi/ai build
+pnpm --filter @openzhiyu/ai build
 
 # Use the package in the web app during development
 # Packages are linked via pnpm workspace
@@ -194,9 +194,9 @@ The `packages/integrations` directory contains connectors for external platforms
 
 ## Getting Help
 
-- [GitHub Issues](https://github.com/melandlabs/openloomi/issues) - bugs and feature requests
+- [GitHub Issues](https://github.com/melandlabs/openzhiyu/issues) - bugs and feature requests
 - [Discord](https://discord.com/invite/xkJaJyWcsv) - discussion and questions
-- [Email](mailto:developer@openloomi.ai) - direct contact
+- [Email](mailto:developer@openzhiyu.ai) - direct contact
 
 ## Code of Conduct
 

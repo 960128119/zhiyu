@@ -6,14 +6,14 @@ import { RemixIcon } from "@/components/remix-icon";
 import { useChatContext } from "./chat-context";
 import { useGlobalInsightDrawer } from "@/components/global-insight-drawer";
 import { InsightBadge } from "./insight-badge";
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@openloomi/ui";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@openzhiyu/ui";
 import { cn } from "@/lib/utils";
 
 interface FocusedInsightCardProps {

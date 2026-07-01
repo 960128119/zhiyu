@@ -4,7 +4,7 @@ import { useCallback, useRef, useState, type ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { RemixIcon } from "@/components/remix-icon";
 
-import { Button } from "@openloomi/ui";
+import { Button } from "@openzhiyu/ui";
 import { toast } from "@/components/toast";
 import { importRssOpmlClient } from "@/lib/integrations/rss-client";
 
@@ -183,7 +183,7 @@ export function RssOpmlImport({ onImported }: RssOpmlImportProps) {
         <p className="text-[11px] text-[#8f8e88]">
           {t(
             "integrations.importOpmlHint",
-            "Only .opml files up to 2MB are accepted. openloomi processes the first 200 feeds per upload.",
+            "Only .opml files up to 2MB are accepted. openzhiyu processes the first 200 feeds per upload.",
           )}
         </p>
       </div>

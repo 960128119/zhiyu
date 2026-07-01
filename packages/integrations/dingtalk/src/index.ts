@@ -2,26 +2,26 @@
  * DingTalk bot adapter (Stream receive messages + OpenAPI send messages)
  * Credentials are Open Platform Client ID (AppKey) and Client Secret, consistent with nanobot dingtalk channel
  */
-import { MessagePlatformAdapter } from "@openloomi/integrations/channels";
+import { MessagePlatformAdapter } from "@openzhiyu/integrations/channels";
 import type {
   Messages,
   Message,
   Image,
   Voice,
   File as FileMsg,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 import type {
   GroupMessageEvent,
   MessageEvent,
   MessageTarget,
-} from "@openloomi/integrations/channels";
+} from "@openzhiyu/integrations/channels";
 import type {
   Friend,
   Group,
   GroupMember,
-} from "@openloomi/integrations/channels";
-import type { Permission } from "@openloomi/integrations/channels";
-import type { ExtractedMessageInfo } from "@openloomi/integrations/channels/sources/types";
+} from "@openzhiyu/integrations/channels";
+import type { Permission } from "@openzhiyu/integrations/channels";
+import type { ExtractedMessageInfo } from "@openzhiyu/integrations/channels/sources/types";
 
 const DEBUG = process.env.DEBUG_DINGTALK === "true";
 
@@ -328,7 +328,7 @@ export class DingTalkAdapter extends MessagePlatformAdapter {
     if (text) {
       await this.postRobotMessage(id, "sampleMarkdown", {
         text,
-        title: "openloomi",
+        title: "openzhiyu",
       });
     }
 
@@ -461,7 +461,7 @@ export class DingTalkAdapter extends MessagePlatformAdapter {
       if (fallback) {
         await this.postRobotMessage(id, "sampleMarkdown", {
           text: fallback,
-          title: "openloomi",
+          title: "openzhiyu",
         });
       }
     }

@@ -1,7 +1,7 @@
 import { Noto_Sans_SC, Noto_Serif_SC, Roboto } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/components/i18n-provider";
-import { TooltipProvider } from "@openloomi/ui";
+import { TooltipProvider } from "@openzhiyu/ui";
 
 import "./globals.css";
 import "remixicon/fonts/remixicon.css";

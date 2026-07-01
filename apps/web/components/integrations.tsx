@@ -6,7 +6,7 @@ import { toast } from "./toast";
 import { useRouter } from "next/navigation";
 import { useSWRConfig } from "swr";
 import { RemixIcon } from "@/components/remix-icon";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@openloomi/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@openzhiyu/ui";
 import { PlatformIntegrations } from "./platform-integrations";
 import { RssIntegrations, RssAddControls } from "./rss-integrations";
 import { SavedFiles } from "./saved-files";

@@ -17,7 +17,7 @@ import { AgentLayout } from "@/components/agent/layout";
 import { ResponsiveToolbar } from "@/components/agent/responsive-toolbar";
 import { AgentChatPanel } from "@/components/agent/chat-panel";
 import { ChatHeaderPanel } from "@/components/agent/chat-header-panel";
-import { Button, PageSectionHeader } from "@openloomi/ui";
+import { Button, PageSectionHeader } from "@openzhiyu/ui";
 import {
   AgentEventsPanel,
   AgentBriefPanel,
@@ -25,7 +25,7 @@ import {
 } from "@/components/agent/dynamic-panels";
 import { useTranslation } from "react-i18next";
 import "../../i18n";
-import type { ChatMessage } from "@openloomi/shared";
+import type { ChatMessage } from "@openzhiyu/shared";
 import dynamic from "next/dynamic";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { buildNavigationUrl, cn, generateUUID, fetcher } from "@/lib/utils";
@@ -33,7 +33,7 @@ import { UserProfileSettings } from "@/components/user-profile-settings";
 import { AiApiSettings } from "@/components/ai-api-settings";
 import { ProfileOverview } from "@/components/profile-overview";
 import { StorageManagementPanel } from "@/components/storage-management-panel";
-import { useIsMobile } from "@openloomi/hooks/use-is-mobile";
+import { useIsMobile } from "@openzhiyu/hooks/use-is-mobile";
 import { useChatContext } from "@/components/chat-context";
 import { InsightsPaginationProvider } from "@/hooks/use-insight-data";
 import { FilePreviewOverlay } from "@/components/file-preview-overlay";
@@ -73,7 +73,7 @@ export function Home() {
   const category = searchParams.get("category");
   /** Chat page (page=chat) reads chatId from URL, used to correctly open corresponding chat after jumping from Library/Chat Vault "Open chat" */
   const urlChatId = searchParams.get("chatId") ?? undefined;
-  /** Chat page reads send parameter from URL, automatically sends that message after mounting (e.g., onboarding "Talk with openloomi") */
+  /** Chat page reads send parameter from URL, automatically sends that message after mounting (e.g., onboarding "Talk with openzhiyu") */
   const urlSendMessage = searchParams.get("send");
   const initialMessageToSend =
     urlSendMessage != null ? decodeURIComponent(urlSendMessage) : undefined;
@@ -127,9 +127,9 @@ export function Home() {
     const handler = () => {
       router.push("/connectors?addPlatform=true");
     };
-    window.addEventListener("openloomi:request-integration", handler);
+    window.addEventListener("openzhiyu:request-integration", handler);
     return () =>
-      window.removeEventListener("openloomi:request-integration", handler);
+      window.removeEventListener("openzhiyu:request-integration", handler);
   }, [router]);
 
   // Listen for integration authorization completion → retry the tool call
@@ -252,17 +252,25 @@ export function Home() {
   // Sync effectiveChatId to ChatContext
   // When chatId exists in URL (jumped from scheduled job or execution history), call switchChatId to load messages
   useEffect(() => {
+    if (pathname !== "/") return;
     if (!effectiveChatId) return;
 
     // If chatId exists in URL (jumped from scheduled job etc.), call switchChatId to load messages
-    if (urlChatId) {
+    if (urlChatId && urlChatId !== localActiveChatId) {
       // Always call switchChatId, let it handle caching logic internally
       // Avoid message not loaded due to async loading not completing
       switchChatId(effectiveChatId);
     } else {
       contextSetActiveChatId(effectiveChatId);
     }
-  }, [effectiveChatId, contextSetActiveChatId, switchChatId, urlChatId]);
+  }, [
+    effectiveChatId,
+    contextSetActiveChatId,
+    switchChatId,
+    urlChatId,
+    pathname,
+    localActiveChatId,
+  ]);
 
   // When localActiveChatId changes, synchronously update chatId parameter in URL (only on chat page)
   // This can avoid effectiveChatId still using old value due to URL update delay
@@ -271,7 +279,7 @@ export function Home() {
     // Skip initial render
     if (!localActiveChatId) return;
     // Only synchronously update URL on chat page
-    if (page !== "chat") return;
+    if (pathname !== "/" || page !== "chat") return;
     // If chatId already exists in URL, no need to update (possibly jumped from scheduled job etc.)
     if (urlChatId) return;
 
@@ -284,7 +292,7 @@ export function Home() {
       },
     });
     router.replace(newPath, { scroll: false });
-  }, [localActiveChatId, page, searchParams, router]);
+  }, [localActiveChatId, page, searchParams, router, pathname]);
 
   // Initial redirect: when page is null (first load), redirect to chat page
   useEffect(() => {
@@ -591,7 +599,7 @@ export function Home() {
         return t("settings.general", "General");
       case "ai-api-settings":
         return t("settings.aiSettingsTitle", "AI Settings");
-      case "openloomi-soul":
+      case "openzhiyu-soul":
         return t("settings.general", "General");
       case "storage-management":
         return t("settings.storageManagementTitle", "Storage management");
@@ -611,7 +619,7 @@ export function Home() {
       "account-settings",
       "profile-edit",
       "ai-api-settings",
-      "openloomi-soul",
+      "openzhiyu-soul",
       "storage-management",
     ].includes(pageParam ?? "");
   }
@@ -662,7 +670,7 @@ export function Home() {
       return renderUtilityPanel(<AiApiSettings />, "ai-api-settings");
     }
 
-    if (page === "openloomi-soul") {
+    if (page === "openzhiyu-soul") {
       return renderUtilityPanel(<UserProfileSettings />, "account-settings");
     }
 

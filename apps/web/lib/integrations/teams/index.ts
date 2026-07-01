@@ -1,19 +1,19 @@
-import { MessagePlatformAdapter } from "@openloomi/integrations/channels";
-import type { Messages, Message } from "@openloomi/integrations/channels";
+import { MessagePlatformAdapter } from "@openzhiyu/integrations/channels";
+import type { Messages, Message } from "@openzhiyu/integrations/channels";
 import type {
   MessageEvent,
   MessageTarget,
-} from "@openloomi/integrations/channels";
-import type { Attachment } from "@openloomi/shared";
+} from "@openzhiyu/integrations/channels";
+import type { Attachment } from "@openzhiyu/shared";
 import {
   coerceDate,
   delay,
   type DialogInfo,
   type ExtractedMessageInfo,
-} from "@openloomi/integrations/channels/sources/types";
+} from "@openzhiyu/integrations/channels/sources/types";
 import { ingestAttachmentForUser } from "@/lib/integrations/utils/attachments";
 import type { UserType } from "@/app/(auth)/auth";
-import { updateIntegrationAccount } from "@/lib/db/queries";
+import { updateIntegrationAccount } from "@/lib/db/integration-queries";
 
 const GRAPH_BASE = "https://graph.microsoft.com/v1.0";
 const DEFAULT_SCOPES =

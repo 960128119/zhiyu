@@ -22,6 +22,8 @@ import { verifyLoopRun } from "./verifier";
 import {
   buildCheckerVerificationPayload,
   decideLoopOutcome,
+  type LoopCheckerResult,
+  type LoopOutcomeDecision,
   runLoopChecker,
   type LoopModelChecker,
 } from "./checker";
@@ -29,12 +31,19 @@ import {
   evaluateLoopApprovals,
   extractActionNamesFromJobResult,
 } from "./approval";
-import { evaluateLoopActionGuard, type LoopActionGuardMode } from "./action-guard";
+import {
+  evaluateLoopActionGuard,
+  type LoopActionGuardMode,
+} from "./action-guard";
 import {
   createRuntimeLoopModelChecker,
   resolveLoopModelChecker,
 } from "./model-checker";
 import type { LoopToolGateEvaluation } from "./tool-gate";
+import type { LoopApprovalEvaluation } from "./approval";
+import type { LoopActionGuardResult } from "./action-guard";
+import type { LoopVerificationResult } from "./verifier";
+import { loopRetryPolicySchema } from "./spec";
 
 type RunNativeLoopRuntimeInput = RunNativeLoopInput & {
   modelChecker?: LoopModelChecker | null;
@@ -42,6 +51,18 @@ type RunNativeLoopRuntimeInput = RunNativeLoopInput & {
 
 type RunScheduledJobLoopRuntimeInput = RunScheduledJobLoopInput & {
   modelChecker?: LoopModelChecker | null;
+};
+
+type LoopExecutionEvaluation = {
+  loopStatus: Exclude<LoopRunStatus, "running">;
+  verification: LoopVerificationResult;
+  checker: LoopCheckerResult;
+  decision: LoopOutcomeDecision;
+  approval: LoopApprovalEvaluation;
+  actionGuard: LoopActionGuardResult;
+  toolGate?: LoopToolGateEvaluation;
+  executionTrace?: LoopJson;
+  modelCheckerMetadata: LoopJson;
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -57,6 +78,13 @@ function extractToolGateResult(
   return Array.isArray(toolGate.decisions)
     ? (toolGate as unknown as LoopToolGateEvaluation)
     : undefined;
+}
+
+function extractExecutionTrace(
+  result: JobExecutionResult,
+): LoopJson | undefined {
+  const executionTrace = asRecord(asRecord(result.result).executionTrace);
+  return Array.isArray(executionTrace.events) ? executionTrace : undefined;
 }
 
 function scheduledJobTriggerConfig(jobId: string): LoopJson {
@@ -101,6 +129,57 @@ function compactStateSnapshot(state: Awaited<ReturnType<typeof getLoopState>>) {
   };
 }
 
+function maxAttemptsForLoop(loop: Loop): number {
+  const retryPolicy = loopRetryPolicySchema.parse(loop.retryPolicy ?? {});
+  return Math.max(1, retryPolicy.maxAttempts);
+}
+
+function buildRetryAttemptState(input: {
+  previousState: LoopState | null;
+  loopId: string;
+  feedback: string;
+  attemptNumber: number;
+  maxAttempts: number;
+  result: JobExecutionResult;
+}): LoopState | null {
+  const retryFeedback = {
+    attemptNumber: input.attemptNumber,
+    maxAttempts: input.maxAttempts,
+    feedback: input.feedback,
+    previousStatus: input.result.status,
+    previousOutput: resultSummary(input.result),
+    createdAt: new Date().toISOString(),
+  };
+
+  if (!input.previousState) {
+    return {
+      loopId: input.loopId,
+      currentPhase: "retry_recommended",
+      memorySummary: null,
+      openQuestions: [],
+      lastObservation: "Previous loop attempt needs retry",
+      nextAction: "Retry maker execution with checker feedback",
+      blockedReason: input.feedback,
+      stateJson: {
+        retryFeedback,
+      },
+      updatedAt: new Date(),
+    } as LoopState;
+  }
+
+  return {
+    ...input.previousState,
+    currentPhase: "retry_recommended",
+    lastObservation: "Previous loop attempt needs retry",
+    nextAction: "Retry maker execution with checker feedback",
+    blockedReason: input.feedback,
+    stateJson: {
+      ...(input.previousState.stateJson ?? {}),
+      retryFeedback,
+    },
+  };
+}
+
 async function buildRuntimeModelChecker(input: {
   loop: Loop;
   candidate?: LoopModelChecker | null;
@@ -120,6 +199,65 @@ async function buildRuntimeModelChecker(input: {
       model: process.env.LLM_MODEL,
     },
   });
+}
+
+async function evaluateLoopExecution(input: {
+  loop: Loop;
+  result: JobExecutionResult;
+  actionGuardMode?: LoopActionGuardMode;
+  modelChecker?: LoopModelChecker | null;
+  attemptsUsed?: number;
+}): Promise<LoopExecutionEvaluation> {
+  const loopStatus = mapJobResultToLoopStatus(input.result);
+  const verification = verifyLoopRun({
+    verificationConfig: input.loop.verificationConfig,
+    result: input.result,
+  });
+  const runtimeModelChecker = await buildRuntimeModelChecker({
+    loop: input.loop,
+    candidate: input.modelChecker,
+  });
+  const modelCheckerResolution = resolveLoopModelChecker({
+    verificationConfig: input.loop.verificationConfig,
+    candidate: runtimeModelChecker,
+  });
+  const checker = await runLoopChecker({
+    verification,
+    modelChecker: modelCheckerResolution.modelChecker,
+  });
+  const decision = decideLoopOutcome({
+    checker,
+    retryPolicy: input.loop.retryPolicy,
+    attemptsUsed: input.attemptsUsed,
+  });
+  const actionNames = extractActionNamesFromJobResult(input.result);
+  const approval = evaluateLoopApprovals({
+    actionNames,
+    actionPolicy: input.loop.actionPolicy,
+    approvalPolicy: input.loop.approvalPolicy,
+  });
+  const actionGuard = evaluateLoopActionGuard({
+    actionNames,
+    actionPolicy: input.loop.actionPolicy,
+    approvalPolicy: input.loop.approvalPolicy,
+    mode: input.actionGuardMode ?? "advisory",
+  });
+
+  return {
+    loopStatus,
+    verification,
+    checker,
+    decision,
+    approval,
+    actionGuard,
+    toolGate: extractToolGateResult(input.result),
+    executionTrace: extractExecutionTrace(input.result),
+    modelCheckerMetadata: {
+      enabled: modelCheckerResolution.enabled,
+      reason: modelCheckerResolution.reason,
+      maxInputChars: modelCheckerResolution.maxInputChars,
+    },
+  };
 }
 
 function buildNativeDryRunResult(loop: Loop): JobExecutionResult {
@@ -167,42 +305,29 @@ async function completeLoopExecution(input: {
   stateJson?: LoopJson;
   actionGuardMode?: LoopActionGuardMode;
   modelChecker?: LoopModelChecker | null;
+  attemptsUsed?: number;
+  evaluation?: LoopExecutionEvaluation;
 }): Promise<void> {
-  const loopStatus = mapJobResultToLoopStatus(input.result);
-  const verification = verifyLoopRun({
-    verificationConfig: input.loop.verificationConfig,
-    result: input.result,
-  });
-  const runtimeModelChecker = await buildRuntimeModelChecker({
-    loop: input.loop,
-    candidate: input.modelChecker,
-  });
-  const modelCheckerResolution = resolveLoopModelChecker({
-    verificationConfig: input.loop.verificationConfig,
-    candidate: runtimeModelChecker,
-  });
-  const checker = await runLoopChecker({
+  const evaluation =
+    input.evaluation ??
+    (await evaluateLoopExecution({
+      loop: input.loop,
+      result: input.result,
+      actionGuardMode: input.actionGuardMode,
+      modelChecker: input.modelChecker,
+      attemptsUsed: input.attemptsUsed,
+    }));
+  const {
+    loopStatus,
     verification,
-    modelChecker: modelCheckerResolution.modelChecker,
-  });
-  const decision = decideLoopOutcome({
     checker,
-    retryPolicy: input.loop.retryPolicy,
-    attemptsUsed: 1,
-  });
-  const actionNames = extractActionNamesFromJobResult(input.result);
-  const approval = evaluateLoopApprovals({
-    actionNames,
-    actionPolicy: input.loop.actionPolicy,
-    approvalPolicy: input.loop.approvalPolicy,
-  });
-  const actionGuard = evaluateLoopActionGuard({
-    actionNames,
-    actionPolicy: input.loop.actionPolicy,
-    approvalPolicy: input.loop.approvalPolicy,
-    mode: input.actionGuardMode ?? "advisory",
-  });
-  const toolGate = extractToolGateResult(input.result);
+    decision,
+    approval,
+    actionGuard,
+    toolGate,
+    executionTrace,
+    modelCheckerMetadata,
+  } = evaluation;
 
   await completeLoopRun(input.loopRun.id, {
     status: decision.runStatus,
@@ -214,11 +339,8 @@ async function completeLoopExecution(input: {
       approval,
       actionGuard,
       toolGate,
-      modelChecker: {
-        enabled: modelCheckerResolution.enabled,
-        reason: modelCheckerResolution.reason,
-        maxInputChars: modelCheckerResolution.maxInputChars,
-      },
+      executionTrace,
+      modelChecker: modelCheckerMetadata,
     }),
     error: input.result.error ?? null,
   });
@@ -266,6 +388,7 @@ async function completeLoopExecution(input: {
       lastVerificationPassed: verification.passed,
       lastCheckerPassed: checker.passed,
       lastOutcomeAction: decision.action,
+      lastAttemptsUsed: decision.attemptsUsed,
       attemptsRemaining: decision.attemptsRemaining,
       lastApprovalRequiresApproval: approval.requiresApproval,
       lastApprovalDenied: approval.denied,
@@ -336,7 +459,8 @@ async function failLoopExecution(input: {
   });
 
   await upsertLoopState(input.loop.id, {
-    currentPhase: decision.statePhase === "idle" ? "error" : decision.statePhase,
+    currentPhase:
+      decision.statePhase === "idle" ? "error" : decision.statePhase,
     lastObservation: input.observation,
     nextAction: decision.nextAction ?? "Review failed loop run",
     blockedReason: decision.blockedReason ?? errorMessage,
@@ -492,26 +616,101 @@ export async function runNativeLoopOnce(
   });
 
   try {
-    const result = input.execute
-      ? await input.execute({ loop, previousState, loopRun })
-      : buildNativeDryRunResult(loop);
+    const maxAttempts = input.execute ? maxAttemptsForLoop(loop) : 1;
+    let attemptNumber = 1;
+    let attemptState = previousState;
+    let retryFeedback: string | null = null;
+    let retryPreviousResult: LoopJson | null = null;
+    let finalResult: JobExecutionResult | null = null;
+    let finalEvaluation: LoopExecutionEvaluation | null = null;
+
+    while (attemptNumber <= maxAttempts) {
+      const result: JobExecutionResult = input.execute
+        ? await input.execute({
+            loop,
+            previousState: attemptState,
+            loopRun,
+            attemptContext: {
+              attemptNumber,
+              maxAttempts,
+              previousFeedback: retryFeedback,
+              previousResult: retryPreviousResult,
+            },
+          })
+        : buildNativeDryRunResult(loop);
+
+      const evaluation = await evaluateLoopExecution({
+        loop,
+        result,
+        actionGuardMode: "enforce",
+        modelChecker: input.modelChecker,
+        attemptsUsed: attemptNumber,
+      });
+
+      finalResult = result;
+      finalEvaluation = evaluation;
+
+      if (
+        input.execute &&
+        evaluation.decision.action === "retry" &&
+        attemptNumber < maxAttempts
+      ) {
+        retryFeedback = evaluation.checker.feedback;
+        retryPreviousResult = {
+          status: result.status,
+          outputSummary: resultSummary(result),
+          verification: evaluation.verification,
+          checker: evaluation.checker,
+          decision: evaluation.decision,
+        };
+        attemptState = buildRetryAttemptState({
+          previousState,
+          loopId: loop.id,
+          feedback: retryFeedback,
+          attemptNumber,
+          maxAttempts,
+          result,
+        });
+        attemptNumber += 1;
+        continue;
+      }
+
+      break;
+    }
+
+    if (!finalResult || !finalEvaluation) {
+      throw new Error("Native loop execution did not produce a result");
+    }
 
     await completeLoopExecution({
       loop,
       loopRun,
       previousState,
-      result,
+      result: finalResult,
       successObservation: `Native loop "${loop.name}" completed successfully`,
       followUpObservation: `Native loop "${loop.name}" needs follow-up`,
       stateJson: {
         lastExecutionMode: input.execute ? "native" : "dry_run",
+        lastAutoAttemptCount: finalEvaluation.decision.attemptsUsed,
+        lastAutoRetryFeedback: retryFeedback,
       },
       actionGuardMode: "enforce",
       modelChecker: input.modelChecker,
+      attemptsUsed: finalEvaluation.decision.attemptsUsed,
+      evaluation: finalEvaluation,
     });
 
-    return result;
+    return finalResult;
   } catch (error) {
+    console.error("[LoopRuntime] native loop failed before completion", {
+      loopId: loop.id,
+      loopRunId: loopRun.id,
+      userId: input.userId,
+      triggeredBy: input.triggeredBy,
+      errorName: error instanceof Error ? error.name : typeof error,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
     return await failLoopExecution({
       loop,
       loopRun,

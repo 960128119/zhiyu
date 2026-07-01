@@ -1,0 +1,9 @@
+{
+  "name": "@openzhiyu/benchmark-rag",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bench:sqlite-vec": "tsx ./sqlite-vec.bench.ts"
+  }
+}

@@ -30,6 +30,9 @@ async function postRegistration(
     string,
     unknown
   > | null;
+  if (!resp.ok && body.action === "poll" && json) {
+    return json;
+  }
   if (!resp.ok) {
     const msg =
       json && typeof json.msg === "string" ? json.msg : `HTTP ${resp.status}`;
@@ -84,15 +87,17 @@ export async function beginAppRegistration(
   if (typeof deviceCode !== "string" || !deviceCode) {
     throw new Error("feishu_registration_begin_missing_device_code");
   }
-  const qrUrl = new URL(verificationUriComplete);
-  qrUrl.searchParams.set("from", "openloomi");
-  qrUrl.searchParams.set("tp", "ob_cli_app");
   return {
     deviceCode,
-    qrUrl: qrUrl.toString(),
+    qrUrl: verificationUriComplete,
     userCode: typeof res.user_code === "string" ? res.user_code : undefined,
     intervalSec: typeof res.interval === "number" ? res.interval : 5,
-    expireInSec: typeof res.expire_in === "number" ? res.expire_in : 600,
+    expireInSec:
+      typeof res.expires_in === "number"
+        ? res.expires_in
+        : typeof res.expire_in === "number"
+          ? res.expire_in
+          : 600,
   };
 }
 
@@ -110,6 +115,8 @@ export type PollRegistrationOnceResult =
       nextDomain: FeishuAccountsDomain;
       /** If Feishu requires slow_down, interval will increase */
       nextIntervalSec: number;
+      reason?: string;
+      code?: number;
     }
   | { kind: "denied" }
   | { kind: "expired" }
@@ -117,7 +124,9 @@ export type PollRegistrationOnceResult =
 
 /**
  * Poll registration result once (called repeatedly by frontend per interval)
- * @param tp Same as OpenClaw `runScanToCreate`, pass ob_app
+ * @param tp Optional compatibility parameter. The official Feishu begin API
+ * currently returns a clean verification URI, so omit this unless required by
+ * the upstream flow.
  */
 export async function pollAppRegistrationOnce(params: {
   domain: FeishuAccountsDomain;
@@ -127,20 +136,20 @@ export async function pollAppRegistrationOnce(params: {
   domainAlreadySwitched: boolean;
   tp?: string;
 }): Promise<PollRegistrationOnceResult> {
-  const tp = params.tp ?? "ob_app";
   let pollRes: Record<string, unknown>;
   try {
     const body: Record<string, string> = {
       action: "poll",
       device_code: params.deviceCode,
-      tp,
     };
+    if (params.tp) body.tp = params.tp;
     pollRes = await postRegistration(params.domain, body);
-  } catch {
+  } catch (error) {
     return {
       kind: "pending",
       nextDomain: params.domain,
       nextIntervalSec: params.currentIntervalSec,
+      reason: error instanceof Error ? error.message : String(error),
     };
   }
 
@@ -176,6 +185,8 @@ export async function pollAppRegistrationOnce(params: {
       kind: "pending",
       nextDomain: params.domain,
       nextIntervalSec: params.currentIntervalSec,
+      reason: "authorization_pending",
+      code: typeof pollRes.code === "number" ? pollRes.code : undefined,
     };
   }
   if (err === "slow_down") {
@@ -183,6 +194,8 @@ export async function pollAppRegistrationOnce(params: {
       kind: "pending",
       nextDomain: params.domain,
       nextIntervalSec: params.currentIntervalSec + 5,
+      reason: "slow_down",
+      code: typeof pollRes.code === "number" ? pollRes.code : undefined,
     };
   }
   if (err === "access_denied") {

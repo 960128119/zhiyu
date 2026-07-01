@@ -8,7 +8,8 @@ function createResponse(
     hasApiKey?: boolean;
     baseUrl?: string | null;
     model?: string | null;
-    systemHasApiKey?: boolean;
+    systemOpenAiHasApiKey?: boolean;
+    systemAnthropicHasApiKey?: boolean;
   } = {},
 ) {
   return {
@@ -22,8 +23,11 @@ function createResponse(
       },
     ],
     systemDefaults: {
+      openai_compatible: {
+        hasApiKey: overrides.systemOpenAiHasApiKey ?? false,
+      },
       anthropic_compatible: {
-        hasApiKey: overrides.systemHasApiKey ?? false,
+        hasApiKey: overrides.systemAnthropicHasApiKey ?? false,
       },
     },
   };
@@ -66,7 +70,7 @@ describe("conversation API configuration", () => {
     ).toBe(false);
   });
 
-  it("does not treat an OpenAI-compatible provider as chat configuration", () => {
+  it("accepts a complete enabled OpenAI-compatible user provider", () => {
     const response = createResponse();
     response.settings = [
       {
@@ -78,13 +82,21 @@ describe("conversation API configuration", () => {
       },
     ];
 
-    expect(hasUsableConversationApiConfiguration(response)).toBe(false);
+    expect(hasUsableConversationApiConfiguration(response)).toBe(true);
   });
 
   it("accepts the system Anthropic API key fallback", () => {
     expect(
       hasUsableConversationApiConfiguration(
-        createResponse({ systemHasApiKey: true }),
+        createResponse({ systemAnthropicHasApiKey: true }),
+      ),
+    ).toBe(true);
+  });
+
+  it("accepts the system OpenAI-compatible API key fallback", () => {
+    expect(
+      hasUsableConversationApiConfiguration(
+        createResponse({ systemOpenAiHasApiKey: true }),
       ),
     ).toBe(true);
   });

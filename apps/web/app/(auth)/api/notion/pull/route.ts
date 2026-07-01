@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
-import { getIntegrationAccountByPlatform } from "@/lib/db/queries";
-import { AppError } from "@openloomi/shared/errors";
+import { getIntegrationAccountByPlatform } from "@/lib/db/integration-queries";
+import { AppError } from "@openzhiyu/shared/errors";
 import { pullNotionPages, type NotionMetadata } from "@/lib/files/notion";
 
 const requestSchema = z.object({

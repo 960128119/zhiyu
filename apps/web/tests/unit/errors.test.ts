@@ -3,7 +3,7 @@ import {
   AppError,
   getMessageByErrorCode,
   isTelegramAuthIssue,
-} from "@openloomi/shared/errors";
+} from "@openzhiyu/shared/errors";
 
 describe("errors", () => {
   it("builds message with cause for api bad request", () => {

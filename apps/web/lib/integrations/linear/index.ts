@@ -1,5 +1,5 @@
-import { AppError } from "@openloomi/shared/errors";
-import type { BotWithAccount } from "@/lib/db/queries";
+import { AppError } from "@openzhiyu/shared/errors";
+import type { BotWithAccount } from "@/lib/db/bot-queries";
 import type { UserType } from "@/app/(auth)/auth";
 
 /**

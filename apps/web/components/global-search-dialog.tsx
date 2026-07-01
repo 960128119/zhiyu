@@ -8,11 +8,11 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@openloomi/ui";
-import { Button, Input } from "@openloomi/ui";
+} from "@openzhiyu/ui";
+import { Button, Input } from "@openzhiyu/ui";
 import { RemixIcon } from "@/components/remix-icon";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@openloomi/hooks/use-is-mobile";
+import { useIsMobile } from "@openzhiyu/hooks/use-is-mobile";
 import { useChatContextOptional } from "@/components/chat-context";
 import {
   DropdownMenu,
@@ -20,11 +20,11 @@ import {
   DropdownMenuContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-} from "@openloomi/ui";
+} from "@openzhiyu/ui";
 import { getRecentInsights, type RecentInsight } from "@/lib/insights/recent";
 import { fetcher } from "@/lib/utils";
 import useSWR from "swr";
-import { queryRawMessages } from "@openloomi/indexeddb/client";
+import { queryRawMessages } from "@openzhiyu/indexeddb/client";
 import { useSession } from "next-auth/react";
 
 /**

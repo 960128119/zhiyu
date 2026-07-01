@@ -19,7 +19,7 @@ export type OpenWorkspaceFileResult =
     };
 
 /**
- * Resolves `~/.openloomi/sessions/{taskId}/{relativePath}` on the local machine (Tauri only).
+ * Resolves `~/.openzhiyu/sessions/{taskId}/{relativePath}` on the local machine (Tauri only).
  */
 /**
  * Resolves a path (absolute or already relative) to a path relative to the session root,
@@ -31,13 +31,13 @@ export function sessionRelativePathFromStoredPath(
   taskId: string,
 ): string {
   const norm = filePath.replace(/\\/g, "/");
-  const needle = `/.openloomi/sessions/${taskId}/`;
+  const needle = `/.openzhiyu/sessions/${taskId}/`;
   const idx = norm.indexOf(needle);
   if (idx >= 0) {
     return norm.slice(idx + needle.length).replace(/^\/+/, "");
   }
   const tailRe = new RegExp(
-    `/\\.openloomi/sessions/${taskId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/(.+)$`,
+    `/\\.openzhiyu/sessions/${taskId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/(.+)$`,
     "i",
   );
   const m = norm.match(tailRe);
@@ -74,7 +74,7 @@ export async function resolveWorkspaceSessionAbsolutePath(
     /Windows|Win32|Win64/i.test(navigator.userAgent);
   const sep = isWin ? "\\" : "/";
   const parts = norm.split("/").filter(Boolean);
-  return [home, ".openloomi", "sessions", taskId, ...parts].join(sep);
+  return [home, ".openzhiyu", "sessions", taskId, ...parts].join(sep);
 }
 
 /**

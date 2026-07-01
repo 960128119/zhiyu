@@ -1,14 +1,26 @@
-// Extended translations - adds missing keys to @openloomi/i18n
-import baseZh from "@openloomi/i18n/locales/zh-Hans";
+// Extended translations - adds missing keys to @openzhiyu/i18n
+import baseZh from "@openzhiyu/i18n/locales/zh-Hans";
 
 const zh = {
   ...baseZh,
   common: {
     ...baseZh.common,
     export: "导出",
+    toolNames: {
+      ...baseZh.common.toolNames,
+      wechatDesktopHealth: "检查桌面微信",
+      wechatDesktopPreviewMessage: "预览微信消息",
+      wechatDesktopSendMessage: "发送微信消息",
+      createLoopTask: "创建自动任务",
+      listLoopTasks: "列出自动任务",
+      setLoopTaskStatus: "更新自动任务",
+      deleteLoopTask: "删除自动任务",
+    },
   },
   nav: {
     ...baseZh.nav,
+    automaticTasks: "自动任务",
+    legacyTasks: "旧版任务",
     insights: "洞察",
     inbox: "洞察",
     termsAndPolicies: "条款与政策",
@@ -62,39 +74,37 @@ const zh = {
       preset: {
         ...(baseZh.insight?.tabs?.preset ?? {}),
         importantPeople: "重要人物",
-        importantPeopleDesc: "筛选来自重要人物或重点联系人的 Insight",
+        importantPeopleDesc: "筛选来自重要人物或重点联系人的洞察",
       },
     },
     analytics: {
-      ...((
-        baseZh.insight as typeof baseZh.insight & {
-          analytics?: Record<string, unknown>;
-        }
-      ).analytics ?? {}),
+      ...((baseZh.insight as typeof baseZh.insight & {
+        analytics?: Record<string, unknown>;
+      }).analytics ?? {}),
       tab: "分析",
       title: "使用分析",
       generatedAt: "更新于 {{time}}",
       loadFailed: "分析数据加载失败",
-      totalInsights: "Insight 总数",
-      activeInsights: "30 天活跃",
-      dormantInsights: "休眠",
+      totalInsights: "洞察总数",
+      activeInsights: "近 30 天活跃",
+      dormantInsights: "沉睡洞察",
       averageScore: "平均评分",
-      topInsights: "高频 Insight",
-      bottomInsights: "休眠 Insight",
+      topInsights: "高价值洞察",
+      bottomInsights: "沉睡洞察",
       noUsageData: "暂无使用数据",
-      noDormantData: "暂无休眠 Insight",
+      noDormantData: "暂无沉睡洞察",
       trends: "趋势分析",
       relationships: "关系分析",
       noRelationships: "暂无重复关联",
       organizationRecommendations: "整理建议",
-      noRecommendations: "暂无需要清理的 Insight",
+      noRecommendations: "暂无需要整理的内容",
       neverAccessed: "从未访问",
-      noAccess: "暂无访问",
-      untitled: "未命名 Insight",
-      accesses30dShort: "{{count}} / 30天",
-      totalAccessesShort: "共 {{count}} 次",
-      conversationCount: "{{count}} 个会话",
-      accessCount30d: "30 天 {{count}} 次访问",
+      noAccess: "无访问",
+      untitled: "未命名洞察",
+      accesses30dShort: "{{count}} 次 / 30 天",
+      totalAccessesShort: "累计 {{count}} 次",
+      conversationCount: "{{count}} 个对话",
+      accessCount30d: "{{count}} 次访问 / 30 天",
       scoreValue: "评分 {{score}}",
       trend: {
         rising: "上升",
@@ -107,8 +117,8 @@ const zh = {
         delete: "删除",
       },
       reason: {
-        favorited: "已收藏的 Insight 会被视为需要保留。",
-        deleteDormant: "超过 90 天没有近期使用，且价值评分较低。",
+        highValue: "近期活跃且价值评分较高，建议继续保留。",
+        stale: "较长时间未被访问，近期价值较低。",
         archiveDormant: "至少 30 天未活跃，近期价值较低。",
         archiveFalling: "使用趋势下降，且价值评分低于活跃阈值。",
         keepActive: "使用情况、新鲜度或相关性仍支持继续保留。",
@@ -128,9 +138,9 @@ const zh = {
     dailyFocusItemsAnalyzed: "{{count}} 条事项已分析",
     dailyFocusV1Summary:
       "{{urgent}} 条紧急、{{important}} 条重要、{{monitor}} 条监控",
-    dailyFocusReasoningChain: "思维链 ({{count}})",
+    dailyFocusReasoningChain: "思维链（{{count}}）",
     dailyFocusRawContent: "原始信息",
-    dailyFocusActionPrefix: "操作: {{label}}",
+    dailyFocusActionPrefix: "操作：{{label}}",
     dailyFocusTodayBadge: "今天",
     dailyFocusDeadline: "截止 {{deadline}}",
     dailyFocusOverdueDeadline: "已逾期 · {{deadline}}",
@@ -145,18 +155,19 @@ const zh = {
     taskListShowAll: "显示全部",
     taskListOnlyWithResults: "只展示有结果记录",
     taskListOnlyFilesEmpty: "暂无有文件输出的任务",
-    addMessageChannel: "添加消息频道",
+    addMessageChannel: "添加消息渠道",
     newCharacter: "新建伙伴",
     taskLabel: "伙伴任务",
-    taskHint: "你希望做什么",
+    taskHint: "你希望做什么？",
     taskPlaceholder: "例如：每天早上整理 AI 行业新闻。",
     taskScheduleLabel: "任务计划",
-    taskScheduleHint: "告诉伙伴你希望它在哪些时间帮你执行任务",
+    taskScheduleHint: "告诉伙伴你希望它在哪些时间帮你执行任务。",
     completionNotificationLabel: "完成通知",
     completionNotificationHint:
-      "当伙伴完成任务后，将通过以下方式将结果同步给你",
+      "当伙伴完成任务后，将通过以下方式将结果同步给你。",
     moreConfig: "更多配置",
     tooltips: {
+      ...baseZh.character?.tooltips,
       selectModel: "选择模型",
       selectSkill: "加载不同的技能可以让伙伴掌握更多专项能力",
       addMessageChannel: "连接不同的渠道可以让伙伴获得更精准的消息范围",
@@ -171,6 +182,7 @@ const zh = {
     notificationChannels: "通知渠道",
     marketplaceGroupAll: "全部",
     marketplaceGroup: {
+      ...baseZh.character?.marketplaceGroup,
       office: "办公",
       product: "产研",
       marketing: "营销",

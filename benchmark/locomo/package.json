@@ -1,5 +1,5 @@
 {
-  "name": "@openloomi/benchmark-locomo",
+  "name": "@openzhiyu/benchmark-locomo",
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",

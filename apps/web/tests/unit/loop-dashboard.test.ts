@@ -1,12 +1,21 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveLoopDashboardStatus,
+  summarizeLoop,
   summarizeLoopRun,
   type LoopRunDashboardSummary,
 } from "@/lib/loops";
 import type { Loop, LoopRun, LoopState } from "@/lib/db/schema";
 
 const now = new Date("2026-06-16T00:00:00.000Z");
+
+const emptyExecutionTrace = {
+  events: [],
+  toolCallCount: 0,
+  failedToolCallCount: 0,
+  permissionDecisionCount: 0,
+  durationMs: null,
+};
 
 function loop(overrides: Partial<Loop> = {}): Loop {
   return {
@@ -66,6 +75,34 @@ describe("loop dashboard", () => {
           enabled: true,
           reason: "Model checker is enabled for this loop.",
         },
+        executionTrace: {
+          events: [
+            {
+              type: "tool_used",
+              title: "Tool used",
+              toolName: "wechatDesktopSendMessage",
+              status: "running",
+              timestamp: "2026-06-16T00:00:01.000Z",
+            },
+            {
+              type: "tool_result",
+              title: "Tool completed",
+              status: "completed",
+              timestamp: "2026-06-16T00:00:02.000Z",
+            },
+            {
+              type: "permission_decision",
+              title: "Tool permission allowed",
+              toolName: "wechatDesktopSendMessage",
+              status: "completed",
+              timestamp: "2026-06-16T00:00:01.500Z",
+            },
+          ],
+          toolCallCount: 1,
+          failedToolCallCount: 0,
+          permissionDecisionCount: 1,
+          durationMs: 1200,
+        },
       },
       createdAt: now,
       updatedAt: now,
@@ -81,6 +118,16 @@ describe("loop dashboard", () => {
       actionGuardBlocked: false,
       modelCheckerEnabled: true,
       modelCheckerReason: "Model checker is enabled for this loop.",
+      executionTrace: {
+        toolCallCount: 1,
+        failedToolCallCount: 0,
+        permissionDecisionCount: 1,
+        durationMs: 1200,
+      },
+    });
+    expect(summary.executionTrace.events[0]).toMatchObject({
+      type: "tool_used",
+      toolName: "wechatDesktopSendMessage",
     });
   });
 
@@ -101,6 +148,7 @@ describe("loop dashboard", () => {
       actionGuardBlocked: false,
       modelCheckerEnabled: false,
       modelCheckerReason: null,
+      executionTrace: emptyExecutionTrace,
     };
 
     expect(
@@ -147,6 +195,7 @@ describe("loop dashboard", () => {
       actionGuardBlocked: true,
       modelCheckerEnabled: false,
       modelCheckerReason: null,
+      executionTrace: emptyExecutionTrace,
     };
 
     expect(
@@ -156,5 +205,57 @@ describe("loop dashboard", () => {
         latestRun,
       }),
     ).toBe("blocked");
+  });
+
+  it("summarizes the loop task space from LoopSpec metadata", () => {
+    const summary = summarizeLoop({
+      loop: loop({
+        triggerConfig: {
+          type: "cron",
+          expression: "0 9 * * *",
+          timezone: "Asia/Shanghai",
+        },
+        approvalPolicy: {
+          externalWrites: "allow",
+        },
+        contextConfig: {
+          instructions: "Fetch weather",
+        },
+      }),
+      state: state({
+        stateJson: {
+          loopSpec: {
+            metadata: {
+              harness: "loop-run-harness",
+              agents: {
+                planner: "natural-language-planner",
+                executor: "native-loop-executor",
+                verifier: "loop-verifier",
+              },
+              weather: {
+                city: "北京",
+              },
+              delivery: {
+                platform: "wechat_desktop",
+                recipientName: "文件传输助手",
+              },
+            },
+          },
+        },
+      }),
+      latestRun: null,
+    });
+
+    expect(summary.spaceSummary).toMatchObject({
+      triggerLabel: "Cron 0 9 * * *",
+      contextLabel: "北京",
+      deliveryLabel: "微信：文件传输助手",
+      plannerAgent: "natural-language-planner",
+      executorAgent: "native-loop-executor",
+      verifierAgent: "loop-verifier",
+      harness: "loop-run-harness",
+      externalWriteMode: "auto",
+      permissionLabel: "按任务自动执行",
+    });
   });
 });
