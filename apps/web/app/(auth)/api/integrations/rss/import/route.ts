@@ -1,39 +1,39 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
-import { auth } from "@/app/(auth)/auth";
-import { createRssSubscription } from "@/lib/db/queries";
-import { AppError } from "@openzhiyu/shared/errors";
+import { auth } from '@/app/(auth)/auth';
+import { createRssSubscription } from '@/lib/db/rss-queries';
+import { AppError } from '@openzhiyu/shared/errors';
 import {
   DEFAULT_MAX_OPML_FEEDS,
   parseOpmlFeeds,
   type ParsedOpmlFeed,
   type SkippedOpmlFeed,
-} from "@openzhiyu/rss";
+} from '@openzhiyu/rss';
 
 const MAX_OPML_FILE_BYTES = 2 * 1024 * 1024; // 2MB
 
-export const runtime = "nodejs";
+export const runtime = 'nodejs';
 
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const formData = await request.formData();
-  const file = formData.get("file");
+  const file = formData.get('file');
 
   if (!(file instanceof File)) {
     return NextResponse.json(
-      { error: "Missing OPML file upload." },
+      { error: 'Missing OPML file upload.' },
       { status: 400 },
     );
   }
 
-  const fileName = `${file.name ?? ""}`.toLowerCase();
-  if (!fileName.endsWith(".opml")) {
+  const fileName = `${file.name ?? ''}`.toLowerCase();
+  if (!fileName.endsWith('.opml')) {
     return NextResponse.json(
-      { error: "Only .opml files are supported." },
+      { error: 'Only .opml files are supported.' },
       { status: 400 },
     );
   }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   if (file.size > MAX_OPML_FILE_BYTES) {
     return NextResponse.json(
       {
-        error: "OPML file is too large.",
+        error: 'OPML file is too large.',
         limitBytes: MAX_OPML_FILE_BYTES,
       },
       { status: 413 },
@@ -62,13 +62,13 @@ export async function POST(request: Request) {
     skipped = result.skipped;
     totalFound = result.totalFound;
   } catch (error) {
-    console.error("[RssImport] Failed to parse OPML file", error);
+    console.error('[RssImport] Failed to parse OPML file', error);
     return NextResponse.json(
       {
         error:
           error instanceof Error
             ? error.message
-            : "Unable to parse this OPML file.",
+            : 'Unable to parse this OPML file.',
       },
       { status: 400 },
     );
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
   if (parsedFeeds.length === 0) {
     return NextResponse.json(
       {
-        error: "No valid RSS feeds were found in this OPML file.",
+        error: 'No valid RSS feeds were found in this OPML file.',
         skipped,
         totalFound,
       },
@@ -95,16 +95,16 @@ export async function POST(request: Request) {
         sourceUrl: feed.sourceUrl,
         title: feed.title,
         category: feed.category,
-        status: "active",
-        sourceType: "import",
+        status: 'active',
+        sourceType: 'import',
       });
       imported += 1;
     } catch (error) {
       const reason =
         error instanceof AppError
           ? error.message
-          : "Unexpected error while saving this feed.";
-      console.error("[RssImport] Failed to save feed", {
+          : 'Unexpected error while saving this feed.';
+      console.error('[RssImport] Failed to save feed', {
         error,
         sourceUrl: feed.sourceUrl,
       });

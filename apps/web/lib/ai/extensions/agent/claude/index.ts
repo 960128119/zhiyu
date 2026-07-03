@@ -2157,6 +2157,8 @@ ${formattedMessages}${truncationNotice}\n\n---\n## Current Request\n`;
       McpServerConfig | ReturnType<typeof createSandboxMcpServer>
     > = {
       ...userMcpServers,
+      ...((options?.customMcpServers as Record<string, any> | undefined) ??
+        {}),
     };
 
     // Add sandbox MCP server if sandbox is enabled
@@ -3140,6 +3142,8 @@ If you need to create any files during planning, use this directory.
       McpServerConfig | ReturnType<typeof createSandboxMcpServer>
     > = {
       ...userMcpServers,
+      ...((options?.customMcpServers as Record<string, any> | undefined) ??
+        {}),
     };
 
     // Add sandbox MCP server if sandbox is enabled

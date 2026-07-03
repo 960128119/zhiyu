@@ -3,37 +3,33 @@
  * This module provides a client-side scheduler that checks for due jobs periodically
  */
 
-import {
-  recoverStuckJobs,
-  cleanupStuckJobs,
-} from "./service";
-import { isTauriMode } from "../env/constants";
-import { getCloudAuthToken } from "@/lib/auth/token-manager";
-import { db } from "../db/index";
-import { jobExecutions, scheduledJobs } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { recoverStuckJobs, cleanupStuckJobs } from './service';
+import { isTauriMode } from '../env/constants';
+import { getCloudAuthToken } from '@/lib/auth/token-manager';
+import { db } from '../db/index';
+import { jobExecutions, scheduledJobs } from '../db/schema';
+import { eq } from 'drizzle-orm';
 import {
   getNativeLoopSchedulerStatus,
   runDueNativeLoops,
-} from "@/lib/loops/native-scheduler";
+} from '@/lib/loops/native-scheduler';
 import {
-  runInsightEmbeddingDreamIfDue,
-  runInsightMaintenanceIfDue,
-  runRawMessageEmbeddingDreamIfDue,
-} from "./insight-maintenance";
+  LOCAL_SCHEDULER_CHECK_INTERVAL,
+  setLocalSchedulerRunning,
+} from './scheduler-state';
 
 // Track running jobs to prevent duplicate executions within the same scheduler cycle
 const runningJobs = new Set<string>();
 
 let schedulerInterval: ReturnType<typeof setInterval> | null = null;
 let isProcessing = false;
-const CHECK_INTERVAL = 60 * 1000; // Check every minute
+const CHECK_INTERVAL = LOCAL_SCHEDULER_CHECK_INTERVAL; // Check every minute
 
 // Store current user ID for filtering jobs (set when scheduler starts)
 let schedulerUserId: string | undefined;
 
 export function isLocalSchedulerAllowed() {
-  return isTauriMode() || process.env.ENABLE_LOCAL_SCHEDULER === "true";
+  return isTauriMode() || process.env.ENABLE_LOCAL_SCHEDULER === 'true';
 }
 
 /**
@@ -57,24 +53,23 @@ export function getSchedulerUserId(): string | undefined {
  */
 export async function startLocalScheduler() {
   if (schedulerInterval) {
-    console.log("[LocalScheduler] Already running");
+    console.log('[LocalScheduler] Already running');
     return;
   }
 
   if (!isLocalSchedulerAllowed()) {
     console.log(
-      "[LocalScheduler] Local scheduler disabled; set ENABLE_LOCAL_SCHEDULER=true to run it outside Tauri",
+      '[LocalScheduler] Local scheduler disabled; set ENABLE_LOCAL_SCHEDULER=true to run it outside Tauri',
     );
     return;
   }
 
-  // Immediately check due jobs (includes recoverStuckJobs internally)
-  checkAndExecuteDueJobs();
-
-  // Then check periodically
+  // Check periodically. The first run is intentionally delayed so runtime
+  // bootstrap does not block page navigation with maintenance compilation.
   schedulerInterval = setInterval(() => {
     checkAndExecuteDueJobs();
   }, CHECK_INTERVAL);
+  setLocalSchedulerRunning(true, getNativeLoopSchedulerStatus());
 }
 
 /**
@@ -84,7 +79,8 @@ export async function stopLocalScheduler() {
   if (schedulerInterval) {
     clearInterval(schedulerInterval);
     schedulerInterval = null;
-    console.log("[LocalScheduler] Scheduler stopped");
+    setLocalSchedulerRunning(false, getNativeLoopSchedulerStatus());
+    console.log('[LocalScheduler] Scheduler stopped');
   }
   // Clear running jobs to prevent stuck entries on shutdown
   runningJobs.clear();
@@ -94,23 +90,23 @@ export async function stopLocalScheduler() {
   const running = await db
     .select()
     .from(jobExecutions)
-    .where(eq(jobExecutions.status, "running"));
+    .where(eq(jobExecutions.status, 'running'));
 
   for (const exec of running) {
     await db
       .update(jobExecutions)
       .set({
-        status: "interrupted",
+        status: 'interrupted',
         completedAt: now,
-        error: "Job was interrupted (application closed)",
+        error: 'Job was interrupted (application closed)',
       })
       .where(eq(jobExecutions.id, exec.id));
 
     await db
       .update(scheduledJobs)
       .set({
-        lastStatus: "error",
-        lastError: "Job was interrupted (application closed)",
+        lastStatus: 'error',
+        lastError: 'Job was interrupted (application closed)',
         updatedAt: now,
       })
       .where(eq(scheduledJobs.id, exec.jobId));
@@ -125,7 +121,7 @@ export async function stopLocalScheduler() {
 
 // Register cleanup on process exit to prevent jobs from being stuck in runningJobs
 // This handles unexpected crashes or process termination
-if (typeof process !== "undefined" && process.on) {
+if (typeof process !== 'undefined' && process.on) {
   const cleanupHandler = async () => {
     runningJobs.clear();
 
@@ -134,23 +130,23 @@ if (typeof process !== "undefined" && process.on) {
     const running = await db
       .select()
       .from(jobExecutions)
-      .where(eq(jobExecutions.status, "running"));
+      .where(eq(jobExecutions.status, 'running'));
 
     for (const exec of running) {
       await db
         .update(jobExecutions)
         .set({
-          status: "interrupted",
+          status: 'interrupted',
           completedAt: now,
-          error: "Job was interrupted (application closed)",
+          error: 'Job was interrupted (application closed)',
         })
         .where(eq(jobExecutions.id, exec.id));
 
       await db
         .update(scheduledJobs)
         .set({
-          lastStatus: "error",
-          lastError: "Job was interrupted (application closed)",
+          lastStatus: 'error',
+          lastError: 'Job was interrupted (application closed)',
           updatedAt: now,
         })
         .where(eq(scheduledJobs.id, exec.jobId));
@@ -162,7 +158,7 @@ if (typeof process !== "undefined" && process.on) {
       );
     }
   };
-  process.on("exit", cleanupHandler);
+  process.on('exit', cleanupHandler);
 }
 
 /**
@@ -170,7 +166,7 @@ if (typeof process !== "undefined" && process.on) {
  */
 async function checkAndExecuteDueJobs() {
   if (isProcessing) {
-    console.log("[LocalScheduler] Already processing, skipping");
+    console.log('[LocalScheduler] Already processing, skipping');
     return;
   }
 
@@ -187,6 +183,11 @@ async function checkAndExecuteDueJobs() {
 
     const schedulerAuthToken = getCloudAuthToken();
     try {
+      const {
+        runInsightEmbeddingDreamIfDue,
+        runInsightMaintenanceIfDue,
+        runRawMessageEmbeddingDreamIfDue,
+      } = await import('./insight-maintenance');
       await runRawMessageEmbeddingDreamIfDue(
         schedulerUserId,
         schedulerAuthToken,
@@ -195,14 +196,10 @@ async function checkAndExecuteDueJobs() {
       await runInsightMaintenanceIfDue(schedulerUserId);
       await runDueNativeLoops({ userId: schedulerUserId });
     } catch (error) {
-      console.error(
-        "[LocalScheduler] Error running maintenance loops:",
-        error,
-      );
+      console.error('[LocalScheduler] Error running maintenance loops:', error);
     }
-
   } catch (error) {
-    console.error("[LocalScheduler] Error checking for due jobs:", error);
+    console.error('[LocalScheduler] Error checking for due jobs:', error);
   } finally {
     // Reset isProcessing after launching all jobs (not after they complete)
     isProcessing = false;
@@ -213,9 +210,11 @@ async function checkAndExecuteDueJobs() {
  * Get scheduler status
  */
 export function getSchedulerStatus() {
+  const nativeLoops = getNativeLoopSchedulerStatus();
+  setLocalSchedulerRunning(schedulerInterval !== null, nativeLoops);
   return {
     isRunning: schedulerInterval !== null,
     checkInterval: CHECK_INTERVAL,
-    nativeLoops: getNativeLoopSchedulerStatus(),
+    nativeLoops,
   };
 }

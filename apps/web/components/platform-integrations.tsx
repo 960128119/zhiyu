@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
-"use client";
+'use client';
 
-import Image from "next/image";
+import Image from 'next/image';
 import {
   useMemo,
   useState,
@@ -9,27 +9,27 @@ import {
   createContext,
   useContext,
   useEffect,
-} from "react";
-import { useTranslation } from "react-i18next";
-import { useRouter, useSearchParams } from "next/navigation";
-import { RemixIcon } from "@/components/remix-icon";
-import { Badge, Button, Switch } from "@openzhiyu/ui";
-import { toast } from "./toast";
-import { getPlatformDisplayInfo } from "./add-platform-dialog";
+} from 'react';
+import { useTranslation } from 'react-i18next';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { RemixIcon } from '@/components/remix-icon';
+import { Badge, Button, Switch } from '@openzhiyu/ui';
+import { toast } from './toast';
+import { getPlatformDisplayInfo } from './add-platform-dialog';
 import {
   useIntegrations,
   type IntegrationAccountClient,
   type IntegrationId,
-} from "@/hooks/use-integrations";
-import { resolvePlatformLogo } from "./integration-platform-card";
-import { deleteIntegrationAccountRemote } from "@/lib/integrations/client";
-import { getAuthToken } from "@/lib/auth/token-manager";
+} from '@/hooks/use-integrations';
+import { resolvePlatformLogo } from './integration-platform-card';
+import { deleteIntegrationAccountRemote } from '@/lib/integrations/client';
+import { getAuthToken } from '@/lib/auth/token-manager';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@openzhiyu/ui";
+} from '@openzhiyu/ui';
 
 export interface TelegramTokenFormContextType {
   showTelegramTokenForm: (reconnectAccountId?: string) => void;
@@ -45,7 +45,7 @@ export const useTelegramTokenForm = () => {
   const context = useContext(TelegramTokenFormContext);
   if (!context) {
     throw new Error(
-      "useTelegramTokenForm must be used within TelegramTokenFormProvider",
+      'useTelegramTokenForm must be used within TelegramTokenFormProvider',
     );
   }
   return context;
@@ -99,11 +99,11 @@ function normalizeTelegramBotLink(
     return null;
   }
   const trimmed = raw.trim();
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    return trimmed.replace(/^http:\/\//, "https://");
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed.replace(/^http:\/\//, 'https://');
   }
-  const withoutScheme = trimmed.replace(/^@/, "");
-  if (withoutScheme.startsWith("t.me/")) {
+  const withoutScheme = trimmed.replace(/^@/, '');
+  if (withoutScheme.startsWith('t.me/')) {
     return `https://${withoutScheme}`;
   }
   return `https://t.me/${withoutScheme}`;
@@ -117,108 +117,108 @@ function resolveAccountDetail(
 ): string | undefined {
   const meta = account.metadata ?? {};
   switch (account.platform) {
-    case "gmail":
+    case 'gmail':
       return (meta.email as string) ?? account.displayName;
-    case "outlook":
+    case 'outlook':
       return (meta.email as string) ?? account.displayName;
-    case "linkedin":
+    case 'linkedin':
       return (
         (meta.name as string) ?? (meta.email as string) ?? account.displayName
       );
-    case "twitter":
+    case 'twitter':
       return account.displayName;
-    case "instagram": {
-      const username = typeof meta.username === "string" ? meta.username : null;
-      const handle = typeof meta.handle === "string" ? meta.handle : null;
+    case 'instagram': {
+      const username = typeof meta.username === 'string' ? meta.username : null;
+      const handle = typeof meta.handle === 'string' ? meta.handle : null;
       return username ?? handle ?? account.displayName;
     }
-    case "google_calendar":
+    case 'google_calendar':
       return (meta.email as string) ?? account.displayName;
-    case "slack":
+    case 'slack':
       return (meta.teamName as string) ?? account.displayName;
-    case "discord":
+    case 'discord':
       return (meta.guildName as string) ?? account.displayName;
-    case "whatsapp":
+    case 'whatsapp':
       return (
         (meta.pushName as string) ??
         (meta.formattedNumber as string) ??
         account.displayName
       );
-    case "google_drive":
+    case 'google_drive':
       return (meta.email as string) ?? account.displayName;
-    case "google_docs":
+    case 'google_docs':
       return (meta.email as string) ?? account.displayName;
-    case "outlook_calendar": {
-      const email = typeof meta.email === "string" ? meta.email : null;
+    case 'outlook_calendar': {
+      const email = typeof meta.email === 'string' ? meta.email : null;
       const displayName =
-        typeof meta.displayName === "string" ? meta.displayName : null;
+        typeof meta.displayName === 'string' ? meta.displayName : null;
       return email ?? displayName ?? account.displayName;
     }
-    case "telegram": {
+    case 'telegram': {
       const handleName =
-        typeof meta.userName === "string" ? meta.userName : null;
+        typeof meta.userName === 'string' ? meta.userName : null;
       if (handleName && handleName.length > 0) {
         return handleName;
       }
-      const fullName = `${meta.firstName ?? ""} ${meta.lastName ?? ""}`.trim();
+      const fullName = `${meta.firstName ?? ''} ${meta.lastName ?? ''}`.trim();
       if (fullName.length > 0) {
         return fullName;
       }
       return account.displayName;
     }
-    case "teams": {
+    case 'teams': {
       const upn =
-        typeof meta.userPrincipalName === "string"
+        typeof meta.userPrincipalName === 'string'
           ? meta.userPrincipalName
           : null;
       const name =
-        typeof meta.displayName === "string" ? meta.displayName : null;
+        typeof meta.displayName === 'string' ? meta.displayName : null;
       return upn ?? name ?? account.displayName;
     }
-    case "notion": {
+    case 'notion': {
       const workspaceName =
-        typeof meta.workspaceName === "string" ? meta.workspaceName : null;
+        typeof meta.workspaceName === 'string' ? meta.workspaceName : null;
       return workspaceName ?? account.displayName;
     }
-    case "github": {
-      const login = typeof meta.login === "string" ? meta.login : null;
-      const name = typeof meta.name === "string" ? meta.name : null;
+    case 'github': {
+      const login = typeof meta.login === 'string' ? meta.login : null;
+      const name = typeof meta.name === 'string' ? meta.name : null;
       return name ?? login ?? account.displayName;
     }
-    case "facebook_messenger": {
-      const pageName = typeof meta.pageName === "string" ? meta.pageName : null;
-      const pageId = typeof meta.pageId === "string" ? meta.pageId : null;
+    case 'facebook_messenger': {
+      const pageName = typeof meta.pageName === 'string' ? meta.pageName : null;
+      const pageId = typeof meta.pageId === 'string' ? meta.pageId : null;
       return pageName ?? pageId ?? account.displayName;
     }
-    case "hubspot": {
+    case 'hubspot': {
       const hubDomain =
-        typeof meta.hubDomain === "string" ? meta.hubDomain : null;
+        typeof meta.hubDomain === 'string' ? meta.hubDomain : null;
       const hubId =
-        typeof meta.hubId === "number" || typeof meta.hubId === "string"
+        typeof meta.hubId === 'number' || typeof meta.hubId === 'string'
           ? meta.hubId
           : null;
       const userEmail =
-        typeof meta.userEmail === "string" ? meta.userEmail : null;
+        typeof meta.userEmail === 'string' ? meta.userEmail : null;
       return hubDomain ?? userEmail ?? (hubId ? String(hubId) : undefined);
     }
-    case "asana": {
-      const name = typeof meta.name === "string" ? meta.name : null;
-      const email = typeof meta.email === "string" ? meta.email : null;
-      const gid = typeof meta.gid === "string" ? meta.gid : null;
+    case 'asana': {
+      const name = typeof meta.name === 'string' ? meta.name : null;
+      const email = typeof meta.email === 'string' ? meta.email : null;
+      const gid = typeof meta.gid === 'string' ? meta.gid : null;
       return name ?? email ?? gid ?? account.displayName;
     }
-    case "jira": {
-      const name = typeof meta.name === "string" ? meta.name : null;
-      const email = typeof meta.email === "string" ? meta.email : null;
+    case 'jira': {
+      const name = typeof meta.name === 'string' ? meta.name : null;
+      const email = typeof meta.email === 'string' ? meta.email : null;
       const instanceUrl =
-        typeof meta.instanceUrl === "string" ? meta.instanceUrl : null;
+        typeof meta.instanceUrl === 'string' ? meta.instanceUrl : null;
       return name ?? email ?? instanceUrl ?? account.displayName;
     }
-    case "linear": {
-      const name = typeof meta.name === "string" ? meta.name : null;
-      const email = typeof meta.email === "string" ? meta.email : null;
+    case 'linear': {
+      const name = typeof meta.name === 'string' ? meta.name : null;
+      const email = typeof meta.email === 'string' ? meta.email : null;
       const organization =
-        typeof meta.organization === "string" ? meta.organization : null;
+        typeof meta.organization === 'string' ? meta.organization : null;
       return name ?? email ?? organization ?? account.displayName;
     }
     default:
@@ -248,6 +248,7 @@ export interface PlatformIntegrationsProps {
   onMessengerAuthOpen: () => void;
   onOutlookAuthOpen: () => void;
   onIMessageAuthOpen?: () => void;
+  initialAccounts?: IntegrationAccountClient[];
 }
 
 /**
@@ -260,12 +261,16 @@ export function PlatformIntegrations({
   onMessengerAuthOpen,
   onOutlookAuthOpen,
   onIMessageAuthOpen,
+  initialAccounts,
 }: PlatformIntegrationsProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { showTelegramTokenForm } = useTelegramTokenForm();
-  const { accounts, groupedByIntegration, mutate } = useIntegrations();
+  const { accounts, mutate } = useIntegrations({
+    fallbackAccounts: initialAccounts,
+    revalidateOnMount: !initialAccounts,
+  });
 
   const [isAddPlatformDialogOpen, setIsAddPlatformDialogOpen] = useState(false);
   const [linkingPlatform, setLinkingPlatform] = useState<IntegrationId | null>(
@@ -279,11 +284,11 @@ export function PlatformIntegrations({
   );
   // Watch for URL parameter to auto-open the add platform dialog
   useEffect(() => {
-    if (searchParams.get("addPlatform") === "true") {
+    if (searchParams.get('addPlatform') === 'true') {
       setIsAddPlatformDialogOpen(true);
       // Clear the parameter to prevent reopening on refresh
       const params = new URLSearchParams(searchParams.toString());
-      params.delete("addPlatform");
+      params.delete('addPlatform');
       const newUrl = params.toString()
         ? `?${params.toString()}`
         : window.location.pathname;
@@ -297,10 +302,10 @@ export function PlatformIntegrations({
       setIsAddPlatformDialogOpen(true);
     };
 
-    window.addEventListener("openzhiyu:add-platform", handleAddPlatform);
+    window.addEventListener('openzhiyu:add-platform', handleAddPlatform);
 
     return () => {
-      window.removeEventListener("openzhiyu:add-platform", handleAddPlatform);
+      window.removeEventListener('openzhiyu:add-platform', handleAddPlatform);
     };
   }, []);
 
@@ -332,9 +337,9 @@ export function PlatformIntegrations({
           feedEnabled: enabled,
         };
 
-        const headers: HeadersInit = { "Content-Type": "application/json" };
+        const headers: HeadersInit = { 'Content-Type': 'application/json' };
         // Add Bearer token (Tauri mode)
-        if (typeof window !== "undefined") {
+        if (typeof window !== 'undefined') {
           const token = getAuthToken();
           if (token) {
             headers.Authorization = `Bearer ${token}`;
@@ -342,34 +347,34 @@ export function PlatformIntegrations({
         }
 
         const response = await fetch(`/api/integrations/${account.id}`, {
-          method: "PATCH",
+          method: 'PATCH',
           headers,
-          credentials: "include",
+          credentials: 'include',
           body: JSON.stringify({ metadata: nextMetadata }),
         });
         if (!response.ok) {
           const errorBody = await response.json().catch(() => ({}));
           const message =
-            typeof errorBody?.error === "string"
+            typeof errorBody?.error === 'string'
               ? errorBody.error
-              : t("common.operationFailed");
+              : t('common.operationFailed');
           throw new Error(message);
         }
         await mutate();
         toast({
-          type: "success",
+          type: 'success',
           description: t(
-            "integrations.calendarFeedToggleSuccess",
-            "Updated calendar feed preference.",
+            'integrations.calendarFeedToggleSuccess',
+            'Updated calendar feed preference.',
           ),
         });
       } catch (error) {
         toast({
-          type: "error",
+          type: 'error',
           description:
             error instanceof Error
               ? error.message
-              : t("common.operationFailed"),
+              : t('common.operationFailed'),
         });
       } finally {
         setUpdatingAccountId(null);
@@ -389,19 +394,19 @@ export function PlatformIntegrations({
         await deleteIntegrationAccountRemote(account.id);
         await mutate();
         toast({
-          type: "success",
+          type: 'success',
           description: t(
-            "auth.disconnectSuccess",
-            "Disconnected successfully.",
+            'auth.disconnectSuccess',
+            'Disconnected successfully.',
           ),
         });
       } catch (error) {
         toast({
-          type: "error",
+          type: 'error',
           description:
             error instanceof Error
               ? error.message
-              : t("auth.disconnectFailed", "Failed to disconnect account"),
+              : t('auth.disconnectFailed', 'Failed to disconnect account'),
         });
       } finally {
         setDisconnectingAccountId(null);
@@ -427,7 +432,7 @@ export function PlatformIntegrations({
       <div className="space-y-6">
         {connectedAccounts.length === 0 ? (
           <div className="rounded-xl border border-[#e5e5e5] bg-white p-4 text-xs text-[#6f6e69]">
-            {t("common.noConnectedPlatforms")}
+            {t('common.noConnectedPlatforms')}
           </div>
         ) : (
           <div className="flex flex-col gap-3">
@@ -470,10 +475,10 @@ export function PlatformIntegrations({
                           <span className="text-sm font-serif font-semibold text-[#37352f] truncate">
                             {platformInfo.label}
                           </span>
-                          {account.platform === "telegram" &&
+                          {account.platform === 'telegram' &&
                           account.metadata?.telegramLastError ? (
                             <Badge className="bg-red-50 text-red-700 border border-red-100">
-                              {t("common.telegramReauth", { userName: "" })}
+                              {t('common.telegramReauth', { userName: '' })}
                             </Badge>
                           ) : null}
                         </div>
@@ -498,7 +503,7 @@ export function PlatformIntegrations({
                               align="end"
                               className="text-xs"
                             >
-                              {account.platform === "telegram" &&
+                              {account.platform === 'telegram' &&
                               account.metadata?.telegramLastError ? (
                                 <DropdownMenuItem
                                   disabled={isUpdating}
@@ -506,7 +511,7 @@ export function PlatformIntegrations({
                                     void handleTelegramReconnect(account);
                                   }}
                                 >
-                                  {t("common.reconnect", "Reconnect")}
+                                  {t('common.reconnect', 'Reconnect')}
                                 </DropdownMenuItem>
                               ) : null}
                               <DropdownMenuItem
@@ -516,7 +521,7 @@ export function PlatformIntegrations({
                                   void handleDisconnect(account);
                                 }}
                               >
-                                {t("common.unbind", "Unbind")}
+                                {t('common.unbind', 'Unbind')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -529,8 +534,8 @@ export function PlatformIntegrations({
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    {account.platform === "google_calendar" ||
-                    account.platform === "outlook_calendar" ? (
+                    {account.platform === 'google_calendar' ||
+                    account.platform === 'outlook_calendar' ? (
                       <div className="flex items-center gap-2 text-xs text-[#6f6e69]">
                         <Switch
                           id={`cal-${account.id}`}
@@ -547,7 +552,7 @@ export function PlatformIntegrations({
                           htmlFor={`gcal-${account.id}`}
                           className="cursor-pointer"
                         >
-                          {t("integrations.calendarFeedToggle", "Show in feed")}
+                          {t('integrations.calendarFeedToggle', 'Show in feed')}
                         </label>
                       </div>
                     ) : null}

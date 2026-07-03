@@ -23,6 +23,7 @@ DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 8765
 DEFAULT_CONFIRM_TTL_SECONDS = 300
 MAX_BODY_BYTES = 64 * 1024
+DEFAULT_SEND_RATE_LIMIT_PER_MINUTE = 6
 
 
 class ServiceError(Exception):
@@ -80,6 +81,29 @@ class ConfirmationStore:
         expired = [token for token, item in self._items.items() if item.expires_at <= now]
         for token in expired:
             self._items.pop(token, None)
+
+
+class SendRateLimiter:
+    def __init__(self, max_sends_per_minute: int):
+        self.max_sends_per_minute = max(0, max_sends_per_minute)
+        self._lock = threading.Lock()
+        self._timestamps: list[float] = []
+
+    def check(self) -> None:
+        if self.max_sends_per_minute <= 0:
+            return
+        now = time.time()
+        window_started_at = now - 60
+        with self._lock:
+            self._timestamps = [
+                timestamp for timestamp in self._timestamps if timestamp > window_started_at
+            ]
+            if len(self._timestamps) >= self.max_sends_per_minute:
+                raise ServiceError(
+                    HTTPStatus.TOO_MANY_REQUESTS,
+                    f"Send rate limit exceeded. Max {self.max_sends_per_minute} sends per minute.",
+                )
+            self._timestamps.append(now)
 
 
 class WeChatClient(Protocol):
@@ -504,8 +528,12 @@ class WeChatDesktopService:
         confirm_ttl_seconds: int,
         backend: str,
         minimize_after_send: bool,
+        allowed_recipients: set[str],
+        send_rate_limit_per_minute: int,
     ):
         self.auth_token = auth_token
+        self.allowed_recipients = allowed_recipients
+        self.rate_limiter = SendRateLimiter(send_rate_limit_per_minute)
         self.confirmations = ConfirmationStore(confirm_ttl_seconds)
         self.wechat = create_wechat_client(backend, minimize_after_send)
         self.started_at = time.time()
@@ -520,6 +548,18 @@ class WeChatDesktopService:
         token = provided[len(prefix) :].strip()
         if not hmac.compare_digest(token, self.auth_token):
             raise ServiceError(HTTPStatus.UNAUTHORIZED, "Invalid bearer token.")
+
+    def require_allowed_recipient(self, recipient_name: str) -> None:
+        if not self.allowed_recipients:
+            return
+        if recipient_name not in self.allowed_recipients:
+            raise ServiceError(
+                HTTPStatus.FORBIDDEN,
+                "Recipient is not allowed by WECHAT_DESKTOP_ALLOWED_RECIPIENTS.",
+            )
+
+    def require_send_allowed(self, recipient_name: str) -> None:
+        self.rate_limiter.check()
 
 
 def compact_hash(value: str) -> str:
@@ -550,6 +590,9 @@ def make_handler(service: WeChatDesktopService):
                 payload = {
                     "ok": True,
                     "uptimeSeconds": int(time.time() - service.started_at),
+                    "requiresAuth": bool(service.auth_token),
+                    "recipientAllowlistEnabled": bool(service.allowed_recipients),
+                    "sendRateLimitPerMinute": service.rate_limiter.max_sends_per_minute,
                     **service.wechat.health(),
                 }
                 self._write_json(HTTPStatus.OK, payload)
@@ -578,6 +621,7 @@ def make_handler(service: WeChatDesktopService):
             payload = self._read_json()
             recipient_name = require_string(payload, "recipientName", 200)
             message = require_string(payload, "message", 5000)
+            service.require_allowed_recipient(recipient_name)
             confirm_token = service.confirmations.create(recipient_name, message)
             LOGGER.info(
                 "Created preview recipient=%s messageHash=%s",
@@ -609,7 +653,9 @@ def make_handler(service: WeChatDesktopService):
                 recipient_name,
                 compact_hash(message),
             )
+            service.require_allowed_recipient(recipient_name)
             service.confirmations.consume(confirm_token, recipient_name, message)
+            service.require_send_allowed(recipient_name)
             send_result = service.wechat.send_message(recipient_name, message)
             LOGGER.info(
                 "Send completed recipient=%s messageHash=%s",
@@ -696,7 +742,38 @@ def parse_args() -> argparse.Namespace:
         in {"1", "true", "yes"},
         help="Minimize WeChat after each send. By default the service restores the previous window only.",
     )
+    parser.add_argument(
+        "--allowed-recipient",
+        action="append",
+        default=[],
+        help="Allowed recipient display name. May be repeated. Defaults to WECHAT_DESKTOP_ALLOWED_RECIPIENTS.",
+    )
+    parser.add_argument(
+        "--send-rate-limit",
+        type=int,
+        default=int(
+            os.getenv(
+                "WECHAT_DESKTOP_SEND_RATE_LIMIT_PER_MINUTE",
+                str(DEFAULT_SEND_RATE_LIMIT_PER_MINUTE),
+            ),
+        ),
+        help="Maximum sends per minute. Set 0 to disable.",
+    )
     return parser.parse_args()
+
+
+def parse_allowed_recipients(args: argparse.Namespace) -> set[str]:
+    recipients = set()
+    raw_env = os.getenv("WECHAT_DESKTOP_ALLOWED_RECIPIENTS", "")
+    for item in raw_env.split(","):
+        item = item.strip()
+        if item:
+            recipients.add(item)
+    for item in args.allowed_recipient:
+        item = item.strip()
+        if item:
+            recipients.add(item)
+    return recipients
 
 
 def main() -> None:
@@ -716,15 +793,20 @@ def main() -> None:
     if args.host not in ("127.0.0.1", "localhost") and not args.token:
         raise SystemExit("Refusing to bind beyond localhost without --token.")
 
+    allowed_recipients = parse_allowed_recipients(args)
     service = WeChatDesktopService(
         auth_token=args.token,
         confirm_ttl_seconds=args.confirm_ttl,
         backend=args.backend,
         minimize_after_send=args.minimize_after_send,
+        allowed_recipients=allowed_recipients,
+        send_rate_limit_per_minute=args.send_rate_limit,
     )
     server = ThreadingHTTPServer((args.host, args.port), make_handler(service))
     LOGGER.info("Listening on http://%s:%s", args.host, args.port)
     LOGGER.info("Using backend: %s", args.backend)
+    LOGGER.info("Recipient allowlist enabled: %s", bool(allowed_recipients))
+    LOGGER.info("Send rate limit per minute: %s", args.send_rate_limit)
     LOGGER.info("Writing logs to %s", log_path)
     LOGGER.info("Preview endpoint: POST /preview")
     LOGGER.info("Send endpoint: POST /send")

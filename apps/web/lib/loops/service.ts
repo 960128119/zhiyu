@@ -1,5 +1,6 @@
-import { and, desc, eq } from "drizzle-orm";
-import { db, deserializeJson, serializeJson } from "@/lib/db/queries";
+import { and, desc, eq } from 'drizzle-orm';
+import { db } from '@/lib/db/client';
+import { deserializeJson, serializeJson } from '@/lib/db/serialization';
 import {
   loopApprovalRequests,
   loopRuns,
@@ -13,7 +14,7 @@ import {
   type LoopApprovalRequest,
   type LoopRun,
   type LoopState,
-} from "@/lib/db/schema";
+} from '@/lib/db/schema';
 import type {
   CompleteLoopRunInput,
   CreateLoopApprovalRequestInput,
@@ -25,7 +26,7 @@ import type {
   LoopStatus,
   ResolveLoopApprovalRequestInput,
   UpdateLoopInput,
-} from "./types";
+} from './types';
 
 const EMPTY_OBJECT: LoopJson = {};
 
@@ -49,7 +50,7 @@ function toDbArray(value: unknown[] | null | undefined) {
 
 function parseJsonObject(value: unknown): LoopJson {
   const parsed = deserializeJson(value as any);
-  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+  if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
     return parsed as LoopJson;
   }
   return {};
@@ -115,7 +116,7 @@ function buildLoopStateInsert(
 ): InsertLoopState {
   return {
     loopId,
-    currentPhase: input?.currentPhase ?? "idle",
+    currentPhase: input?.currentPhase ?? 'idle',
     memorySummary: input?.memorySummary ?? null,
     openQuestions: toDbArray(input?.openQuestions),
     lastObservation: input?.lastObservation ?? null,
@@ -134,7 +135,7 @@ export async function createLoop(input: CreateLoopInput): Promise<Loop> {
     name: input.name,
     description: input.description ?? null,
     goal: input.goal,
-    status: input.status ?? "active",
+    status: input.status ?? 'active',
     triggerConfig: toDbJson(input.triggerConfig),
     contextConfig: toDbJson(input.contextConfig),
     actionPolicy: toDbJson(input.actionPolicy),
@@ -235,7 +236,7 @@ export async function archiveLoop(
   userId: string,
   loopId: string,
 ): Promise<Loop | null> {
-  return updateLoop(userId, loopId, { status: "archived" });
+  return updateLoop(userId, loopId, { status: 'archived' });
 }
 
 export async function deleteLoop(
@@ -256,7 +257,7 @@ export async function createLoopRun(
   const runData: InsertLoopRun = {
     id: crypto.randomUUID(),
     loopId: input.loopId,
-    status: input.status ?? "running",
+    status: input.status ?? 'running',
     triggerReason: toDbJsonOrNull(input.triggerReason),
     inputSnapshot: toDbJsonOrNull(input.inputSnapshot),
     startedAt: now,
@@ -298,8 +299,8 @@ export async function createLoopApprovalRequest(
     loopId: input.loopId,
     loopRunId: input.loopRunId,
     userId: input.userId,
-    status: input.status ?? "pending",
-    source: input.source ?? "tool_gate",
+    status: input.status ?? 'pending',
+    source: input.source ?? 'tool_gate',
     actionName: input.actionName,
     capability: input.capability ?? null,
     reason: input.reason ?? null,

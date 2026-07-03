@@ -3413,6 +3413,7 @@ const enUS = {
     insights: "Insight Tracking",
     audit: "Audit",
     workspace: "Library",
+    workshop: "Workshop",
     marketplace: "Marketplace",
     connectors: "Connectors",
     share: "Share",

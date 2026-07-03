@@ -2485,6 +2485,261 @@ export type InsertLoopApprovalRequest = InferInsertModel<
   typeof loopApprovalRequests
 >;
 
+// Work Workshops
+export const workshops = pgTable(
+  "workshops",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 255 }).notNull(),
+    mission: text("mission").notNull(),
+    status: varchar("status", { length: 20 }).notNull().default("active"),
+    autonomyLevel: varchar("autonomy_level", { length: 20 })
+      .notNull()
+      .default("draft"),
+    boundaryPolicy: jsonb("boundary_policy")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    modelConfig: jsonb("model_config")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userIdx: index("workshops_user_idx").on(table.userId),
+    userStatusIdx: index("workshops_user_status_idx").on(
+      table.userId,
+      table.status,
+    ),
+    updatedAtIdx: index("workshops_updated_at_idx").on(table.updatedAt),
+  }),
+);
+
+export type Workshop = InferSelectModel<typeof workshops>;
+export type InsertWorkshop = InferInsertModel<typeof workshops>;
+
+export const workshopRuns = pgTable(
+  "workshop_runs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workshopId: uuid("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    status: varchar("status", { length: 20 }).notNull().default("running"),
+    triggerReason: jsonb("trigger_reason").$type<Record<string, unknown>>(),
+    ccSessionId: text("cc_session_id"),
+    inputSnapshot: jsonb("input_snapshot").$type<Record<string, unknown>>(),
+    outputSummary: text("output_summary"),
+    error: text("error"),
+    startedAt: timestamp("started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    workshopIdx: index("workshop_runs_workshop_idx").on(table.workshopId),
+    statusIdx: index("workshop_runs_status_idx").on(table.status),
+    startedAtIdx: index("workshop_runs_started_at_idx").on(table.startedAt),
+  }),
+);
+
+export type WorkshopRun = InferSelectModel<typeof workshopRuns>;
+export type InsertWorkshopRun = InferInsertModel<typeof workshopRuns>;
+
+export const workshopEvents = pgTable(
+  "workshop_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workshopId: uuid("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    runId: uuid("run_id").references(() => workshopRuns.id, {
+      onDelete: "set null",
+    }),
+    seq: integer("seq").notNull(),
+    type: varchar("type", { length: 50 }).notNull(),
+    title: text("title").notNull(),
+    body: text("body"),
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    visibility: varchar("visibility", { length: 20 })
+      .notNull()
+      .default("user"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    workshopSeqIdx: uniqueIndex("workshop_events_workshop_seq_idx").on(
+      table.workshopId,
+      table.seq,
+    ),
+    workshopCreatedAtIdx: index("workshop_events_workshop_created_at_idx").on(
+      table.workshopId,
+      table.createdAt,
+    ),
+    runIdx: index("workshop_events_run_idx").on(table.runId),
+  }),
+);
+
+export type WorkshopEvent = InferSelectModel<typeof workshopEvents>;
+export type InsertWorkshopEvent = InferInsertModel<typeof workshopEvents>;
+
+export const workshopSources = pgTable(
+  "workshop_sources",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workshopId: uuid("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    type: varchar("type", { length: 30 }).notNull(),
+    name: text("name").notNull(),
+    uri: text("uri"),
+    content: text("content"),
+    config: jsonb("config")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    enabled: boolean("enabled").notNull().default(true),
+    lastCheckedAt: timestamp("last_checked_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    workshopIdx: index("workshop_sources_workshop_idx").on(table.workshopId),
+    typeIdx: index("workshop_sources_type_idx").on(table.type),
+  }),
+);
+
+export type WorkshopSource = InferSelectModel<typeof workshopSources>;
+export type InsertWorkshopSource = InferInsertModel<typeof workshopSources>;
+
+export const workshopDirectives = pgTable(
+  "workshop_directives",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workshopId: uuid("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    runId: uuid("run_id").references(() => workshopRuns.id, {
+      onDelete: "set null",
+    }),
+    content: text("content").notNull(),
+    priority: integer("priority").notNull().default(0),
+    scope: varchar("scope", { length: 30 }).notNull().default("current_run"),
+    status: varchar("status", { length: 20 }).notNull().default("active"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    workshopStatusIdx: index("workshop_directives_workshop_status_idx").on(
+      table.workshopId,
+      table.status,
+    ),
+    runIdx: index("workshop_directives_run_idx").on(table.runId),
+  }),
+);
+
+export type WorkshopDirective = InferSelectModel<typeof workshopDirectives>;
+export type InsertWorkshopDirective = InferInsertModel<
+  typeof workshopDirectives
+>;
+
+export const workshopMemories = pgTable(
+  "workshop_memories",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workshopId: uuid("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    kind: varchar("kind", { length: 40 }).notNull(),
+    content: text("content").notNull(),
+    confidence: integer("confidence").notNull().default(50),
+    tags: jsonb("tags").$type<string[]>().notNull().default([]),
+    sourceEventIds: jsonb("source_event_ids").$type<string[]>().notNull().default([]),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    workshopKindIdx: index("workshop_memories_workshop_kind_idx").on(
+      table.workshopId,
+      table.kind,
+    ),
+    createdAtIdx: index("workshop_memories_created_at_idx").on(table.createdAt),
+  }),
+);
+
+export type WorkshopMemory = InferSelectModel<typeof workshopMemories>;
+export type InsertWorkshopMemory = InferInsertModel<typeof workshopMemories>;
+
+export const workshopOutbox = pgTable(
+  "workshop_outbox",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workshopId: uuid("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    runId: uuid("run_id").references(() => workshopRuns.id, {
+      onDelete: "set null",
+    }),
+    channel: varchar("channel", { length: 30 }).notNull().default("wechat_desktop"),
+    recipientName: text("recipient_name"),
+    message: text("message").notNull(),
+    status: varchar("status", { length: 30 }).notNull().default("draft"),
+    confidence: integer("confidence").notNull().default(50),
+    riskLevel: varchar("risk_level", { length: 20 }).notNull().default("medium"),
+    sourceEventIds: jsonb("source_event_ids").$type<string[]>().notNull().default([]),
+    boundaryResult: jsonb("boundary_result")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    workshopStatusIdx: index("workshop_outbox_workshop_status_idx").on(
+      table.workshopId,
+      table.status,
+    ),
+    runIdx: index("workshop_outbox_run_idx").on(table.runId),
+  }),
+);
+
+export type WorkshopOutboxItem = InferSelectModel<typeof workshopOutbox>;
+export type InsertWorkshopOutboxItem = InferInsertModel<typeof workshopOutbox>;
+
 // Characters
 export const characters = pgTable(
   "characters",

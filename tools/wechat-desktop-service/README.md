@@ -1,15 +1,36 @@
 # WeChat Desktop Service
 
-Local companion service for OpenZhiyu. It controls the logged-in Windows WeChat desktop client through Windows UI automation by default, so it does not require `wxautox`.
+Local Windows companion service for OpenZhiyu. It controls the logged-in PC WeChat desktop client through local desktop automation and exposes a small HTTP API plus an optional MCP stdio wrapper.
+
+This is a personal/local automation tool, not an official WeChat SDK. Read [DISCLAIMER.md](./DISCLAIMER.md) and [SECURITY.md](./SECURITY.md) before publishing or using it on a shared machine.
+
+## Scope
+
+Supported:
+
+- Check whether the local automation service is healthy.
+- Preview a message and create a short-lived confirmation token.
+- Send a confirmed text message through PC WeChat.
+- Expose those actions as MCP tools for local AI clients.
+
+Not supported:
+
+- Fully invisible Windows Service / Session 0 execution.
+- A stable official background WeChat API.
+- Public network deployment by default.
+- Bulk messaging, marketing, scraping, or production messaging guarantees.
 
 ## Safety Model
 
 - Binds to `127.0.0.1` by default.
+- Binding outside localhost requires `--token` or `WECHAT_DESKTOP_TOKEN`.
 - `/preview` creates a short-lived `confirmToken`; it does not send.
 - `/send` requires the matching `confirmToken`.
-- If you bind outside localhost, pass `--token` or set `WECHAT_DESKTOP_TOKEN`.
+- Default send rate limit is 6 sends per minute.
+- Optional recipient allowlist can block unexpected recipients.
 - The default `window` backend briefly focuses PC WeChat, sends the message, then restores the previous foreground window and clipboard.
-- Personal PC WeChat does not expose a reliable fully invisible background API. For truly background delivery, use an official API such as WeCom or another authorized channel.
+
+Personal PC WeChat does not expose a reliable fully invisible background API. For a sanctioned background channel, use an official API such as WeCom or another authorized integration.
 
 ## Requirements
 
@@ -17,6 +38,7 @@ Local companion service for OpenZhiyu. It controls the logged-in Windows WeChat 
 - Python 3.9+.
 - PC WeChat installed and logged in.
 - `pywin32`.
+- Node.js 18+ only when using the MCP wrapper.
 
 ## Start
 
@@ -26,8 +48,7 @@ When developing OpenZhiyu from the repository root, the recommended command is:
 pnpm dev
 ```
 
-That command starts this service automatically if `127.0.0.1:8765` is not
-already healthy.
+That command starts this service automatically if `127.0.0.1:8765` is not already healthy.
 
 To start this service by itself:
 
@@ -36,11 +57,30 @@ cd D:\zhiyu\tools\wechat-desktop-service
 .\start.ps1
 ```
 
-The default backend is `window`:
+With an auth token:
 
 ```powershell
-$env:WECHAT_DESKTOP_BACKEND = "window"
+$env:WECHAT_DESKTOP_TOKEN = "replace-with-a-long-random-token"
 .\start.ps1
+```
+
+Restrict recipients:
+
+```powershell
+$env:WECHAT_DESKTOP_ALLOWED_RECIPIENTS = "filehelper,Example Contact"
+.\start.ps1
+```
+
+Adjust send rate limiting:
+
+```powershell
+.\start.ps1 -SendRateLimit 3
+```
+
+Disable send rate limiting only for local development:
+
+```powershell
+.\start.ps1 -SendRateLimit 0
 ```
 
 To minimize WeChat after each send:
@@ -49,14 +89,7 @@ To minimize WeChat after each send:
 .\start.ps1 -MinimizeAfterSend
 ```
 
-With an auth token:
-
-```powershell
-$env:WECHAT_DESKTOP_TOKEN = "change-me"
-.\start.ps1
-```
-
-## API
+## HTTP API
 
 Health:
 
@@ -68,7 +101,7 @@ Preview:
 
 ```powershell
 $body = @{
-  recipientName = "文件传输助手"
+  recipientName = "filehelper"
   message = "OpenZhiyu preview test"
 } | ConvertTo-Json
 
@@ -84,7 +117,7 @@ Send:
 
 ```powershell
 $body = @{
-  recipientName = "文件传输助手"
+  recipientName = "filehelper"
   message = "OpenZhiyu preview test"
   confirmToken = "<token-from-preview>"
 } | ConvertTo-Json
@@ -102,3 +135,61 @@ If `WECHAT_DESKTOP_TOKEN` is set, include:
 ```powershell
 -Headers @{ Authorization = "Bearer $env:WECHAT_DESKTOP_TOKEN" }
 ```
+
+## MCP Wrapper
+
+The MCP wrapper is a stdio server that calls the local HTTP service. It does not send messages directly and it preserves the preview/confirm flow.
+
+Available tools:
+
+- `wechat_desktop_health`
+- `wechat_preview_message`
+- `wechat_send_confirmed_message`
+
+Example OpenZhiyu MCP config at `%USERPROFILE%\.openzhiyu\mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "wechat-desktop": {
+      "command": "node",
+      "args": ["D:\\zhiyu\\tools\\wechat-desktop-service\\mcp-server.mjs"],
+      "env": {
+        "WECHAT_DESKTOP_HOST": "127.0.0.1",
+        "WECHAT_DESKTOP_PORT": "8765",
+        "WECHAT_DESKTOP_TOKEN": "replace-with-your-token"
+      }
+    }
+  }
+}
+```
+
+Start the HTTP service before using the MCP wrapper:
+
+```powershell
+.\start.ps1
+```
+
+## Configuration
+
+| Name | Default | Description |
+| --- | --- | --- |
+| `WECHAT_DESKTOP_HOST` | `127.0.0.1` | HTTP host. |
+| `WECHAT_DESKTOP_PORT` | `8765` | HTTP port. |
+| `WECHAT_DESKTOP_TOKEN` | empty | Optional bearer token; required outside localhost. |
+| `WECHAT_DESKTOP_CONFIRM_TTL` | `300` | Confirmation token TTL in seconds. |
+| `WECHAT_DESKTOP_BACKEND` | `window` | `window` or `wxauto`. |
+| `WECHAT_DESKTOP_MINIMIZE_AFTER_SEND` | empty | Set `1`/`true`/`yes` to minimize after sending. |
+| `WECHAT_DESKTOP_ALLOWED_RECIPIENTS` | empty | Comma-separated recipient allowlist. |
+| `WECHAT_DESKTOP_SEND_RATE_LIMIT_PER_MINUTE` | `6` | Max sends per minute; `0` disables. |
+
+## Open Source Checklist
+
+Before publishing:
+
+- Verify `.env`, logs, screenshots, tokens, contact names, group names, and QR codes are not committed.
+- Keep the default host as `127.0.0.1`.
+- Keep preview/confirm enabled for all write tools.
+- Keep send rate limiting enabled by default.
+- Include the disclaimer and security notes in releases.
+- Avoid describing this project as an official or production WeChat API.

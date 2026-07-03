@@ -1,38 +1,47 @@
-"use client";
+'use client';
 
-import { useState, useCallback } from "react";
-import type { FormEvent } from "react";
-import { useTranslation } from "react-i18next";
-import { formatDistanceToNow } from "date-fns";
-import { zhCN, enUS } from "date-fns/locale";
-import { RemixIcon } from "@/components/remix-icon";
-import { Badge, Button, Input } from "@openzhiyu/ui";
+import { useState, useCallback } from 'react';
+import type { FormEvent } from 'react';
+import { useTranslation } from 'react-i18next';
+import { formatDistanceToNow } from 'date-fns';
+import { zhCN, enUS } from 'date-fns/locale';
+import { RemixIcon } from '@/components/remix-icon';
+import { Badge, Button, Input } from '@openzhiyu/ui';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-} from "@openzhiyu/ui";
-import { toast } from "./toast";
-import { useRssSubscriptions } from "@/hooks/use-rss-subscriptions";
+} from '@openzhiyu/ui';
+import { toast } from './toast';
+import {
+  useRssSubscriptions,
+  type RssSubscriptionClient,
+} from '@/hooks/use-rss-subscriptions';
 import {
   createRssSubscriptionClient,
   deleteRssSubscriptionClient,
   updateRssSubscriptionClient,
-} from "@/lib/integrations/rss-client";
-import type { RssSubscription } from "@/lib/db/schema";
-import { RssOpmlImport } from "./rss-opml-import";
+} from '@/lib/integrations/rss-client';
+import { RssOpmlImport } from './rss-opml-import';
 
 /**
  * RSS subscription add area
  * Used to reuse the "paste subscription link + OPML batch import" add capability in different containers
  */
-export function RssAddControls() {
+export function RssAddControls({
+  initialSubscriptions,
+}: {
+  initialSubscriptions?: RssSubscriptionClient[];
+}) {
   const { t } = useTranslation();
-  const { mutate: mutateSubscriptions } = useRssSubscriptions();
-  const [customSourceUrl, setCustomSourceUrl] = useState("");
-  const [customTitle, setCustomTitle] = useState("");
-  const [customCategory, setCustomCategory] = useState("");
+  const { mutate: mutateSubscriptions } = useRssSubscriptions({
+    fallbackSubscriptions: initialSubscriptions,
+    revalidateOnMount: !initialSubscriptions,
+  });
+  const [customSourceUrl, setCustomSourceUrl] = useState('');
+  const [customTitle, setCustomTitle] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
   const [isAddingCustomFeed, setIsAddingCustomFeed] = useState(false);
 
   const handleCustomFeedSubmit = useCallback(
@@ -41,10 +50,10 @@ export function RssAddControls() {
       const trimmedUrl = customSourceUrl.trim();
       if (!trimmedUrl) {
         toast({
-          type: "error",
+          type: 'error',
           description: t(
-            "integrations.feedUrlRequired",
-            "Please enter a valid RSS feed URL.",
+            'integrations.feedUrlRequired',
+            'Please enter a valid RSS feed URL.',
           ),
         });
         return;
@@ -58,20 +67,20 @@ export function RssAddControls() {
           category: customCategory.trim() || undefined,
         });
         await mutateSubscriptions();
-        setCustomSourceUrl("");
-        setCustomTitle("");
-        setCustomCategory("");
+        setCustomSourceUrl('');
+        setCustomTitle('');
+        setCustomCategory('');
         toast({
-          type: "success",
-          description: t("integrations.addFeedSuccess", "Feed added."),
+          type: 'success',
+          description: t('integrations.addFeedSuccess', 'Feed added.'),
         });
       } catch (error) {
         toast({
-          type: "error",
+          type: 'error',
           description:
             error instanceof Error
               ? error.message
-              : t("integrations.addFeedError", "Unable to add feed."),
+              : t('integrations.addFeedError', 'Unable to add feed.'),
         });
       } finally {
         setIsAddingCustomFeed(false);
@@ -92,7 +101,7 @@ export function RssAddControls() {
               className="text-xs font-medium text-[#6f6e69]"
               htmlFor="rss-feed-url"
             >
-              {t("integrations.feedUrlLabel", "Feed URL")}
+              {t('integrations.feedUrlLabel', 'Feed URL')}
             </label>
             <Input
               type="url"
@@ -100,8 +109,8 @@ export function RssAddControls() {
               value={customSourceUrl}
               onChange={(event) => setCustomSourceUrl(event.target.value)}
               placeholder={t(
-                "integrations.feedUrlPlaceholder",
-                "e.g., https://domain.com/feed.xml",
+                'integrations.feedUrlPlaceholder',
+                'e.g., https://domain.com/feed.xml',
               )}
               required
             />
@@ -111,15 +120,15 @@ export function RssAddControls() {
               className="text-xs font-medium text-[#6f6e69]"
               htmlFor="rss-feed-title"
             >
-              {t("integrations.feedTitleLabel", "Custom title (optional)")}
+              {t('integrations.feedTitleLabel', 'Custom title (optional)')}
             </label>
             <Input
               id="rss-feed-title"
               value={customTitle}
               onChange={(event) => setCustomTitle(event.target.value)}
               placeholder={t(
-                "integrations.feedTitlePlaceholder",
-                "Name shown in the list",
+                'integrations.feedTitlePlaceholder',
+                'Name shown in the list',
               )}
             />
           </div>
@@ -128,15 +137,15 @@ export function RssAddControls() {
               className="text-xs font-medium text-[#6f6e69]"
               htmlFor="rss-feed-category"
             >
-              {t("integrations.feedCategoryLabel", "Tags (optional)")}
+              {t('integrations.feedCategoryLabel', 'Tags (optional)')}
             </label>
             <Input
               id="rss-feed-category"
               value={customCategory}
               onChange={(event) => setCustomCategory(event.target.value)}
               placeholder={t(
-                "integrations.feedCategoryPlaceholder",
-                "Tag for grouping feeds, e.g., Web3",
+                'integrations.feedCategoryPlaceholder',
+                'Tag for grouping feeds, e.g., Web3',
               )}
             />
           </div>
@@ -144,8 +153,8 @@ export function RssAddControls() {
         <div className="flex flex-col gap-2 text-xs text-[#6f6e69]">
           <p>
             {t(
-              "integrations.customFeedDescription",
-              "Paste any RSS/Atom/JSON feed URL. openzhiyu will fetch it periodically and surface new stories in your understanding feed.",
+              'integrations.customFeedDescription',
+              'Paste any RSS/Atom/JSON feed URL. openzhiyu will fetch it periodically and surface new stories in your understanding feed.',
             )}
           </p>
           <Button
@@ -161,12 +170,12 @@ export function RssAddControls() {
                   size="size-4"
                   className="mr-2 animate-spin"
                 />
-                {t("integrations.subscribing", "Subscribing...")}
+                {t('integrations.subscribing', 'Subscribing...')}
               </>
             ) : (
               <>
                 <RemixIcon name="add" size="size-4" className="mr-2" />
-                {t("integrations.addFeedCta", "Add feed source")}
+                {t('integrations.addFeedCta', 'Add feed source')}
               </>
             )}
           </Button>
@@ -182,42 +191,49 @@ export function RssAddControls() {
  * RSS subscription list component
  * Used to display and manage the status and operations of existing RSS subscriptions
  */
-export function RssIntegrations() {
+export function RssIntegrations({
+  initialSubscriptions,
+}: {
+  initialSubscriptions?: RssSubscriptionClient[];
+}) {
   const { t, i18n } = useTranslation();
   const {
     subscriptions,
     isLoading: isSubscriptionsLoading,
     mutate: mutateSubscriptions,
-  } = useRssSubscriptions();
+  } = useRssSubscriptions({
+    fallbackSubscriptions: initialSubscriptions,
+    revalidateOnMount: !initialSubscriptions,
+  });
   const [subscriptionAction, setSubscriptionAction] = useState<{
     id: string;
-    type: "status" | "delete";
+    type: 'status' | 'delete';
   } | null>(null);
 
   const handleSubscriptionStatusToggle = useCallback(
-    async (subscription: RssSubscription) => {
-      setSubscriptionAction({ id: subscription.id, type: "status" });
+    async (subscription: RssSubscriptionClient) => {
+      setSubscriptionAction({ id: subscription.id, type: 'status' });
       try {
         await updateRssSubscriptionClient(subscription.id, {
-          status: subscription.status === "active" ? "paused" : "active",
+          status: subscription.status === 'active' ? 'paused' : 'active',
         });
         await mutateSubscriptions();
         toast({
-          type: "success",
+          type: 'success',
           description: t(
-            "integrations.subscriptionUpdated",
-            "Subscription updated.",
+            'integrations.subscriptionUpdated',
+            'Subscription updated.',
           ),
         });
       } catch (error) {
         toast({
-          type: "error",
+          type: 'error',
           description:
             error instanceof Error
               ? error.message
               : t(
-                  "integrations.subscriptionUpdateError",
-                  "Unable to update this subscription.",
+                  'integrations.subscriptionUpdateError',
+                  'Unable to update this subscription.',
                 ),
         });
       } finally {
@@ -228,27 +244,27 @@ export function RssIntegrations() {
   );
 
   const handleSubscriptionDelete = useCallback(
-    async (subscription: RssSubscription) => {
-      setSubscriptionAction({ id: subscription.id, type: "delete" });
+    async (subscription: RssSubscriptionClient) => {
+      setSubscriptionAction({ id: subscription.id, type: 'delete' });
       try {
         await deleteRssSubscriptionClient(subscription.id);
         await mutateSubscriptions();
         toast({
-          type: "success",
+          type: 'success',
           description: t(
-            "integrations.subscriptionDeleted",
-            "Subscription removed.",
+            'integrations.subscriptionDeleted',
+            'Subscription removed.',
           ),
         });
       } catch (error) {
         toast({
-          type: "error",
+          type: 'error',
           description:
             error instanceof Error
               ? error.message
               : t(
-                  "integrations.subscriptionDeleteError",
-                  "Unable to remove this subscription.",
+                  'integrations.subscriptionDeleteError',
+                  'Unable to remove this subscription.',
                 ),
         });
       } finally {
@@ -258,7 +274,7 @@ export function RssIntegrations() {
     [mutateSubscriptions, t],
   );
 
-  const getSubscriptionDisplayName = (subscription: RssSubscription) => {
+  const getSubscriptionDisplayName = (subscription: RssSubscriptionClient) => {
     if (subscription.title && subscription.title.trim().length > 0) {
       return subscription.title.trim();
     }
@@ -272,14 +288,14 @@ export function RssIntegrations() {
 
   const getRssErrorFriendlyMessage = useCallback(
     (code: string | null | undefined, rawMessage?: string | null): string => {
-      if (!code && !rawMessage) return "";
+      if (!code && !rawMessage) return '';
       const key =
-        code === "error" || code === "timeout"
+        code === 'error' || code === 'timeout'
           ? `integrations.rssErrorCode.${code}`
           : code && /^\d+$/.test(code)
             ? `integrations.rssErrorCode.${code}`
-            : "integrations.rssErrorCode.error";
-      const fallback = t("integrations.rssErrorCode.error");
+            : 'integrations.rssErrorCode.error';
+      const fallback = t('integrations.rssErrorCode.error');
       return t(key, fallback);
     },
     [t],
@@ -288,23 +304,23 @@ export function RssIntegrations() {
   const formatLastCheck = useCallback(
     (lastFetchedAt: Date | string | null | undefined): string => {
       if (!lastFetchedAt) {
-        return t("integrations.lastCheckNever", "Never");
+        return t('integrations.lastCheckNever', 'Never');
       }
       const date =
-        typeof lastFetchedAt === "string"
+        typeof lastFetchedAt === 'string'
           ? new Date(lastFetchedAt)
           : lastFetchedAt;
-      if (Number.isNaN(date.getTime())) return t("integrations.lastCheckNever");
-      const locale = i18n.language.startsWith("zh") ? zhCN : enUS;
+      if (Number.isNaN(date.getTime())) return t('integrations.lastCheckNever');
+      const locale = i18n.language.startsWith('zh') ? zhCN : enUS;
       const relative = formatDistanceToNow(date, { addSuffix: false, locale });
-      return t("integrations.lastCheckAgo", "{{time}} ago", { time: relative });
+      return t('integrations.lastCheckAgo', '{{time}} ago', { time: relative });
     },
     [t, i18n.language],
   );
 
   const isSubscriptionActionPending = (
     subscriptionId: string,
-    action: "status" | "delete",
+    action: 'status' | 'delete',
   ) =>
     subscriptionAction?.id === subscriptionId &&
     subscriptionAction.type === action;
@@ -325,12 +341,12 @@ export function RssIntegrations() {
       <div className="space-y-2">
         {isSubscriptionsLoading ? (
           renderLoadingState(
-            t("integrations.subscriptionsLoading", "Loading subscriptions..."),
+            t('integrations.subscriptionsLoading', 'Loading subscriptions...'),
           )
         ) : subscriptions.length === 0 ? (
           <div className="rounded-xl border border-[#e5e5e5] bg-white p-4 text-xs text-[#6f6e69]">
             {t(
-              "integrations.emptySubscriptions",
+              'integrations.emptySubscriptions',
               "You haven't subscribed to any feeds yet.",
             )}
           </div>
@@ -339,25 +355,25 @@ export function RssIntegrations() {
             {subscriptions.map((subscription) => {
               const isStatusPending = isSubscriptionActionPending(
                 subscription.id,
-                "status",
+                'status',
               );
               const isDeletePending = isSubscriptionActionPending(
                 subscription.id,
-                "delete",
+                'delete',
               );
               const hasError = Boolean(
                 subscription.lastErrorCode ?? subscription.lastErrorMessage,
               );
               const statusLabel = hasError
-                ? t("integrations.subscriptionStatusError", "Error")
-                : subscription.status === "active"
-                  ? t("integrations.subscriptionStatusActive", "Active")
-                  : t("integrations.subscriptionStatusPaused", "Paused");
+                ? t('integrations.subscriptionStatusError', 'Error')
+                : subscription.status === 'active'
+                  ? t('integrations.subscriptionStatusActive', 'Active')
+                  : t('integrations.subscriptionStatusPaused', 'Paused');
               const statusStyles = hasError
-                ? "bg-red-50 text-red-700 border border-red-100"
-                : subscription.status === "active"
-                  ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
-                  : "bg-amber-50 text-amber-700 border border-amber-100";
+                ? 'bg-red-50 text-red-700 border border-red-100'
+                : subscription.status === 'active'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+                  : 'bg-amber-50 text-amber-700 border border-amber-100';
               const errorFriendlyMessage = getRssErrorFriendlyMessage(
                 subscription.lastErrorCode ?? undefined,
                 subscription.lastErrorMessage ?? undefined,
@@ -418,7 +434,7 @@ export function RssIntegrations() {
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           <span className="text-[11px] uppercase tracking-wide text-[#a09f9a] whitespace-nowrap">
-                            {t("integrations.lastCheck", "Last check")}:{" "}
+                            {t('integrations.lastCheck', 'Last check')}:{' '}
                             {formatLastCheck(subscription.lastFetchedAt)}
                           </span>
                           <DropdownMenu>
@@ -446,11 +462,11 @@ export function RssIntegrations() {
                                   );
                                 }}
                               >
-                                {subscription.status === "active"
-                                  ? t("integrations.pauseSubscription", "Pause")
+                                {subscription.status === 'active'
+                                  ? t('integrations.pauseSubscription', 'Pause')
                                   : t(
-                                      "integrations.resumeSubscription",
-                                      "Resume",
+                                      'integrations.resumeSubscription',
+                                      'Resume',
                                     )}
                               </DropdownMenuItem>
                               <DropdownMenuItem
@@ -460,7 +476,7 @@ export function RssIntegrations() {
                                   void handleSubscriptionDelete(subscription);
                                 }}
                               >
-                                {t("integrations.removeSubscription", "Remove")}
+                                {t('integrations.removeSubscription', 'Remove')}
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -472,8 +488,8 @@ export function RssIntegrations() {
                       {hasError && errorFriendlyMessage ? (
                         <p className="text-xs font-medium text-red-600">
                           {subscription.lastErrorCode
-                            ? `${subscription.lastErrorCode} ${t("integrations.subscriptionStatusError", "Error")} - `
-                            : ""}
+                            ? `${subscription.lastErrorCode} ${t('integrations.subscriptionStatusError', 'Error')} - `
+                            : ''}
                           {errorFriendlyMessage}
                         </p>
                       ) : null}

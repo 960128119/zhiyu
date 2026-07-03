@@ -1,78 +1,89 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { getAuthToken } from "@/lib/auth/token-manager";
+import { getAuthToken } from '@/lib/auth/token-manager';
+import { useEffect } from 'react';
 
 /**
- * Scheduled Jobs Auto-Initialization Component
+ * Bootstraps local runtime services after the first paint.
  *
- * This component should be imported in the app root layout (Tauri environment only)
- * It automatically starts the local scheduler on app startup for executing scheduled user tasks
+ * This starts the native scheduler and restores connector listeners without
+ * coupling those side effects to page-list APIs such as /api/integrations.
  */
 export function ScheduledJobsInit() {
   useEffect(() => {
-    // Only run on client side
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       return;
     }
 
-    // Check if running in Tauri environment or local web development.
-    const isTauri = !!(window as any).__TAURI__;
+    const isTauri = '__TAURI__' in window;
     const isLocalDev =
-      process.env.NODE_ENV === "development" &&
-      (window.location.hostname === "localhost" ||
-        window.location.hostname === "127.0.0.1");
+      process.env.NODE_ENV === 'development' &&
+      (window.location.hostname === 'localhost' ||
+        window.location.hostname === '127.0.0.1');
 
     if (!isTauri && !isLocalDev) {
       return;
     }
 
-    // Delay execution to ensure app is fully loaded
-    const timer = setTimeout(async () => {
+    const initializeRuntime = async () => {
       try {
-        // Call scheduler API to start the local scheduler
-        // Get cloud auth token from localStorage for Tauri mode
         const cloudAuthToken = getAuthToken();
         const response = await fetch(
-          `/api/scheduled-jobs/internal/scheduler${
+          `/api/runtime/bootstrap${
             cloudAuthToken
               ? `?cloudAuthToken=${encodeURIComponent(cloudAuthToken)}`
-              : ""
+              : ''
           }`,
         );
 
-        if (response.ok) {
-          const contentType = response.headers.get("content-type");
-          if (contentType?.includes("application/json")) {
-            const data = await response.json();
-
-            if (data.success && data.scheduler.isRunning) {
-              console.log(
-                "[Scheduled Jobs] ✅ Local scheduler is running (checks every",
-                data.scheduler.checkInterval / 1000,
-                "seconds)",
-              );
-            }
-          } else {
-            console.warn(
-              "[Scheduled Jobs Init] Unexpected response content-type:",
-              contentType,
-            );
-          }
-        } else {
+        if (!response.ok) {
           console.warn(
-            "[Scheduled Jobs Init] API returned non-OK status:",
+            '[RuntimeBootstrap] API returned non-OK status:',
             response.status,
           );
+          return;
+        }
+
+        const contentType = response.headers.get('content-type');
+        if (!contentType?.includes('application/json')) {
+          console.warn(
+            '[RuntimeBootstrap] Unexpected response content-type:',
+            contentType,
+          );
+          return;
+        }
+
+        const data = await response.json();
+        if (data.success && data.scheduler.isRunning) {
+          console.log(
+            '[RuntimeBootstrap] Local scheduler is running (checks every',
+            data.scheduler.checkInterval / 1000,
+            'seconds)',
+          );
+        }
+        if (data.connectorBootstrapQueued) {
+          console.log('[RuntimeBootstrap] Connector listeners queued');
         }
       } catch (error) {
-        console.error("[Scheduled Jobs Init] Failed to initialize:", error);
+        console.error('[RuntimeBootstrap] Failed to initialize:', error);
       }
-    }, 3000); // Delay 3 seconds to ensure Next.js fully starts
+    };
+
+    const bootstrapDelayMs = isLocalDev && !isTauri ? 60_000 : 3_000;
+    const timer = setTimeout(() => {
+      const requestIdleCallback = window.requestIdleCallback;
+      if (typeof requestIdleCallback === 'function') {
+        requestIdleCallback(() => void initializeRuntime(), {
+          timeout: 30_000,
+        });
+        return;
+      }
+
+      void initializeRuntime();
+    }, bootstrapDelayMs);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // This component does not render any content
   return null;
 }

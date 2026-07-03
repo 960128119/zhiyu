@@ -117,6 +117,13 @@ export const loops = (currentSchema as any).loops;
 export const loopRuns = (currentSchema as any).loopRuns;
 export const loopStates = (currentSchema as any).loopStates;
 export const loopApprovalRequests = (currentSchema as any).loopApprovalRequests;
+export const workshops = (currentSchema as any).workshops;
+export const workshopRuns = (currentSchema as any).workshopRuns;
+export const workshopEvents = (currentSchema as any).workshopEvents;
+export const workshopSources = (currentSchema as any).workshopSources;
+export const workshopDirectives = (currentSchema as any).workshopDirectives;
+export const workshopMemories = (currentSchema as any).workshopMemories;
+export const workshopOutbox = (currentSchema as any).workshopOutbox;
 export const characters = (currentSchema as any).characters;
 
 // Functions
@@ -209,6 +216,20 @@ export type {
   InsertLoopState,
   LoopApprovalRequest,
   InsertLoopApprovalRequest,
+  Workshop,
+  InsertWorkshop,
+  WorkshopRun,
+  InsertWorkshopRun,
+  WorkshopEvent,
+  InsertWorkshopEvent,
+  WorkshopSource,
+  InsertWorkshopSource,
+  WorkshopDirective,
+  InsertWorkshopDirective,
+  WorkshopMemory,
+  InsertWorkshopMemory,
+  WorkshopOutboxItem,
+  InsertWorkshopOutboxItem,
   InsightTimelineHistory,
   InsertInsightTimelineHistory,
   InsightNote,

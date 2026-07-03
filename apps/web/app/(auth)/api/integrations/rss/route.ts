@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
-import { auth } from "@/app/(auth)/auth";
+import { auth } from '@/app/(auth)/auth';
 import {
   createRssSubscription,
   getIntegrationCatalogEntryBySlug,
   getRssSubscriptionsByUser,
-} from "@/lib/db/queries";
-import { AppError } from "@openzhiyu/shared/errors";
+} from '@/lib/db/rss-queries';
+import { AppError } from '@openzhiyu/shared/errors';
 
 const CreateRssSubscriptionSchema = z
   .object({
@@ -18,13 +18,13 @@ const CreateRssSubscriptionSchema = z
   })
   .refine(
     (value) => Boolean(value.sourceUrl || value.catalogSlug),
-    "Either sourceUrl or catalogSlug is required.",
+    'Either sourceUrl or catalogSlug is required.',
   );
 
 export async function GET() {
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -36,9 +36,9 @@ export async function GET() {
     if (error instanceof AppError) {
       return error.toResponse();
     }
-    console.error("[RssSubscriptions] Failed to list subscriptions", error);
+    console.error('[RssSubscriptions] Failed to list subscriptions', error);
     return NextResponse.json(
-      { error: "Failed to load RSS subscriptions" },
+      { error: 'Failed to load RSS subscriptions' },
       { status: 500 },
     );
   }
@@ -47,17 +47,17 @@ export async function GET() {
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     const payload = CreateRssSubscriptionSchema.parse(await request.json());
 
-    let resolvedUrl = payload.sourceUrl?.trim() ?? "";
+    let resolvedUrl = payload.sourceUrl?.trim() ?? '';
     let resolvedTitle = payload.title ?? null;
     let resolvedCategory = payload.category ?? null;
     let catalogId: string | null = null;
-    let sourceType = payload.catalogSlug ? "catalog" : "custom";
+    let sourceType = payload.catalogSlug ? 'catalog' : 'custom';
 
     if (payload.catalogSlug) {
       const catalogEntry = await getIntegrationCatalogEntryBySlug({
@@ -65,7 +65,7 @@ export async function POST(request: Request) {
       });
       if (!catalogEntry) {
         return NextResponse.json(
-          { error: "Catalog entry not found" },
+          { error: 'Catalog entry not found' },
           { status: 404 },
         );
       }
@@ -73,12 +73,12 @@ export async function POST(request: Request) {
       resolvedUrl = catalogEntry.url;
       resolvedTitle = resolvedTitle ?? catalogEntry.title;
       resolvedCategory = resolvedCategory ?? catalogEntry.category;
-      sourceType = "catalog";
+      sourceType = 'catalog';
     }
 
     if (!resolvedUrl) {
       return NextResponse.json(
-        { error: "RSS feed URL is required" },
+        { error: 'RSS feed URL is required' },
         { status: 400 },
       );
     }
@@ -88,7 +88,7 @@ export async function POST(request: Request) {
       sourceUrl: resolvedUrl,
       title: resolvedTitle,
       category: resolvedCategory,
-      status: "active",
+      status: 'active',
       sourceType,
       catalogId,
     });
@@ -97,16 +97,16 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.issues.map((item) => item.message).join(", ") },
+        { error: error.issues.map((item) => item.message).join(', ') },
         { status: 400 },
       );
     }
     if (error instanceof AppError) {
       return error.toResponse();
     }
-    console.error("[RssSubscriptions] Failed to create subscription", error);
+    console.error('[RssSubscriptions] Failed to create subscription', error);
     return NextResponse.json(
-      { error: "Failed to create RSS subscription" },
+      { error: 'Failed to create RSS subscription' },
       { status: 500 },
     );
   }

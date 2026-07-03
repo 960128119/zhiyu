@@ -4,6 +4,8 @@ param(
   [string]$Token = $env:WECHAT_DESKTOP_TOKEN,
   [ValidateSet("window", "wxauto")]
   [string]$Backend = $(if ($env:WECHAT_DESKTOP_BACKEND) { $env:WECHAT_DESKTOP_BACKEND } else { "window" }),
+  [string[]]$AllowedRecipient = @(),
+  [int]$SendRateLimit = $(if ($env:WECHAT_DESKTOP_SEND_RATE_LIMIT_PER_MINUTE) { [int]$env:WECHAT_DESKTOP_SEND_RATE_LIMIT_PER_MINUTE } else { 6 }),
   [switch]$MinimizeAfterSend
 )
 
@@ -25,6 +27,14 @@ if (-not (Test-Path ".venv")) {
 $argsList = @("server.py", "--host", $HostName, "--port", "$Port", "--backend", $Backend)
 if ($Token) {
   $argsList += @("--token", $Token)
+}
+foreach ($recipient in $AllowedRecipient) {
+  if ($recipient) {
+    $argsList += @("--allowed-recipient", $recipient)
+  }
+}
+if ($SendRateLimit -ge 0) {
+  $argsList += @("--send-rate-limit", "$SendRateLimit")
 }
 if ($MinimizeAfterSend) {
   $argsList += @("--minimize-after-send")

@@ -1,23 +1,23 @@
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
 
-import { auth } from "@/app/(auth)/auth";
+import { auth } from '@/app/(auth)/auth';
 import {
   deleteRssSubscription,
   getRssSubscriptionById,
   updateRssSubscription,
-} from "@/lib/db/queries";
-import { AppError } from "@openzhiyu/shared/errors";
+} from '@/lib/db/rss-queries';
+import { AppError } from '@openzhiyu/shared/errors';
 
 const UpdateRssSubscriptionSchema = z
   .object({
-    status: z.enum(["active", "paused", "disabled"]).optional(),
+    status: z.enum(['active', 'paused', 'disabled']).optional(),
     title: z.string().min(1).optional(),
     category: z.string().min(1).optional(),
   })
   .refine(
     (value) => Object.keys(value).length > 0,
-    "At least one field must be provided.",
+    'At least one field must be provided.',
   );
 
 export async function PATCH(
@@ -26,13 +26,13 @@ export async function PATCH(
 ) {
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { subscriptionId } = await params;
   if (!subscriptionId) {
     return NextResponse.json(
-      { error: "Missing subscription identifier" },
+      { error: 'Missing subscription identifier' },
       { status: 400 },
     );
   }
@@ -47,7 +47,7 @@ export async function PATCH(
 
     if (!updated) {
       return NextResponse.json(
-        { error: "Subscription not found" },
+        { error: 'Subscription not found' },
         { status: 404 },
       );
     }
@@ -56,7 +56,7 @@ export async function PATCH(
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.issues.map((item) => item.message).join(", ") },
+        { error: error.issues.map((item) => item.message).join(', ') },
         { status: 400 },
       );
     }
@@ -68,7 +68,7 @@ export async function PATCH(
       error,
     );
     return NextResponse.json(
-      { error: "Failed to update RSS subscription" },
+      { error: 'Failed to update RSS subscription' },
       { status: 500 },
     );
   }
@@ -80,13 +80,13 @@ export async function DELETE(
 ) {
   const session = await auth();
   if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { subscriptionId } = await params;
   if (!subscriptionId) {
     return NextResponse.json(
-      { error: "Missing subscription identifier" },
+      { error: 'Missing subscription identifier' },
       { status: 400 },
     );
   }
@@ -98,7 +98,7 @@ export async function DELETE(
     });
     if (!existing) {
       return NextResponse.json(
-        { error: "Subscription not found" },
+        { error: 'Subscription not found' },
         { status: 404 },
       );
     }
@@ -118,7 +118,7 @@ export async function DELETE(
       error,
     );
     return NextResponse.json(
-      { error: "Failed to delete RSS subscription" },
+      { error: 'Failed to delete RSS subscription' },
       { status: 500 },
     );
   }

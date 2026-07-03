@@ -289,6 +289,8 @@ export interface AgentOptions {
   skillsConfig?: SkillsConfig;
   /** MCP configuration */
   mcpConfig?: McpConfig;
+  /** Runtime-scoped MCP servers injected by the host for one agent run. */
+  customMcpServers?: Record<string, unknown>;
   /** Active character (mate) ID for character-scoped chat */
   characterId?: string;
   /** Focused insight IDs (from web agent) */

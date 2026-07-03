@@ -2554,6 +2554,277 @@ export type InsertLoopApprovalRequest = InferInsertModel<
   typeof loopApprovalRequests
 >;
 
+// Work Workshops
+export const workshops = sqliteTable(
+  "workshops",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    mission: text("mission").notNull(),
+    status: text("status").notNull().default("active"),
+    autonomyLevel: text("autonomy_level").notNull().default("draft"),
+    boundaryPolicy: text("boundary_policy")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    modelConfig: text("model_config")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    userIdx: index("workshops_user_idx").on(table.userId),
+    userStatusIdx: index("workshops_user_status_idx").on(
+      table.userId,
+      table.status,
+    ),
+    updatedAtIdx: index("workshops_updated_at_idx").on(table.updatedAt),
+  }),
+);
+
+export type Workshop = InferSelectModel<typeof workshops>;
+export type InsertWorkshop = InferInsertModel<typeof workshops>;
+
+export const workshopRuns = sqliteTable(
+  "workshop_runs",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workshopId: text("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("running"),
+    triggerReason: text("trigger_reason").$type<Record<string, unknown>>(),
+    ccSessionId: text("cc_session_id"),
+    inputSnapshot: text("input_snapshot").$type<Record<string, unknown>>(),
+    outputSummary: text("output_summary"),
+    error: text("error"),
+    startedAt: integer("started_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    completedAt: integer("completed_at", { mode: "timestamp" }),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    workshopIdx: index("workshop_runs_workshop_idx").on(table.workshopId),
+    statusIdx: index("workshop_runs_status_idx").on(table.status),
+    startedAtIdx: index("workshop_runs_started_at_idx").on(table.startedAt),
+  }),
+);
+
+export type WorkshopRun = InferSelectModel<typeof workshopRuns>;
+export type InsertWorkshopRun = InferInsertModel<typeof workshopRuns>;
+
+export const workshopEvents = sqliteTable(
+  "workshop_events",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workshopId: text("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    runId: text("run_id").references(() => workshopRuns.id, {
+      onDelete: "set null",
+    }),
+    seq: integer("seq").notNull(),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    body: text("body"),
+    metadata: text("metadata")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    visibility: text("visibility").notNull().default("user"),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    workshopSeqIdx: uniqueIndex("workshop_events_workshop_seq_idx").on(
+      table.workshopId,
+      table.seq,
+    ),
+    workshopCreatedAtIdx: index("workshop_events_workshop_created_at_idx").on(
+      table.workshopId,
+      table.createdAt,
+    ),
+    runIdx: index("workshop_events_run_idx").on(table.runId),
+  }),
+);
+
+export type WorkshopEvent = InferSelectModel<typeof workshopEvents>;
+export type InsertWorkshopEvent = InferInsertModel<typeof workshopEvents>;
+
+export const workshopSources = sqliteTable(
+  "workshop_sources",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workshopId: text("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    name: text("name").notNull(),
+    uri: text("uri"),
+    content: text("content"),
+    config: text("config")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+    lastCheckedAt: integer("last_checked_at", { mode: "timestamp" }),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    workshopIdx: index("workshop_sources_workshop_idx").on(table.workshopId),
+    typeIdx: index("workshop_sources_type_idx").on(table.type),
+  }),
+);
+
+export type WorkshopSource = InferSelectModel<typeof workshopSources>;
+export type InsertWorkshopSource = InferInsertModel<typeof workshopSources>;
+
+export const workshopDirectives = sqliteTable(
+  "workshop_directives",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workshopId: text("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    runId: text("run_id").references(() => workshopRuns.id, {
+      onDelete: "set null",
+    }),
+    content: text("content").notNull(),
+    priority: integer("priority").notNull().default(0),
+    scope: text("scope").notNull().default("current_run"),
+    status: text("status").notNull().default("active"),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    workshopStatusIdx: index("workshop_directives_workshop_status_idx").on(
+      table.workshopId,
+      table.status,
+    ),
+    runIdx: index("workshop_directives_run_idx").on(table.runId),
+  }),
+);
+
+export type WorkshopDirective = InferSelectModel<typeof workshopDirectives>;
+export type InsertWorkshopDirective = InferInsertModel<
+  typeof workshopDirectives
+>;
+
+export const workshopMemories = sqliteTable(
+  "workshop_memories",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workshopId: text("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    kind: text("kind").notNull(),
+    content: text("content").notNull(),
+    confidence: integer("confidence").notNull().default(50),
+    tags: text("tags").notNull().default("[]").$type<string[]>(),
+    sourceEventIds: text("source_event_ids")
+      .notNull()
+      .default("[]")
+      .$type<string[]>(),
+    expiresAt: integer("expires_at", { mode: "timestamp" }),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    workshopKindIdx: index("workshop_memories_workshop_kind_idx").on(
+      table.workshopId,
+      table.kind,
+    ),
+    createdAtIdx: index("workshop_memories_created_at_idx").on(table.createdAt),
+  }),
+);
+
+export type WorkshopMemory = InferSelectModel<typeof workshopMemories>;
+export type InsertWorkshopMemory = InferInsertModel<typeof workshopMemories>;
+
+export const workshopOutbox = sqliteTable(
+  "workshop_outbox",
+  {
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    workshopId: text("workshop_id")
+      .notNull()
+      .references(() => workshops.id, { onDelete: "cascade" }),
+    runId: text("run_id").references(() => workshopRuns.id, {
+      onDelete: "set null",
+    }),
+    channel: text("channel").notNull().default("wechat_desktop"),
+    recipientName: text("recipient_name"),
+    message: text("message").notNull(),
+    status: text("status").notNull().default("draft"),
+    confidence: integer("confidence").notNull().default(50),
+    riskLevel: text("risk_level").notNull().default("medium"),
+    sourceEventIds: text("source_event_ids")
+      .notNull()
+      .default("[]")
+      .$type<string[]>(),
+    boundaryResult: text("boundary_result")
+      .notNull()
+      .default("{}")
+      .$type<Record<string, unknown>>(),
+    sentAt: integer("sent_at", { mode: "timestamp" }),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .default(sql`(unixepoch() * 1000)`),
+  },
+  (table) => ({
+    workshopStatusIdx: index("workshop_outbox_workshop_status_idx").on(
+      table.workshopId,
+      table.status,
+    ),
+    runIdx: index("workshop_outbox_run_idx").on(table.runId),
+  }),
+);
+
+export type WorkshopOutboxItem = InferSelectModel<typeof workshopOutbox>;
+export type InsertWorkshopOutboxItem = InferInsertModel<typeof workshopOutbox>;
+
 // Characters
 export const characters = sqliteTable("characters", {
   id: text("id")
