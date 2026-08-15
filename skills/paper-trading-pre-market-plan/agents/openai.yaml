@@ -1,0 +1,4 @@
+interface:
+  display_name: "盘前计划"
+  short_description: "为操盘交易员生成盘前观察计划与风险边界。"
+  default_prompt: "为操盘交易员执行盘前观察计划。"

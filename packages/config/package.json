@@ -1,0 +1,17 @@
+{
+  "name": "@openzhiyu/config",
+  "version": "0.5.1",
+  "private": true,
+  "type": "module",
+  "files": [
+    "src"
+  ],
+  "main": "./src/index.js",
+  "exports": {
+    "./eslint": "./src/eslint.js",
+    "./tsconfig": "./src/tsconfig.json"
+  },
+  "scripts": {
+    "build": "echo no build needed"
+  }
+}

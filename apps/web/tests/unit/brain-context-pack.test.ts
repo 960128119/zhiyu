@@ -1,0 +1,325 @@
+import { describe, expect, it } from "vitest";
+import {
+  buildBrainContextPack,
+  type BrainAccessGrant,
+  type BrainMemory,
+  type BrainRecallProfile,
+  type BrainRequester,
+} from "@/lib/brain";
+
+const now = new Date("2026-08-10T01:00:00.000Z");
+
+function memory(id: string, overrides: Partial<BrainMemory> = {}): BrainMemory {
+  return {
+    id,
+    userId: "user-1",
+    scope: { type: "workshop", workshopId: "trader" },
+    ownerType: "work",
+    ownerId: "trader-work",
+    memoryType: "fact",
+    subject: "General note",
+    content: "General workshop memory.",
+    status: "active",
+    confidence: 70,
+    evidenceRefs: [`event-${id}`],
+    createdAt: "2026-08-10T00:00:00.000Z",
+    updatedAt: "2026-08-10T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+const requester: BrainRequester = {
+  type: "work",
+  userId: "user-1",
+  id: "trader-work",
+  workshopId: "trader",
+};
+
+describe("brain context pack", () => {
+  it("prioritizes boundaries and plans for a work loop", () => {
+    const pack = buildBrainContextPack({
+      requester,
+      taskIntent: "pre market trading plan and risk boundary",
+      now,
+      maxItems: 2,
+      memories: [
+        memory("generic", {
+          memoryType: "fact",
+          subject: "Chatty note",
+          content: "A low value observation.",
+          confidence: 95,
+        }),
+        memory("plan", {
+          memoryType: "plan",
+          subject: "Monday trading plan",
+          content: "Run pre market observation before trading.",
+          confidence: 80,
+        }),
+        memory("boundary", {
+          memoryType: "boundary",
+          subject: "Risk boundary",
+          content: "Never trade outside the paper account guardrails.",
+          confidence: 75,
+          status: "verified",
+        }),
+      ],
+    });
+
+    expect(pack.interfaceVersion).toBe("brain-context.v1");
+    expect(pack.items.map((item) => item.id)).toEqual(["boundary", "plan"]);
+    expect(pack.items[0]?.reasons).toContain("type:boundary");
+    expect(pack.items[1]?.reasons).toContain("type:plan");
+  });
+
+  it("matches Chinese task intent against Chinese memory text", () => {
+    const pack = buildBrainContextPack({
+      requester,
+      taskIntent:
+        "\u76d8\u524d\u5206\u6790\u6c47\u5ddd\u6280\u672f\u662f\u5426\u9700\u8981\u51cf\u4ed3",
+      now,
+      maxItems: 1,
+      memories: [
+        memory("generic", {
+          memoryType: "fact",
+          subject: "High confidence generic note",
+          content: "General market note without the target stock.",
+          confidence: 95,
+        }),
+        memory("huichuan", {
+          memoryType: "insight",
+          subject: "\u6c47\u5ddd\u6280\u672f",
+          content:
+            "\u6c47\u5ddd\u6280\u672f\u6536\u5230 break_warning\uff0c\u6a21\u62df\u4ed3\u4ecd\u6709\u6d6e\u76c8\uff0c\u9700\u8981\u8bc4\u4f30\u662f\u5426\u51cf\u4ed3\u3002",
+          confidence: 55,
+          tags: ["break_warning", "\u51cf\u4ed3"],
+        }),
+      ],
+    });
+
+    expect(pack.items.map((item) => item.id)).toEqual(["huichuan"]);
+    expect(pack.items[0]?.reasons).not.toContain("profile:trading");
+    expect(
+      pack.items[0]?.reasons.some((reason) =>
+        reason.startsWith("token_match:"),
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps domain recall profiles injectable instead of hard-coding them in Brain", () => {
+    const tradingProfile: BrainRecallProfile = {
+      id: "trading",
+      matchTerms: ["\u51cf\u4ed3", "\u6a21\u62df\u4ed3", "break_warning"],
+      memoryTypeBoosts: {
+        insight: 80,
+        plan: 30,
+        boundary: 30,
+      },
+    };
+
+    const pack = buildBrainContextPack({
+      requester,
+      taskIntent:
+        "\u76d8\u524d\u5206\u6790\u6c47\u5ddd\u6280\u672f\u662f\u5426\u9700\u8981\u51cf\u4ed3",
+      now,
+      maxItems: 1,
+      recallProfiles: [tradingProfile],
+      memories: [
+        memory("generic", {
+          memoryType: "fact",
+          subject: "High confidence generic note",
+          content: "General market note without the target stock.",
+          confidence: 95,
+        }),
+        memory("huichuan", {
+          memoryType: "insight",
+          subject: "\u6c47\u5ddd\u6280\u672f",
+          content:
+            "\u6c47\u5ddd\u6280\u672f\u6536\u5230 break_warning\uff0c\u6a21\u62df\u4ed3\u4ecd\u6709\u6d6e\u76c8\uff0c\u9700\u8981\u8bc4\u4f30\u662f\u5426\u51cf\u4ed3\u3002",
+          confidence: 55,
+          tags: ["break_warning", "\u51cf\u4ed3"],
+        }),
+      ],
+    });
+
+    expect(pack.items.map((item) => item.id)).toEqual(["huichuan"]);
+    expect(pack.items[0]?.reasons).toContain("profile:trading");
+  });
+
+  it("does not treat trading vocabulary as a global risk profile", () => {
+    const pack = buildBrainContextPack({
+      requester,
+      taskIntent: "evaluate stop-loss and drawdown signals",
+      now,
+      maxItems: 1,
+      memories: [
+        memory("trading-note", {
+          memoryType: "boundary",
+          subject: "Trading signal",
+          content: "A stop-loss signal appeared after a drawdown.",
+          confidence: 70,
+        }),
+      ],
+    });
+
+    expect(pack.items[0]?.reasons).not.toContain("profile:risk");
+  });
+
+  it("omits candidate, superseded and deleted memories from strict packs", () => {
+    const pack = buildBrainContextPack({
+      requester,
+      taskIntent: "daily plan",
+      now,
+      memories: [
+        memory("active", { status: "active" }),
+        memory("candidate", { status: "candidate" }),
+        memory("superseded", { status: "superseded" }),
+        memory("deleted", { status: "deleted" }),
+      ],
+    });
+
+    expect(pack.items.map((item) => item.id)).toEqual(["active"]);
+    expect(pack.omitted).toEqual([
+      { id: "candidate", reason: "candidate_requires_review" },
+      { id: "superseded", reason: "superseded" },
+      { id: "deleted", reason: "deleted" },
+    ]);
+  });
+
+  it("reports denied cross-work memories instead of silently dropping them", () => {
+    const pack = buildBrainContextPack({
+      requester,
+      taskIntent: "daily plan",
+      now,
+      memories: [
+        memory("own"),
+        memory("other-work", {
+          scope: { type: "workshop", workshopId: "hunter" },
+          ownerId: "hunter-work",
+        }),
+      ],
+    });
+
+    expect(pack.items.map((item) => item.id)).toEqual(["own"]);
+    expect(pack.denied).toEqual([
+      { id: "other-work", reason: "no_matching_grant" },
+    ]);
+  });
+
+  it("includes granted cross-work reference memories", () => {
+    const grants: BrainAccessGrant[] = [
+      {
+        id: "grant-watchlist",
+        userId: "user-1",
+        subjectType: "work",
+        subjectId: "trader-work",
+        scope: { type: "workshop", workshopId: "hunter" },
+        permissions: ["reference"],
+      },
+    ];
+
+    const pack = buildBrainContextPack({
+      requester,
+      grants,
+      taskIntent: "watchlist trading plan",
+      now,
+      memories: [
+        memory("hunter-plan", {
+          scope: { type: "workshop", workshopId: "hunter" },
+          ownerId: "hunter-work",
+          memoryType: "plan",
+          subject: "Watchlist plan",
+          content: "Use only current watchlist candidates.",
+        }),
+      ],
+    });
+
+    expect(pack.denied).toEqual([]);
+    expect(pack.items.map((item) => item.id)).toEqual(["hunter-plan"]);
+  });
+
+  it("prioritizes fresher time-varying memory and explains the freshness score", () => {
+    const pack = buildBrainContextPack({
+      requester,
+      taskIntent: "current watchlist and today action",
+      now: new Date("2026-08-11T12:00:00.000Z"),
+      maxItems: 2,
+      memories: [
+        memory("older", {
+          subject: "Watchlist state",
+          content: "Current watchlist and today action snapshot.",
+          confidence: 80,
+          updatedAt: "2026-08-08T12:00:00.000Z",
+        }),
+        memory("newer", {
+          subject: "Watchlist state",
+          content: "Current watchlist and today action snapshot.",
+          confidence: 70,
+          updatedAt: "2026-08-10T18:00:00.000Z",
+        }),
+      ],
+    });
+
+    expect(pack.items.map((item) => item.id)).toEqual(["newer", "older"]);
+    expect(pack.items[0]).toMatchObject({
+      freshness: {
+        bucket: "fresh_24h",
+        updatedAt: "2026-08-10T18:00:00.000Z",
+      },
+    });
+    expect(pack.items[0]?.reasons).toContain("freshness:fresh_24h");
+  });
+
+  it("warns when a current-state recall contains conflicting or time-versioned evidence", () => {
+    const pack = buildBrainContextPack({
+      requester,
+      taskIntent: "check the current watchlist state",
+      now: new Date("2026-08-11T12:00:00.000Z"),
+      maxItems: 2,
+      memories: [
+        memory("state-a", {
+          subject: "Watchlist state",
+          content:
+            "The persisted state has a mismatch with the recorded state.",
+          updatedAt: "2026-08-08T12:00:00.000Z",
+        }),
+        memory("state-b", {
+          subject: "Watchlist state",
+          content: "The current watchlist contains eleven items.",
+          updatedAt: "2026-08-10T12:00:00.000Z",
+        }),
+      ],
+    });
+
+    expect(
+      pack.items.find((item) => item.id === "state-a")?.warnings,
+    ).toContain("content_reports_conflict");
+    expect(pack.warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "potential_state_conflict",
+          memoryIds: ["state-a"],
+          requiresCurrentObservation: true,
+        }),
+      ]),
+    );
+  });
+
+  it("does not confuse stale-content vocabulary with an actual state conflict", () => {
+    const pack = buildBrainContextPack({
+      requester,
+      taskIntent: "check the current maintenance state",
+      now: new Date("2026-08-11T12:00:00.000Z"),
+      memories: [
+        memory("maintenance", {
+          subject: "Maintenance audit",
+          content:
+            "Stale-content and expired-candidate checks completed with zero issues.",
+          updatedAt: "2026-08-11T10:00:00.000Z",
+        }),
+      ],
+    });
+
+    expect(pack.items[0]?.warnings).not.toContain("content_reports_conflict");
+    expect(pack.warnings).toEqual([]);
+  });
+});

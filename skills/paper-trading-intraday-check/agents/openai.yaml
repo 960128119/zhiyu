@@ -1,0 +1,4 @@
+interface:
+  display_name: "盘中巡检"
+  short_description: "为操盘交易员执行盘中低频巡检、触发判断和风险控制。"
+  default_prompt: "为操盘交易员执行盘中模拟盘巡检。"

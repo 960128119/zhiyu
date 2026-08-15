@@ -1,0 +1,37 @@
+import {
+  fetchQuantWatchlistConfig,
+  updateQuantWatchlistConfig,
+} from "@/lib/quant/client";
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  try {
+    const config = await fetchQuantWatchlistConfig();
+    return NextResponse.json(config);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Quant watchlist unavailable";
+    return NextResponse.json({ error: message }, { status: 503 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = (await request.json()) as { codes?: unknown; items?: unknown };
+    const codes = Array.isArray(body.codes)
+      ? body.codes.map((code) => String(code))
+      : [];
+    const items = Array.isArray(body.items)
+      ? body.items.filter(
+          (item): item is Record<string, unknown> =>
+            Boolean(item) && typeof item === "object" && !Array.isArray(item),
+        )
+      : undefined;
+    const config = await updateQuantWatchlistConfig(codes, items as any);
+    return NextResponse.json(config);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to update watchlist";
+    return NextResponse.json({ error: message }, { status: 400 });
+  }
+}

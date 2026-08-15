@@ -1,0 +1,218 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "target": "ESNext",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "tsBuildInfoFile": ".next/cache/tsconfig.tsbuildinfo",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ],
+      "cookie": [
+        "./lib/compat/cookie.ts"
+      ],
+      "@openzhiyu/ui": [
+        "./components/ui/index.ts"
+      ],
+      "@openzhiyu/ui/*": [
+        "./components/ui/*"
+      ],
+      "@openzhiyu/shared": [
+        "../../packages/shared/src/index.ts"
+      ],
+      "@openzhiyu/indexeddb": [
+        "../../packages/indexeddb/src/index.ts"
+      ],
+      "@openzhiyu/sqlite": [
+        "../../packages/sqlite/src/index.ts"
+      ],
+      "@openzhiyu/sqlite/*": [
+        "../../packages/sqlite/src/*"
+      ],
+      "@openzhiyu/insights": [
+        "../../packages/insights/src/index.ts"
+      ],
+      "@openzhiyu/agent": [
+        "../../packages/ai/src/agent/index.ts"
+      ],
+      "@openzhiyu/agent/*": [
+        "../../packages/ai/src/agent/*"
+      ],
+      "@openzhiyu/audit": [
+        "../../packages/audit/src/index.ts"
+      ],
+      "@openzhiyu/audit/*": [
+        "../../packages/audit/src/*"
+      ],
+      "@openzhiyu/ai": [
+        "../../packages/ai/src/index.ts"
+      ],
+      "@openzhiyu/ai/*": [
+        "../../packages/ai/src/*"
+      ],
+      "@openzhiyu/ai/agent": [
+        "../../packages/ai/src/agent/index.ts"
+      ],
+      "@openzhiyu/ai/agent/*": [
+        "../../packages/ai/src/agent/*"
+      ],
+      "@openzhiyu/ai/agent/ai": [
+        "../../packages/ai/src/agent/index.ts"
+      ],
+      "@openzhiyu/ai/agent/ai/*": [
+        "../../packages/ai/src/agent/*"
+      ],
+      "@openzhiyu/ai/agent/billing": [
+        "../../packages/ai/src/agent/billing/index.ts"
+      ],
+      "@openzhiyu/ai/agent/compaction": [
+        "../../packages/ai/src/agent/compaction/index.ts"
+      ],
+      "@openzhiyu/ai/agent/context": [
+        "../../packages/ai/src/agent/context/index.ts"
+      ],
+      "@openzhiyu/ai/agent/model": [
+        "../../packages/ai/src/agent/model/index.ts"
+      ],
+      "@openzhiyu/ai/agent/routing": [
+        "../../packages/ai/src/agent/routing/index.ts"
+      ],
+      "@openzhiyu/ai/store": [
+        "../../packages/ai/src/store/index.ts"
+      ],
+      "@openzhiyu/ai/store/*": [
+        "../../packages/ai/src/store/*"
+      ],
+      "@openzhiyu/ai/audio": [
+        "../../packages/ai/src/audio/index.ts"
+      ],
+      "@openzhiyu/ai/audio/*": [
+        "../../packages/ai/src/audio/*"
+      ],
+      "@openzhiyu/rag": [
+        "../../packages/ai/rag/src/index.ts"
+      ],
+      "@openzhiyu/rag/*": [
+        "../../packages/ai/rag/src/*"
+      ],
+      "@openzhiyu/runtime-api": [
+        "../../packages/runtime-api/src/index.ts"
+      ],
+      "@openzhiyu/runtime-api/*": [
+        "../../packages/runtime-api/src/*"
+      ],
+      "@openzhiyu/runtime-worker": [
+        "../../packages/runtime-worker/src/index.ts"
+      ],
+      "@openzhiyu/runtime-worker/*": [
+        "../../packages/runtime-worker/src/*"
+      ],
+      "@openzhiyu/shared/*": [
+        "../../packages/shared/src/*"
+      ],
+      "@openzhiyu/shared/errors": [
+        "../../packages/shared/src/errors.ts"
+      ],
+      "@openzhiyu/shared/ref": [
+        "../../packages/shared/src/ref.ts"
+      ],
+      "@openzhiyu/shared/soul": [
+        "../../packages/shared/src/soul.ts"
+      ],
+      "@openzhiyu/billing/entitlements": [
+        "../../packages/billing/src/entitlements.ts"
+      ],
+      "@openzhiyu/indexeddb/*": [
+        "../../packages/indexeddb/src/*"
+      ],
+      "@openzhiyu/insights/*": [
+        "../../packages/insights/src/*"
+      ],
+      "@openzhiyu/hooks/*": [
+        "../../packages/hooks/src/*"
+      ],
+      "@openzhiyu/mcp/*": [
+        "../../packages/ai/mcp/src/*"
+      ],
+      "@openzhiyu/search/*": [
+        "../../packages/search/src/*"
+      ],
+      "@openzhiyu/storage": [
+        "../../packages/storage/src/adapters/index.ts"
+      ],
+      "@openzhiyu/storage/*": [
+        "../../packages/storage/src/*"
+      ],
+      "@openzhiyu/api": [
+        "../../packages/api/src/index.ts"
+      ],
+      "@openzhiyu/entitlements": [
+        "../../packages/billing/src/entitlements.ts"
+      ],
+      "@openzhiyu/i18n": [
+        "../../packages/i18n/src/index.ts"
+      ],
+      "@openzhiyu/i18n/*": [
+        "../../packages/i18n/src/*"
+      ],
+      "@openzhiyu/hooks": [
+        "../../packages/hooks/src/index.ts"
+      ],
+      "@openzhiyu/mcp": [
+        "../../packages/ai/mcp/src/index.ts"
+      ],
+      "@openzhiyu/search": [
+        "../../packages/search/src/index.ts"
+      ],
+      "@openzhiyu/security": [
+        "../../packages/security/src/index.ts"
+      ],
+      "@openzhiyu/security/token-encryption": [
+        "../../packages/security/src/token-encryption.ts"
+      ],
+      "@openzhiyu/security/url-validator": [
+        "../../packages/security/src/url-validator.ts"
+      ],
+      "@openzhiyu/security/key-manager": [
+        "../../packages/security/src/key-manager.ts"
+      ]
+    },
+    "typeRoots": [
+      "./node_modules/@types"
+    ]
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "next-env.d.ts",
+    "next.config.js",
+    "types/**/*.d.ts",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".next/**/*",
+    "node_modules/playwright/types/**/*"
+  ]
+}

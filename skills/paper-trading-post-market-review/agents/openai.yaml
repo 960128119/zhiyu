@@ -1,0 +1,4 @@
+interface:
+  display_name: "盘后复盘"
+  short_description: "为操盘交易员执行盘后复盘、经验沉淀和下一交易日准备。"
+  default_prompt: "为操盘交易员执行收盘后模拟复盘。"

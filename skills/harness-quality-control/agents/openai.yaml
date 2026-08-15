@@ -1,0 +1,4 @@
+interface:
+  display_name: "Harness Quality Control"
+  short_description: "Audit and evaluate Work Harness changes safely"
+  default_prompt: "Inspect Harness evidence, run isolated evaluations, and create an owner-reviewable proposal without applying it."

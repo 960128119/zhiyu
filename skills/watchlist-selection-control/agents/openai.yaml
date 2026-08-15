@@ -1,0 +1,4 @@
+interface:
+  display_name: "自选股猎手"
+  short_description: "为自选股猎手筛选候选、复核自选股并生成审核提案。"
+  default_prompt: "Use $watchlist-selection-control to run an evidence-based A-share watchlist selection pass."

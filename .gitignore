@@ -1,0 +1,86 @@
+# Dependencies and package-manager state
+node_modules/
+.pnp
+.pnp.js
+.pnpm-debug.log*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build, test, and framework output
+.next/
+.turbo/
+out/
+build/
+dist/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+tsconfig.tsbuildinfo
+
+# Local runtime output
+*.log
+logs/
+.codex-logs/
+artifacts/
+downloads/
+tmp/
+.tmp/
+tools/**/outputs/
+build-result/
+.insight/
+
+# Local databases and queues
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+.data.db
+data.db
+
+# Secrets and machine-specific configuration
+.env
+.env.*
+!.env.example
+.vercel/
+.vscode/
+.vs/
+.idea/
+.cursor/
+.cursorignore
+.claude/
+Note.md
+
+# Python
+.venv/
+**/.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.pyo
+.eggs/
+
+# Local external tool checkouts
+wx-cli/
+
+# Generated application bundles and archives
+*.app
+*.AppImage
+*.deb
+*.dmg
+*.exe
+*.rpm
+*.zip
+*.pem
+
+# Generated skills/runtime bundles
+apps/skills/
+node-runtime/
+cli-bundle/
+
+# OS metadata
+.DS_Store
+Thumbs.db

@@ -1,0 +1,6 @@
+.venv/
+vendor/
+data/drafts/*.json
+logs/*.json
+*.pyc
+__pycache__/

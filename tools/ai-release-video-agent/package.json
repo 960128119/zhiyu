@@ -1,0 +1,21 @@
+{
+  "name": "ai-release-video-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo": "node src/index.mjs generate --project-root ../.. --since HEAD~3",
+    "generate": "node src/index.mjs generate",
+    "generate:bailian": "node src/index.mjs generate --planner bailian",
+    "generate:cc": "node src/index.mjs generate --planner cc-sdk",
+    "render": "node src/index.mjs render --url http://127.0.0.1:3515/workshop",
+    "render:hybrid": "node src/index.mjs render --url http://127.0.0.1:3515/workshop --use-ai-video --video-provider mock",
+    "render:wan": "node src/index.mjs render --url http://127.0.0.1:3515/workshop --use-ai-video --video-provider wan"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.2.71"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

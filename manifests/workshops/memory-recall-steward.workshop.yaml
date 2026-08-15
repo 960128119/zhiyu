@@ -1,0 +1,195 @@
+apiVersion: openzhiyu.ai/v1alpha1
+kind: Workshop
+metadata:
+  name: memory-recall-steward
+  title: "\u8bb0\u5fc6\u53ec\u56de\u8d28\u91cf\u7ba1\u5bb6"
+  labels:
+    openzhiyu.ai/domain: platform
+    openzhiyu.ai/role: memory-recall-steward
+    openzhiyu.ai/risk: read-only-quality-control
+
+spec:
+  mission: >
+    Observe platform memory-recall quality, run a daily closed-loop audit,
+    perform no content or policy mutation, and emit reviewable change proposals
+    when evidence shows a recurring retrieval problem.
+  role: memory_recall_steward
+  autonomyLevel: auto
+
+  control:
+    object: memory_recall_quality
+    objective: improve_authorized_relevant_fresh_evidence_backed_recall
+    mode: observe_report_propose
+    feedback:
+      - brain_context_logs
+      - memory_recall_feedback
+      - recall_profile_validation
+      - index_coverage
+      - owner_review_outcomes
+    invariants:
+      - Aggregate telemetry must not expose memory or task content from other Works.
+      - This Work cannot write, weaken, supersede, or delete another Work's memory.
+      - This Work cannot change access grants, global recall policy, or Skill instructions.
+      - Global and Work profile changes require a versioned owner-reviewable proposal.
+      - Low-risk automatic work is limited to read-only inspection and report generation.
+      - Access-filtered candidate counts prove boundary enforcement, not a missing grant.
+      - A Workshop without a context log is unobserved, not necessarily dormant or unhealthy.
+
+  modelConfig:
+    role: memory_recall_steward
+    primarySkills:
+      - openzhiyu-memory
+    allowedTools:
+      - workshopInspectMemoryRecallQuality
+      - workshopInspectWork
+      - workshopLogEvent
+      - workshopReadMemory
+      - workshopSearchMemory
+      - workshopWriteMemory
+    disallowedTools:
+      - workshopReviewMemory
+      - workshopProposeAgentChange
+      - workshopCreateOutboxDraft
+      - wechatCreateReplyDraft
+      - quantPaperPlaceOrder
+      - quantPaperCancelOrder
+      - douyinPublishApprovedDraft
+    observationTools:
+      - workshopInspectMemoryRecallQuality
+      - workshopInspectWork
+    loopSkillMap:
+      "\u6bcf\u65e5\u8bb0\u5fc6\u53ec\u56de\u8d28\u91cf\u5ba1\u8ba1": openzhiyu-memory
+    feedbackSignals:
+      - empty_recall_rate
+      - denied_memory_count
+      - omitted_memory_count
+      - recall_feedback_outcomes
+      - profile_validation_issues
+
+  boundaryPolicy:
+    mode: auto
+    externalMessages: blocked
+    deniedPrecedence: true
+    hardDeniedActions:
+      - workshopReviewMemory
+      - workshopProposeAgentChange
+      - workshopCreateOutboxDraft
+      - wechatCreateReplyDraft
+      - quantPaperPlaceOrder
+      - quantPaperCancelOrder
+      - douyinPublishApprovedDraft
+      - deleteLoopTask
+    customInstructions: |
+      Operate as a read-only memory-recall quality controller.
+      Use aggregate telemetry only. Never request or expose another Work's memory content.
+      Record observations and proposal artifacts, but do not apply policy, profile, grant, Skill, or memory-content changes.
+
+  sources:
+    - name: workshopInspectMemoryRecallQuality
+      type: connector
+      purpose: Read aggregate context-log and recall-feedback telemetry without memory content.
+    - name: qualityMemory
+      type: memory
+      query: memory recall quality baseline regression proposal outcome
+
+  loops:
+    - name: daily-memory-recall-quality-audit
+      title: "\u6bcf\u65e5\u8bb0\u5fc6\u53ec\u56de\u8d28\u91cf\u5ba1\u8ba1"
+      description: Run a daily read-only recall audit and emit evidence-backed proposals.
+      skill: openzhiyu-memory
+      status: active
+      trigger:
+        type: cron
+        expression: "30 3 * * *"
+        timezone: Asia/Shanghai
+      goal: |
+        Inspect the prior seven days of aggregate recall telemetry.
+        Separate infrastructure, access, ranking, stale-content, and missing-memory symptoms.
+        Compare results with the previous quality checkpoint stored in this Work's own memory.
+        Write a concise quality report event.
+        When a recurring problem has enough evidence, write a recall_change_proposal event containing the affected Work ids, evidence counts, expected improvement, regression cases, and rollback plan.
+        Do not modify any profile, policy, grant, Skill, or other Work's memory.
+        Treat the first observation window as a baseline only. Do not claim a recurring problem without a prior comparable checkpoint.
+      context:
+        sources:
+          - type: connector
+            name: workshopInspectMemoryRecallQuality
+          - type: memory
+            name: qualityMemory
+            query: memory recall quality baseline regression proposal outcome
+        instructions: |
+          Start with workshopInspectMemoryRecallQuality(days=7).
+          Use only aggregate telemetry in the report.
+          A frequency increase alone is not evidence for adding a global keyword.
+          Never infer a missing grant from deniedMemoryCount or no_matching_grant counts alone; those normally show that access policy worked.
+          Recommend a grant review only when explicit missing-recall feedback identifies an intended cross-scope need, the owner confirms that need, and a narrow scope plus rollback is stated.
+          A Workshop with no context log in the window is unobserved. Do not label it dormant or diagnose an infrastructure problem without schedule or run-failure evidence.
+          On the first run, write a baseline and no recall_change_proposal unless a deterministic configuration validation error is present.
+      actionPolicy:
+        allowed:
+          - workshopInspectMemoryRecallQuality
+          - workshopInspectWork
+          - workshopLogEvent
+          - workshopReadMemory
+          - workshopSearchMemory
+          - workshopWriteMemory
+        requiresApproval: []
+        denied:
+          - workshopReviewMemory
+          - workshopProposeAgentChange
+          - workshopCreateOutboxDraft
+          - wechatCreateReplyDraft
+          - quantPaperPlaceOrder
+          - quantPaperCancelOrder
+          - douyinPublishApprovedDraft
+      verification:
+        type: structured_check
+        requiredFields:
+          - observationWindow
+          - recallQualitySummary
+          - feedbackOutcomeSummary
+          - affectedWorks
+          - automaticActions
+          - changeProposals
+          - nextCheckpoint
+        requiredSources:
+          - workshopInspectMemoryRecallQuality
+        successCriteria:
+          - Report contains aggregate telemetry only.
+          - No policy, profile, grant, Skill, or cross-Work memory mutation occurred.
+          - Every proposal cites counts, affected Work ids, regression cases, and rollback plan.
+          - No global keyword proposal is based only on frequency.
+          - Access-filtered candidate counts alone never produce an access-grant proposal.
+          - Missing context logs alone never produce a dormancy or infrastructure diagnosis.
+      approvalPolicy:
+        defaultMode: allow
+        externalWrites: deny
+      retryPolicy:
+        maxAttempts: 2
+        onFailure: summarize_and_block
+      escalationPolicy:
+        onBlocked: notify_user
+        onNeedsApproval: notify_user
+
+  creationReport:
+    title: "\u8bb0\u5fc6\u53ec\u56de\u8d28\u91cf\u7ba1\u5bb6\u8f66\u95f4\u58f0\u660e"
+    body: |
+      Create a read-only memory-recall quality Work.
+      It observes aggregate telemetry, writes reports to its own event and memory surfaces,
+      and creates reviewable proposal artifacts without applying changes.
+    requiredEvents:
+      - memory_recall_quality_work_created
+    requiredFields:
+      - recallQualitySummary
+      - changeProposals
+      - nextCheckpoint
+
+  applyPolicy:
+    idempotency:
+      key: metadata.name
+      loopKey: loops.name
+      behavior: upsert
+    dryRunSupported: true
+    diffSupported: true
+    versionSnapshot: true
+    auditEvent: true

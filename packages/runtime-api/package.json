@@ -1,0 +1,13 @@
+{
+  "name": "@openzhiyu/runtime-api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./rag": "./src/rag.ts"
+  },
+  "scripts": {
+    "build": "echo no build needed"
+  }
+}

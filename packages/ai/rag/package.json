@@ -1,0 +1,43 @@
+{
+  "name": "@openzhiyu/rag",
+  "version": "0.5.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./chunking": "./src/chunking.ts",
+    "./embeddings": "./src/embeddings.ts",
+    "./vector-service": "./src/vector-service.ts",
+    "./unified-vector-search-service": "./src/unified-vector-search-service.ts",
+    "./parsers": "./src/parsers.ts",
+    "./embedding-provider": "./src/embedding-provider.ts",
+    "./local-transformers-embedding-provider": "./src/local-transformers-embedding-provider.ts",
+    "./universal-embeddings": "./src/universal-embeddings.ts",
+    "./chroma-store": "./src/chroma-store.ts",
+    "./sqlite-vec-store": "./src/sqlite-vec-store.ts",
+    "./pgvector-store": "./src/pgvector-store.ts"
+  },
+  "dependencies": {
+    "@huggingface/transformers": "^3.8.1",
+    "@langchain/community": "^1.1.1",
+    "@langchain/core": "^1.1.8",
+    "@langchain/textsplitters": "^1.0.1",
+    "@openzhiyu/shared": "workspace:*",
+    "better-sqlite3": "^11.7.0",
+    "chromadb": "^3.4.3",
+    "jszip": "^3.10.1",
+    "langchain": "^1.2.3",
+    "openai": "^4.85.2",
+    "pdfjs-dist": "^4.9.155",
+    "pg": "^8.13.1",
+    "sqlite-vec": "^0.1.9",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@openzhiyu/config": "workspace:*",
+    "typescript": "^5.6.3"
+  },
+  "scripts": {
+    "build": "echo no build needed"
+  }
+}

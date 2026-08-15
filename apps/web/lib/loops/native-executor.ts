@@ -1,0 +1,1156 @@
+import { mkdirSync } from "node:fs";
+import { join } from "node:path";
+import type { AgentMessage } from "@openzhiyu/ai/agent/types";
+import { createClaudeAgent } from "@/lib/ai/extensions";
+import { getUserLlmProviderConfig } from "@/lib/ai/user-llm-api-settings";
+import { getUserInsightSettings } from "@/lib/db/insight-queries";
+import { getUserTypeForService } from "@/lib/db/user-queries";
+import { getAppDir } from "@/lib/env/config/constants";
+import { AI_PROXY_BASE_URL, DEFAULT_AI_MODEL } from "@/lib/env/constants";
+import { stripMalformedToolCalls } from "@/lib/utils/tool-names";
+import {
+  buildStructuredExecutionReport,
+  parseStructuredOutput,
+  type ExecutionTraceEvent,
+} from "@/lib/types/execution-result";
+import type { JobExecutionResult } from "@/lib/cron/types";
+import type { Loop, LoopState, Workshop } from "@/lib/db/schema";
+import {
+  getWorkshop,
+  listActiveDirectives,
+  listWorkshopEvents,
+  listWorkshopMemories,
+  listWorkshopSources,
+} from "@/lib/workshops/service";
+import { workshopBoundaryToLoopPolicies } from "@/lib/workshops/boundary-policy";
+import { createWorkshopMcpServer } from "@/lib/workshops/mcp-tools";
+import { resolveWorkshopSdkAllowedTools } from "@/lib/workshops/tool-access";
+import type { LoopJson } from "./types";
+import { parseLoopSpec, safeParseLoopSpec } from "./spec";
+import {
+  prepareLoopContextWindow,
+  prepareLoopWorkshopContext,
+  type LoopContextWindowResult,
+  type LoopWorkshopContextResult,
+} from "./context-window";
+import {
+  createLoopToolPermissionHandler,
+  summarizeLoopToolGate,
+  type LoopToolGateDecision,
+} from "./tool-gate";
+import { buildLoopCurrentTimeContext } from "./time-context";
+
+type LoadedWorkshopLoopContext = {
+  workshop: Workshop;
+  promptContext: LoopWorkshopContextResult;
+  actionPolicy: LoopJson;
+  approvalPolicy: LoopJson;
+  boundaryMetadata: LoopJson;
+};
+
+export const LOOP_WORKSHOP_ALLOWED_TOOLS = [
+  "Read",
+  "Edit",
+  "Write",
+  "Glob",
+  "Grep",
+  "Bash",
+  "WebFetch",
+  "WebSearch",
+  "Skill",
+  "Task",
+  "LSP",
+  "TodoWrite",
+  "workshopLogEvent",
+  "workshopInspectWork",
+  "workshopProposeAgentChange",
+  "workshopListSources",
+  "workshopGetDirectives",
+  "workshopReadLinkedWorkshopEvents",
+  "workshopReadMemory",
+  "workshopSearchMemory",
+  "workshopRecordMemoryRecallFeedback",
+  "workshopInspectMemoryRecallQuality",
+  "workshopInspectHarnessQuality",
+  "workshopCreateHarnessProposal",
+  "workshopCreateHarnessEvaluationCampaign",
+  "workshopRunHarnessEvaluation",
+  "workshopGetMemoryEvidence",
+  "workshopListMemoryCandidates",
+  "workshopReviewMemory",
+  "workshopWriteMemory",
+  "workshopCreateLoopTask",
+  "workshopCreateOutboxDraft",
+  "wechatLocalHealth",
+  "wechatRecordNewMessages",
+  "wechatListRecordedMessages",
+  "wechatMarkMessagesProcessed",
+  "interactionProcessRecordedMessages",
+  "interactionCreateWikiNote",
+  "interactionCreateTaskCandidate",
+  "interactionCreateMemoryCandidate",
+  "interactionListWiki",
+  "wechatLocalCheckNewMessages",
+  "wechatLocalSessions",
+  "wechatLocalHistory",
+  "wechatLocalSearch",
+  "wechatCreateReplyDraft",
+  "webReadPage",
+  "aStockQuote",
+  "aStockResearch",
+  "aStockSignals",
+  "aStockTrend",
+  "aStockTrendSystem",
+  "aStockTrendStateHistory",
+  "aStockTrendStrategyStats",
+  "aStockFundamentals",
+  "aStockNewsAndFilings",
+  "aStockMarketMood",
+  "quantPaperGetAccount",
+  "quantTradePlanList",
+  "quantTradePlanUpsert",
+  "quantTradePlanReview",
+  "quantRuleEvaluate",
+  "watchlistFollowupTaskUpsert",
+  "watchlistFollowupTaskList",
+  "watchlistCandidateAgeReview",
+  "watchlistChangeHistory",
+  "watchlistPerformanceReview",
+  "quantMarketDiscoverCandidates",
+  "quantPaperGetWatchlist",
+  "quantPaperProposeWatchlistChange",
+  "quantPaperPlaceOrder",
+  "quantPaperCancelOrder",
+  "videoRenderInvestmentBrief",
+  "videoGenerateInvestmentBrief",
+  "douyinCheckAccount",
+  "douyinCreatePublishDraft",
+  "douyinPrepareUpload",
+  "douyinPublishApprovedDraft",
+  "mcp__workshop-tools__workshopLogEvent",
+  "mcp__workshop-tools__workshopInspectWork",
+  "mcp__workshop-tools__workshopProposeAgentChange",
+  "mcp__workshop-tools__workshopListSources",
+  "mcp__workshop-tools__workshopGetDirectives",
+  "mcp__workshop-tools__workshopReadLinkedWorkshopEvents",
+  "mcp__workshop-tools__workshopReadMemory",
+  "mcp__workshop-tools__workshopSearchMemory",
+  "mcp__workshop-tools__workshopRecordMemoryRecallFeedback",
+  "mcp__workshop-tools__workshopInspectMemoryRecallQuality",
+  "mcp__workshop-tools__workshopInspectHarnessQuality",
+  "mcp__workshop-tools__workshopCreateHarnessProposal",
+  "mcp__workshop-tools__workshopCreateHarnessEvaluationCampaign",
+  "mcp__workshop-tools__workshopRunHarnessEvaluation",
+  "mcp__workshop-tools__workshopGetMemoryEvidence",
+  "mcp__workshop-tools__workshopListMemoryCandidates",
+  "mcp__workshop-tools__workshopReviewMemory",
+  "mcp__workshop-tools__workshopWriteMemory",
+  "mcp__workshop-tools__workshopCreateLoopTask",
+  "mcp__workshop-tools__workshopCreateOutboxDraft",
+  "mcp__workshop-tools__wechatLocalHealth",
+  "mcp__workshop-tools__wechatRecordNewMessages",
+  "mcp__workshop-tools__wechatListRecordedMessages",
+  "mcp__workshop-tools__wechatMarkMessagesProcessed",
+  "mcp__workshop-tools__interactionProcessRecordedMessages",
+  "mcp__workshop-tools__interactionCreateWikiNote",
+  "mcp__workshop-tools__interactionCreateTaskCandidate",
+  "mcp__workshop-tools__interactionCreateMemoryCandidate",
+  "mcp__workshop-tools__interactionListWiki",
+  "mcp__workshop-tools__wechatLocalCheckNewMessages",
+  "mcp__workshop-tools__wechatLocalSessions",
+  "mcp__workshop-tools__wechatLocalHistory",
+  "mcp__workshop-tools__wechatLocalSearch",
+  "mcp__workshop-tools__wechatCreateReplyDraft",
+  "mcp__workshop-tools__webReadPage",
+  "mcp__workshop-tools__aStockQuote",
+  "mcp__workshop-tools__aStockResearch",
+  "mcp__workshop-tools__aStockSignals",
+  "mcp__workshop-tools__aStockTrend",
+  "mcp__workshop-tools__aStockTrendSystem",
+  "mcp__workshop-tools__aStockTrendStateHistory",
+  "mcp__workshop-tools__aStockTrendStrategyStats",
+  "mcp__workshop-tools__aStockFundamentals",
+  "mcp__workshop-tools__aStockNewsAndFilings",
+  "mcp__workshop-tools__aStockMarketMood",
+  "mcp__workshop-tools__quantPaperGetAccount",
+  "mcp__workshop-tools__quantTradePlanList",
+  "mcp__workshop-tools__quantTradePlanUpsert",
+  "mcp__workshop-tools__quantTradePlanReview",
+  "mcp__workshop-tools__quantRuleEvaluate",
+  "mcp__workshop-tools__watchlistFollowupTaskUpsert",
+  "mcp__workshop-tools__watchlistFollowupTaskList",
+  "mcp__workshop-tools__watchlistCandidateAgeReview",
+  "mcp__workshop-tools__watchlistChangeHistory",
+  "mcp__workshop-tools__watchlistPerformanceReview",
+  "mcp__workshop-tools__quantMarketDiscoverCandidates",
+  "mcp__workshop-tools__quantPaperGetWatchlist",
+  "mcp__workshop-tools__quantPaperProposeWatchlistChange",
+  "mcp__workshop-tools__quantPaperPlaceOrder",
+  "mcp__workshop-tools__quantPaperCancelOrder",
+  "mcp__workshop-tools__videoRenderInvestmentBrief",
+  "mcp__workshop-tools__videoGenerateInvestmentBrief",
+  "mcp__workshop-tools__douyinCheckAccount",
+  "mcp__workshop-tools__douyinCreatePublishDraft",
+  "mcp__workshop-tools__douyinPrepareUpload",
+  "mcp__workshop-tools__douyinPublishApprovedDraft",
+  "searchKnowledgeBase",
+  "searchUnifiedMemory",
+  "searchMemoryPath",
+  "getRawMessages",
+  "searchRawMessages",
+  "getFullDocumentContent",
+  "listKnowledgeBaseDocuments",
+  "time",
+];
+
+export interface ExecuteNativeLoopAgentInput {
+  userId: string;
+  loop: Loop;
+  previousState: LoopState | null;
+  runId: string;
+  abortController?: AbortController;
+  attemptContext?: {
+    attemptNumber: number;
+    maxAttempts: number;
+    previousFeedback?: string | null;
+    previousResult?: Record<string, unknown> | null;
+  };
+}
+
+function asPrettyJson(value: unknown): string {
+  try {
+    return JSON.stringify(value ?? {}, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function stringRecord(value: unknown): Record<string, string> {
+  const record = asRecord(value);
+  return Object.fromEntries(
+    Object.entries(record).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string",
+    ),
+  );
+}
+
+function buildWorkshopSkillRule(input: {
+  workshopContext: LoopWorkshopContextResult | null;
+  loopName: string;
+}) {
+  const workshop = input.workshopContext?.workshop;
+  const workshopRecord = asRecord(workshop);
+  const modelConfig = asRecord(workshopRecord.modelConfig);
+  const primarySkills = stringArray(modelConfig.primarySkills);
+  const loopSkillMap = stringRecord(modelConfig.loopSkillMap);
+  const mappedSkill = loopSkillMap[input.loopName];
+  const activeSkills = mappedSkill ? [mappedSkill] : primarySkills;
+
+  if (activeSkills.length === 0) return "";
+
+  const skillLines = [...new Set(activeSkills)]
+    .map((skill) => `- ${skill}`)
+    .join("\n");
+
+  return [
+    "Workshop primary skills:",
+    skillLines,
+    mappedSkill
+      ? `- This loop is mapped to skill: ${mappedSkill}. Before collecting market/account data, call the Skill tool with this exact skill name and follow its workflow unless the Skill tool is unavailable.`
+      : "- Before collecting market/account data, call the Skill tool for the most relevant skill above and follow its workflow unless the Skill tool is unavailable.",
+    "- If the Skill tool fails or is unavailable, continue only with the same conservative rules and log `methodologyLoaded: skill unavailable` using workshopLogEvent.",
+    "- Do not treat a skill as permission to trade. Tools, boundary policy, data gates, and the loop verification contract still control action.",
+  ].join("\n");
+}
+
+function compactJson(value: unknown, maxLength = 500): string | undefined {
+  if (value === undefined || value === null) return undefined;
+  try {
+    const text =
+      typeof value === "string" ? value : JSON.stringify(value, null, 0);
+    const compacted = text.replace(/\s+/g, " ").trim();
+    return compacted.length > maxLength
+      ? `${compacted.slice(0, maxLength - 1)}…`
+      : compacted;
+  } catch {
+    const text = String(value).replace(/\s+/g, " ").trim();
+    return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text;
+  }
+}
+
+function buildRequiredFieldOutputRule(requiredFields: string[]) {
+  if (requiredFields.length === 0) return "";
+
+  const exampleFields = Object.fromEntries(
+    requiredFields.map((field) => [field, `${field} result`]),
+  );
+  const needsTrendDecision = requiredFields.some((field) =>
+    /^trend(Follow|Trade)Decision$/i.test(field),
+  );
+  const trendDecisionExample = needsTrendDecision
+    ? [
+        "trendFollowDecision schema:",
+        asPrettyJson({
+          trendFollowDecision: {
+            marketState: "risk_off|mixed|risk_on|overheated|unknown",
+            candidateDecisions: [
+              {
+                code: "159278.SZ",
+                positionState: "no_position|holding|open_order|holding_and_order",
+                profitState: "positive|negative|flat|unknown",
+                availableQuantity: 0,
+                lifecycleState:
+                  "watch_setup|breakout_confirmed|trend_holding|add_candidate|break_warning|exit_required|avoid|unknown",
+                trendScore: 65,
+                controlAction:
+                  "buy_allowed|hold|add_watch|reduce_watch|sell_watch|blocked",
+                decision:
+                  "enter|add|hold|tighten_stop|reduce_partial|exit|blocked",
+                orderIntent: "buy/sell quantity and limit, or none",
+                orderId: "paper order id when submitted",
+                blockedReason:
+                  "required when no order is submitted for an actionable signal",
+                breakWarningHandling:
+                  "required for break_warning/reduce_watch/exit_required/broken",
+                nextVerification: "next trigger, time, or price condition",
+              },
+            ],
+            orders: [],
+            blockedReasons: [],
+            nextVerification: [],
+          },
+        }),
+      ].join("\n")
+    : "";
+
+  return [
+    "Required structured fields:",
+    `- The loop verifier requires these exact top-level <structured-output> JSON fields: ${requiredFields.join(", ")}.`,
+    "- Include every required field as an exact top-level key in the final JSON, even if the same information is also in summary, outcome, reasoningChain, workshopLogEvent, or Markdown headings.",
+    "- If you use workshopLogEvent for these fields, put the exact field name at the start of the event title, for example `marketScanSummary: ...`, and still include the matching top-level JSON key.",
+    trendDecisionExample,
+    "Required field JSON example:",
+    asPrettyJson(exampleFields),
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function buildRequiredSourceToolRule(requiredSources: string[]) {
+  if (requiredSources.length === 0) return "";
+
+  const toolLikeSources = requiredSources.filter((source) =>
+    /^(mcp__|quant|aStock|workshop|wechat|douyin|video|webRead|Read$|Bash$)/i.test(
+      source,
+    ),
+  );
+  const sourceLines = requiredSources.map((source) => `- ${source}`).join("\n");
+  const toolLines =
+    toolLikeSources.length > 0
+      ? [
+          "Required source tools:",
+          toolLikeSources.map((source) => `- ${source}`).join("\n"),
+          "- Call each required source tool during this run before finalizing, unless the tool is unavailable or explicitly denied.",
+          "- If a required source tool cannot be called, state the exact blocker in the final structured output and do not substitute memory, old logs, or prose summaries as the source.",
+        ].join("\n")
+      : "";
+
+  return [
+    "Required verification sources:",
+    "- The loop verifier requires evidence from these source names in this same run:",
+    sourceLines,
+    toolLines,
+    "- A prior memory, workshop event, or final report paragraph does not satisfy a required source when the required source is a tool name.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function redactedBaseUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return value.replace(/(sk-|Bearer\s+)[\w.-]+/gi, "$1***");
+  }
+}
+
+function extractLoopSpec(loop: Loop, state: LoopState | null) {
+  const fromState =
+    state?.stateJson &&
+    typeof state.stateJson === "object" &&
+    !Array.isArray(state.stateJson)
+      ? (state.stateJson as Record<string, unknown>).loopSpec
+      : null;
+  const parsed = safeParseLoopSpec(fromState);
+  if (parsed.success) return parsed.data;
+
+  return parseLoopSpec({
+    version: 1,
+    goal: loop.goal,
+    trigger: loop.triggerConfig,
+    context: loop.contextConfig,
+    actions: loop.actionPolicy,
+    verification: loop.verificationConfig,
+    retry: loop.retryPolicy,
+    approval: loop.approvalPolicy,
+    escalation: loop.escalationPolicy,
+    metadata: {},
+  });
+}
+
+async function loadWorkshopContextForLoop(input: {
+  userId: string;
+  loop: Loop;
+}): Promise<LoadedWorkshopLoopContext | null> {
+  if (!input.loop.workshopId) return null;
+
+  const workshop = await getWorkshop(input.userId, input.loop.workshopId);
+  if (!workshop) {
+    throw new Error("Workshop not found for loop context");
+  }
+
+  const [sources, memories, directives, events] = await Promise.all([
+    listWorkshopSources(workshop.id, 50),
+    listWorkshopMemories(workshop.id, 40),
+    listActiveDirectives(workshop.id, 50),
+    listWorkshopEvents(workshop.id, { limit: 60, order: "latest" }),
+  ]);
+
+  const bridge = workshopBoundaryToLoopPolicies({
+    workshop,
+    actionPolicy: input.loop.actionPolicy,
+    approvalPolicy: input.loop.approvalPolicy,
+  });
+
+  return {
+    workshop,
+    promptContext: prepareLoopWorkshopContext({
+      workshop,
+      sources,
+      memories,
+      directives,
+      events,
+      taskIntent: [input.loop.name, input.loop.description, input.loop.goal]
+        .filter(Boolean)
+        .join("\n"),
+    }),
+    actionPolicy: bridge.actionPolicy,
+    approvalPolicy: bridge.approvalPolicy,
+    boundaryMetadata: bridge.metadata,
+  };
+}
+
+function buildNativeLoopPrompt(input: {
+  loop: Loop;
+  loopSpec: ReturnType<typeof parseLoopSpec>;
+  contextWindow: LoopContextWindowResult;
+  workshopContext: LoopWorkshopContextResult | null;
+  sessionDir: string;
+  language: string | null;
+  maxToolCalls: number;
+  attemptContext?: ExecuteNativeLoopAgentInput["attemptContext"];
+}): string {
+  const currentTime = buildLoopCurrentTimeContext({
+    timezone:
+      typeof input.loop.triggerConfig?.timezone === "string"
+        ? input.loop.triggerConfig.timezone
+        : input.loopSpec.trigger.type === "cron"
+          ? input.loopSpec.trigger.timezone
+          : "Asia/Shanghai",
+  });
+  const outputLanguage = input.language?.toLowerCase().startsWith("en")
+    ? "English"
+    : "Simplified Chinese";
+  const approval = input.loopSpec.approval;
+  const actions = input.loopSpec.actions;
+  const externalWritesAllowed =
+    approval.externalWrites === "allow" &&
+    actions.allowed.some((action) =>
+      ["send", "reply", "email", "wechat", "wechatDesktopSendMessage"].some(
+        (prefix) => action.toLowerCase().includes(prefix.toLowerCase()),
+      ),
+    );
+  const externalWriteRule = externalWritesAllowed
+    ? [
+        "- External writes are allowed only because this loop's task policy explicitly allows them.",
+        "- Before any external write, verify the exact recipient, destination platform, and message content from the loop spec.",
+        "- Record the delivery attempt and result in the structured output.",
+      ].join("\n")
+    : [
+        "- Do not perform external writes such as sending messages, emails, calendar invites, or ticket updates.",
+        "- If an external write would be useful, return it as a suggested action only.",
+      ].join("\n");
+  const paperTradingRule = actions.allowed.some((action) =>
+    /quantPaper(PlaceOrder|CancelOrder|GetAccount|GetWatchlist|ProposeWatchlistChange)/i.test(
+      action,
+    ),
+  )
+    ? [
+        "Paper-trading simulator rules:",
+        "- quantPaper* tools operate only on the internal paper-trading simulator. They are not real broker, payment, or external-write actions.",
+        "- Real broker/placeOrder/buy/sell/trade actions remain forbidden unless explicitly allowed by a future real-broker policy.",
+        "- At the start of every paper-trading run, call quantTradePlanList when available. Use the ledger as hard prior state: evaluate due plans before making fresh decisions.",
+        "- When a prior plan is executed, partially executed, blocked, skipped, stale, or not executable, call quantTradePlanReview with executionStatus plus orderId, blockerReason, or completionNote. Do not leave due plans silently pending.",
+        "- When the run creates or revises a plan for today, the next trading session, Monday, or another explicit horizon, call quantTradePlanUpsert with planDate, code, action, triggerCondition, invalidation, rationale, dueAt when known, and sourceDecision.",
+        "- Use an aggressive paper-learning posture: prefer action over passive observation when boundaries, data, and risk are adequate. Target 1-3 auditable simulated actions per trading day, using 8%-15% initial capital per experiment and normally no more than 18% in one symbol.",
+        "- Watchlist selection is a three-layer control system: candidate pool for broad discovery, active core/trading watchlist for focused observation and paper-trader consumption, and holding/order tracking for protected exposure.",
+        "- If the loop discovers new opportunities and quantMarketDiscoverCandidates is allowed, call it first. Treat returned symbols as non-trading candidates until a later promotion decision is justified.",
+        "- If the loop decides a symbol should enter or leave the active core/trading watchlist and quantPaperProposeWatchlistChange is allowed, call quantPaperProposeWatchlistChange in this run with concrete add/remove codes, evidence, strategy fit, and risk. The tool auto-applies valid changes after validation and records invalid changes without applying them.",
+        "- If quantPaperGetWatchlist, quantMarketDiscoverCandidates, or quantPaperProposeWatchlistChange fails, or if the quant dashboard reports sample/unavailable data, stop the watchlist control action and record the exact blocker. Never invent, randomize, or hand-compose a replacement active watchlist.",
+        "- Do not merely say 建议移除, 建议加入, 建议主人确认后移除, or 符合移除标准. Either call the watchlist-change tool or record the precise rule/data blocker.",
+        "- Do not remove symbols with current paper positions or open paper orders from the quote universe; they remain under holding/order tracking until exposure is resolved.",
+        "- If the loop decides a simulated buy/sell condition is satisfied and quantPaperPlaceOrder is allowed, call quantPaperPlaceOrder in this run. Do not merely say 准备买入, 拟买入, or 下一交易日试探建仓.",
+        "- For agile paper-trading rotation, inspect weak holdings before new opportunities. When a held symbol has two or more weak signals, prefer a simulated reduce/exit order before replacement buys. Compare at least one weak holding against one stronger watchlist candidate when rotationDecision is required.",
+        "- Replacement buys must stay inside the current watchlist and should compare the weak source holding with the stronger candidate on relative strength, liquidity, risk/reward, news, invalidation line, and data quality.",
+        "- For simulated buys, enforce the execution price-deviation gate: pass plannedPrice to quantPaperPlaceOrder, normally set maxBuyDeviationPct=3, and do not buy when the executable limit price is more than 3% above the planned entry price unless a fresh risk/reward plan replaces the old one.",
+        "- For trend-following paper trades, call aStockTrendStateHistory first when prior state matters, then call aStockTrendSystem for current watchlist-level K-line structure, RS ranking, lifecycle state, stop plan, and strategy stats. Call aStockTrendStrategyStats before changing rules or writing learning from outcomes. Use aStockTrend for single-symbol drilldown, then include trendState, trendScore, RS rank, MA/ATR/trailing stop, invalidation, and evidence in quantPaperPlaceOrder.tradeThesis or the no-action reason.",
+        "- Treat aStockTrendSystem as observation, not the final action. Convert every relevant lifecycleState/controlAction into a trendFollowDecision.candidateDecisions entry with code, positionState, lifecycleState, trendScore, controlAction, decision, and either orderId/orderResult or blockedReason/notTradedReason.",
+        "- When lifecycleState or controlAction includes break_warning, reduce_watch, exit_required, or broken, write breakWarningHandling for that symbol. Include profitState, availableQuantity/T+1 status, trailingStop or invalidation line, chosen action, and next verification. Profitable break_warning is normally handled by protecting profit first: tighten trailing stop or reduce only if the warning is confirmed, persistent, or below stop/invalidation; do not add until repaired.",
+        "- A trend decision may result in no order, but it may not result in vague observation. No order must have a machine-readable blocker such as data_quality, price_deviation, trend_not_confirmed, t1_unavailable, cash, lot_size, limit_price, risk_reward, market_state, or break_warning_ambiguous. Generic caution is not a blocker.",
+        "- Include rotationDecision when the loop verification asks for it: sell_only, replace, hold, buy_only, or blocked, with concrete sell candidates, buy candidates, replacement pairs, and blockers.",
+        "- If a planned paper trade is not executable now, record the exact blocking rule or missing data in actionTaken/riskAssessment and, when useful, persist a structured workshop memory with code, direction, trigger, quantity or target cash, invalidation rule, and next verification run.",
+      ].join("\n")
+    : "";
+  const metadata = asRecord(input.loopSpec.metadata);
+  const delivery = asRecord(metadata.delivery);
+  const deliveryPlatform =
+    typeof delivery.platform === "string" ? delivery.platform : null;
+  const recipientName =
+    typeof delivery.recipientName === "string"
+      ? delivery.recipientName.trim()
+      : "";
+  const mandatoryDeliveryRule =
+    deliveryPlatform === "wechat_desktop" && recipientName
+      ? externalWritesAllowed
+        ? [
+            "Mandatory delivery step:",
+            `- This loop is not complete until you call wechatDesktopSendMessage with recipientName exactly "${recipientName}".`,
+            "- First collect or generate the requested content, then send that final content through desktop WeChat.",
+            "- Do not stop after searching, browsing, or drafting. Search results are only context for the final WeChat message.",
+            "- In the structured output, include a deliver/verify reasoning step that says whether the WeChat send tool returned success.",
+          ].join("\n")
+        : [
+            "Delivery is requested, but external writes are not allowed for this loop.",
+            `- Prepare the message for WeChat recipient "${recipientName}" as a suggested action requiring confirmation.`,
+            "- Do not call wechatDesktopSendMessage.",
+          ].join("\n")
+      : "";
+  const retryContext = input.attemptContext?.previousFeedback
+    ? [
+        "Retry context:",
+        asPrettyJson({
+          attemptNumber: input.attemptContext.attemptNumber,
+          maxAttempts: input.attemptContext.maxAttempts,
+          previousFeedback: input.attemptContext.previousFeedback,
+          previousResult: input.attemptContext.previousResult,
+        }),
+        "Use this feedback as an observation from the verifier/checker. Fix the missing or incorrect parts before finishing.",
+      ].join("\n")
+    : "";
+  const requiredFieldOutputRule = buildRequiredFieldOutputRule(
+    stringArray(asRecord(input.loopSpec.verification).requiredFields),
+  );
+  const requiredSourceToolRule = buildRequiredSourceToolRule(
+    stringArray(asRecord(input.loopSpec.verification).requiredSources),
+  );
+  const workshopSkillRule = buildWorkshopSkillRule({
+    workshopContext: input.workshopContext,
+    loopName: input.loop.name,
+  });
+  const workshopContextText = input.workshopContext
+    ? [
+        "Workshop context:",
+        asPrettyJson({
+          workshop: input.workshopContext.workshop,
+          boundaryPolicy: input.workshopContext.boundaryPolicy,
+          sources: input.workshopContext.sources,
+          memoryContext: input.workshopContext.memoryContext,
+          memories: input.workshopContext.memories,
+          directives: input.workshopContext.directives,
+          recentEvents: input.workshopContext.recentEvents,
+          compacted: input.workshopContext.compacted,
+          originalChars: input.workshopContext.originalChars,
+          compactedChars: input.workshopContext.compactedChars,
+          maxChars: input.workshopContext.maxChars,
+          omittedSections: input.workshopContext.omittedSections,
+        }),
+      ].join("\n")
+    : "Workshop context:\nNo workshop context is attached to this loop.";
+  const workshopExecutionRules = input.workshopContext
+    ? [
+        "- Treat Workshop context as durable background for this loop.",
+        "- Workshop sources and memories are default context; the Loop spec remains the task-specific contract.",
+        "- If Workshop context conflicts with the Loop spec, prefer the Loop spec for task details but obey the stricter safety or external-action boundary.",
+        "- Persistent Workshop directives are owner instructions for this loop. Respect them unless they conflict with explicit Loop verification or safety policy.",
+        "- Treat memoryContext as the self-evolving control-state estimate. Candidate memories are not default truth until activated or verified.",
+        "- Use workshopSearchMemory for narrower recall, workshopGetMemoryEvidence before relying on recalled memory for high-impact decisions, and workshopReviewMemory to mark memories verified, weakened, or dismissed after outcome review.",
+        "- Write new reusable workshop experience as active memory by default. Use candidate only for owner facts, weak evidence, or information that should wait for stewardship.",
+        "- If a recalled memory has no resolvable evidence and the loop action is high impact, treat it as a hypothesis and verify with current sources before acting.",
+        "- Prefer durable Workshop memory over owner notifications for reusable findings, preferences, boundaries, strategy rules, data-source lessons, and recurring mistakes.",
+        "- Do not create Workshop outbox drafts for routine summaries, completed checks, reusable findings, or status updates. Outbox drafts require notifyReason and whyNow, and should be limited to decisions, approvals, replies, owner-requested notices, or urgent risks.",
+        "- External writes must satisfy both the Loop approval/action policy and the Workshop boundary policy. If uncertain, return a suggested action requiring confirmation.",
+      ].join("\n")
+    : "";
+
+  return `You are executing an Zhiyu Loop Engineering loop.
+
+Output language: ${outputLanguage}
+
+Loop name:
+${input.loop.name}
+
+Loop goal:
+${input.loop.goal}
+
+Loop spec:
+${asPrettyJson(input.loopSpec)}
+
+Current durable state:
+${asPrettyJson(input.contextWindow.durableState)}
+
+Context window:
+${asPrettyJson({
+  compacted: input.contextWindow.compacted,
+  originalChars: input.contextWindow.originalChars,
+  compactedChars: input.contextWindow.compactedChars,
+  maxChars: input.contextWindow.maxChars,
+  omittedStateKeys: input.contextWindow.omittedStateKeys,
+})}
+
+${workshopContextText}
+
+Execution budget:
+${asPrettyJson({
+  maxToolCalls: input.maxToolCalls,
+})}
+
+Current execution time:
+${asPrettyJson(currentTime)}
+
+${retryContext}
+
+Execution workspace:
+${input.sessionDir}
+
+Execution rules:
+- Use a Codex-style model/tool/observation loop: decide the next action, call tools when needed, read tool results as observations, then continue until the loop success criteria are satisfied or a blocker is explicit.
+- Keep tool use within the execution budget. If the budget is not enough, stop and report the concrete blocker instead of looping.
+- Before finishing, verify the result against the loop spec verification section and the mandatory delivery rule, if present.
+- Stop only when you can produce the final <structured-output> JSON, or when you must report a concrete blocker.
+- Treat Current execution time as the authoritative source for today's date, weekday, and timezone. If a report title or summary includes a date or weekday, use currentTime.localDateWithWeekday exactly; do not infer or guess the weekday from memory.
+- Collect context using the loop spec context sources when tools are available.
+${externalWriteRule}
+${paperTradingRule}
+${mandatoryDeliveryRule}
+${workshopExecutionRules}
+${workshopSkillRule}
+${requiredFieldOutputRule}
+${requiredSourceToolRule}
+- You may read, analyze, summarize, and create internal notes/insights only when allowed by the action policy.
+- Produce a concise final answer plus a <structured-output> JSON block.
+
+The <structured-output> JSON should include:
+{
+  "summary": "short result summary",
+  "outcome": "what changed or what was learned",
+  "riskAssessment": "risk assessment, trade-off, or why no risky action was taken",
+  "actionTaken": "the concrete action taken, or 'no operation' with the reason",
+  "reasoningChain": [
+    {
+      "summary": "step summary",
+      "description": "what was checked",
+      "sourceType": "insight|memory|connector|file|tool|system",
+      "sourceLabel": "source name",
+      "stepType": "input|collect|analyze|generate|deliver|verify"
+    }
+  ],
+  "suggestedActions": [
+    {
+      "type": "custom",
+      "label": "action label",
+      "content": "draft or next step",
+      "requiresConfirmation": true
+    }
+  ]
+}
+
+Now execute the loop once.`;
+}
+
+function messageText(message: AgentMessage): string {
+  if (message.type !== "text") return "";
+  return typeof message.content === "string" ? message.content : "";
+}
+
+function normalizeOptionalEnv(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function parsePositiveIntEnv(name: string, fallback: number) {
+  const value = Number.parseInt(process.env[name] ?? "", 10);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function getLoopAgentEnvConfig() {
+  return {
+    apiKey: normalizeOptionalEnv(
+      process.env.ANTHROPIC_API_KEY ??
+        process.env.ANTHROPIC_AUTH_TOKEN ??
+        process.env.LLM_API_KEY,
+    ),
+    baseUrl: normalizeOptionalEnv(
+      process.env.ANTHROPIC_BASE_URL ?? process.env.LLM_BASE_URL,
+    ),
+    model: normalizeOptionalEnv(
+      process.env.ANTHROPIC_MODEL ?? process.env.LLM_MODEL,
+    ),
+  };
+}
+
+export async function executeNativeLoopAgent(
+  input: ExecuteNativeLoopAgentInput,
+): Promise<JobExecutionResult> {
+  const startedAt = Date.now();
+  const userSettings = await getUserInsightSettings(input.userId);
+  const loopSpec = extractLoopSpec(input.loop, input.previousState);
+  const contextWindow = prepareLoopContextWindow({
+    state: input.previousState,
+    loopSpec,
+  });
+  const workshopContext = await loadWorkshopContextForLoop({
+    userId: input.userId,
+    loop: input.loop,
+  });
+  const effectiveLoopSpec = workshopContext
+    ? parseLoopSpec({
+        ...loopSpec,
+        actions: workshopContext.actionPolicy,
+        approval: workshopContext.approvalPolicy,
+        metadata: {
+          ...loopSpec.metadata,
+          workshopBoundary: workshopContext.boundaryMetadata,
+        },
+      })
+    : loopSpec;
+  const maxToolCalls = parsePositiveIntEnv("LOOP_MAX_TOOL_CALLS", 40);
+  const agentAbortController = input.abortController ?? new AbortController();
+  const sessionId = `loop-${input.loop.id}`;
+  const sessionDir = join(
+    getAppDir(),
+    "sessions",
+    "loops",
+    input.loop.id,
+    input.runId,
+  );
+  mkdirSync(sessionDir, { recursive: true });
+  mkdirSync(join(sessionDir, "temp"), { recursive: true });
+
+  const userAnthropicConfig = await getUserLlmProviderConfig({
+    userId: input.userId,
+    providerType: "anthropic_compatible",
+  });
+  const envAnthropicConfig = getLoopAgentEnvConfig();
+  const agentBaseUrl =
+    userAnthropicConfig?.baseUrl ??
+    envAnthropicConfig.baseUrl ??
+    AI_PROXY_BASE_URL;
+  const agentModel =
+    userAnthropicConfig?.model ?? envAnthropicConfig.model ?? DEFAULT_AI_MODEL;
+  const agent = createClaudeAgent({
+    provider: "claude",
+    baseUrl: agentBaseUrl,
+    apiKey: userAnthropicConfig?.apiKey ?? envAnthropicConfig.apiKey,
+    model: agentModel,
+  });
+
+  const userType = await getUserTypeForService(input.userId);
+  const workshopMcpServer = workshopContext
+    ? createWorkshopMcpServer({
+        workshop: workshopContext.workshop,
+        workshopId: workshopContext.workshop.id,
+        loopId: input.loop.id,
+        loopRunId: input.runId,
+      })
+    : null;
+  const prompt = buildNativeLoopPrompt({
+    loop: input.loop,
+    loopSpec: effectiveLoopSpec,
+    contextWindow,
+    workshopContext: workshopContext?.promptContext ?? null,
+    sessionDir,
+    language: userSettings?.language ?? null,
+    maxToolCalls,
+    attemptContext: input.attemptContext,
+  });
+  const traceEvents: ExecutionTraceEvent[] = [
+    {
+      type: "task_received",
+      title: "Native loop received",
+      detail: input.loop.name,
+      timestamp: new Date().toISOString(),
+      metadata: {
+        loopId: input.loop.id,
+        runId: input.runId,
+        triggerType: input.loop.triggerConfig?.type,
+        attemptNumber: input.attemptContext?.attemptNumber ?? 1,
+        maxAttempts: input.attemptContext?.maxAttempts ?? 1,
+      },
+    },
+    ...(input.attemptContext?.previousFeedback
+      ? [
+          {
+            type: "task_received" as const,
+            title: "Retry feedback received",
+            detail: compactJson(input.attemptContext.previousFeedback, 240),
+            status: "completed" as const,
+            timestamp: new Date().toISOString(),
+            metadata: {
+              attemptNumber: input.attemptContext.attemptNumber,
+              maxAttempts: input.attemptContext.maxAttempts,
+              previousResult: input.attemptContext.previousResult,
+            },
+          },
+        ]
+      : []),
+    {
+      type: "workspace_prepared",
+      title: "Workspace prepared",
+      detail: sessionDir,
+      status: "completed",
+      timestamp: new Date().toISOString(),
+      metadata: {
+        sessionDir,
+      },
+    },
+    {
+      type: "agent_configured",
+      title: "Agent configured",
+      detail: agentModel,
+      status: "completed",
+      timestamp: new Date().toISOString(),
+      metadata: {
+        provider: "claude",
+        model: agentModel,
+        baseUrl: redactedBaseUrl(agentBaseUrl),
+        userProviderConfigured: Boolean(userAnthropicConfig),
+      },
+    },
+    {
+      type: "context_prepared",
+      title: contextWindow.compacted
+        ? "Loop context compacted"
+        : "Loop context prepared",
+      detail: contextWindow.compacted
+        ? `Compacted durable state from ${contextWindow.originalChars} to ${contextWindow.compactedChars} chars`
+        : `Durable state fits context budget (${contextWindow.originalChars} chars)`,
+      status: "completed",
+      timestamp: new Date().toISOString(),
+      metadata: {
+        compacted: contextWindow.compacted,
+        originalChars: contextWindow.originalChars,
+        compactedChars: contextWindow.compactedChars,
+        maxChars: contextWindow.maxChars,
+        omittedStateKeys: contextWindow.omittedStateKeys,
+      },
+    },
+    ...(workshopContext
+      ? [
+          {
+            type: "context_prepared" as const,
+            title: workshopContext.promptContext.compacted
+              ? "Workshop context compacted"
+              : "Workshop context prepared",
+            detail: `Workshop context loaded for ${workshopContext.promptContext.workshop.name}`,
+            status: "completed" as const,
+            timestamp: new Date().toISOString(),
+            metadata: {
+              workshopId: workshopContext.promptContext.workshop.id,
+              sourceCount: workshopContext.promptContext.sources.length,
+              memoryCount: workshopContext.promptContext.memories.length,
+              directiveCount: workshopContext.promptContext.directives.length,
+              recentEventCount:
+                workshopContext.promptContext.recentEvents.length,
+              compacted: workshopContext.promptContext.compacted,
+              originalChars: workshopContext.promptContext.originalChars,
+              compactedChars: workshopContext.promptContext.compactedChars,
+              maxChars: workshopContext.promptContext.maxChars,
+              omittedSections: workshopContext.promptContext.omittedSections,
+              boundary: workshopContext.boundaryMetadata,
+            },
+          },
+        ]
+      : []),
+    {
+      type: "budget_configured",
+      title: "Loop execution budget configured",
+      detail: `Max tool calls: ${maxToolCalls}`,
+      status: "completed",
+      timestamp: new Date().toISOString(),
+      metadata: {
+        maxToolCalls,
+      },
+    },
+    {
+      type: "prompt_built",
+      title: "Loop prompt built",
+      detail: loopSpec.goal,
+      status: "completed",
+      timestamp: new Date().toISOString(),
+      metadata: {
+        approvalExternalWrites: effectiveLoopSpec.approval.externalWrites,
+        allowedActionCount: effectiveLoopSpec.actions.allowed.length,
+        trigger: effectiveLoopSpec.trigger,
+        workshopId: workshopContext?.promptContext.workshop.id ?? null,
+        workshopBoundary: workshopContext?.boundaryMetadata ?? null,
+      },
+    },
+  ];
+
+  let lastTextContent = "";
+  let hasError = false;
+  let errorMessage: string | undefined;
+  let toolCallCount = 0;
+  const toolGateDecisions: LoopToolGateDecision[] = [];
+
+  try {
+    console.info("[LoopNativeExecutor] starting native agent", {
+      loopId: input.loop.id,
+      runId: input.runId,
+      userId: input.userId,
+      sessionDir,
+      model: agentModel,
+      baseUrl: agentBaseUrl,
+      workshopId: workshopContext?.promptContext.workshop.id ?? null,
+      hasApiKey: Boolean(
+        userAnthropicConfig?.apiKey ?? envAnthropicConfig.apiKey,
+      ),
+      userType,
+    });
+
+    const generator = agent.run(prompt, {
+      sessionId,
+      cwd: sessionDir,
+      taskId: `loops/${input.loop.id}/${input.runId}`,
+      conversation: [],
+      permissionMode: "default",
+      stream: false,
+      excludeTools: ["createLoopTask"],
+      ...(workshopMcpServer
+        ? {
+            customMcpServers: {
+              "workshop-tools": workshopMcpServer,
+            },
+            allowedTools: workshopContext
+              ? resolveWorkshopSdkAllowedTools(
+                  workshopContext.workshop,
+                  LOOP_WORKSHOP_ALLOWED_TOOLS,
+                )
+              : LOOP_WORKSHOP_ALLOWED_TOOLS,
+          }
+        : {}),
+      onPermissionRequest: createLoopToolPermissionHandler({
+        actionPolicy: workshopContext?.actionPolicy ?? input.loop.actionPolicy,
+        approvalPolicy:
+          workshopContext?.approvalPolicy ?? input.loop.approvalPolicy,
+        onDecision: (decision) => {
+          toolGateDecisions.push(decision);
+          traceEvents.push({
+            type: "permission_decision",
+            title:
+              decision.decision === "allow"
+                ? "Tool permission allowed"
+                : decision.decision === "deny"
+                  ? "Tool permission denied"
+                  : "Tool permission requires approval",
+            detail: decision.reason ?? decision.message ?? decision.actionName,
+            toolName: decision.actionName,
+            toolUseId: decision.toolUseID,
+            status:
+              decision.decision === "deny"
+                ? "error"
+                : decision.decision === "require_approval"
+                  ? "running"
+                  : "completed",
+            timestamp: new Date().toISOString(),
+            metadata: {
+              decision: decision.decision,
+              capability: decision.capability,
+            },
+          });
+        },
+      }),
+      session: {
+        user: { id: input.userId, type: userType },
+        platform: "loop",
+        expires: new Date(Date.now() + 3600000),
+      } as any,
+      authToken: userAnthropicConfig?.apiKey,
+      skillsConfig: {
+        enabled: true,
+        userDirEnabled: true,
+        appDirEnabled: false,
+      },
+      aiSoulPrompt: userSettings?.aiSoulPrompt ?? null,
+      language: userSettings?.language ?? null,
+      timezone:
+        typeof input.loop.triggerConfig?.timezone === "string"
+          ? input.loop.triggerConfig.timezone
+          : null,
+      abortController: agentAbortController,
+    });
+
+    for await (const message of generator) {
+      if (message.type === "text") {
+        lastTextContent = messageText(message);
+        if (lastTextContent.trim()) {
+          traceEvents.push({
+            type: "model_text",
+            title: "Agent response received",
+            detail: compactJson(lastTextContent, 240),
+            status: "completed",
+            timestamp: new Date().toISOString(),
+          });
+        }
+      } else if (message.type === "tool_use") {
+        toolCallCount += 1;
+        traceEvents.push({
+          type: "tool_used",
+          title: message.name ?? "Tool used",
+          toolName: message.name,
+          toolUseId: message.id,
+          detail: compactJson(message.input),
+          status: "running",
+          timestamp: new Date().toISOString(),
+        });
+        if (toolCallCount > maxToolCalls) {
+          hasError = true;
+          errorMessage = `Loop execution budget exceeded: ${toolCallCount} tool calls used, max ${maxToolCalls}`;
+          traceEvents.push({
+            type: "budget_exceeded",
+            title: "Loop execution budget exceeded",
+            detail: errorMessage,
+            status: "error",
+            timestamp: new Date().toISOString(),
+            metadata: {
+              toolCallCount,
+              maxToolCalls,
+            },
+          });
+          agentAbortController.abort(errorMessage);
+          break;
+        }
+      } else if (message.type === "tool_result") {
+        traceEvents.push({
+          type: "tool_result",
+          title: message.isError ? "Tool error" : "Tool completed",
+          detail: compactJson(message.output),
+          toolUseId: message.toolUseId,
+          status: message.isError ? "error" : "completed",
+          timestamp: new Date().toISOString(),
+        });
+      } else if (message.type === "error") {
+        hasError = true;
+        errorMessage = message.message || "Native loop agent error";
+        traceEvents.push({
+          type: "error",
+          title: "Agent error",
+          detail: errorMessage,
+          status: "error",
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+  } catch (error) {
+    hasError = true;
+    errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("[LoopNativeExecutor] agent execution threw", {
+      loopId: input.loop.id,
+      runId: input.runId,
+      userId: input.userId,
+      sessionDir,
+      errorName: error instanceof Error ? error.name : typeof error,
+      message: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    traceEvents.push({
+      type: "error",
+      title: "Agent execution threw",
+      detail: errorMessage,
+      status: "error",
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  traceEvents.push({
+    type: hasError ? "error" : "completed",
+    title: hasError ? "Native loop failed" : "Native loop completed",
+    detail: hasError ? errorMessage : `Used ${toolCallCount} tool calls`,
+    status: hasError ? "error" : "completed",
+    timestamp: new Date().toISOString(),
+    durationMs: Date.now() - startedAt,
+  });
+
+  const { data: parsedStructuredData, cleanText } =
+    parseStructuredOutput(lastTextContent);
+  const structuredReport = buildStructuredExecutionReport({
+    structuredData: parsedStructuredData,
+    cleanText,
+    rawText: lastTextContent,
+    taskText: input.loop.goal,
+    requiredFields: stringArray(asRecord(effectiveLoopSpec.verification).requiredFields),
+    traceEvents,
+    sessionFiles: [],
+    hasError,
+    errorMessage,
+    language: userSettings?.language ?? null,
+  });
+
+  const output =
+    stripMalformedToolCalls(cleanText).trim() ||
+    structuredReport.summary ||
+    (hasError ? errorMessage : "Loop completed") ||
+    "Loop completed";
+
+  return {
+    status: hasError ? "error" : "success",
+    output,
+    error: hasError ? errorMessage : undefined,
+    result: {
+      executionMode: "native_agent",
+      loopId: input.loop.id,
+      runId: input.runId,
+      sessionDir,
+      executionTrace: {
+        events: traceEvents,
+        toolCallCount,
+        maxToolCalls,
+        budgetExceeded: traceEvents.some(
+          (event) => event.type === "budget_exceeded",
+        ),
+        failedToolCallCount: traceEvents.filter(
+          (event) => event.type === "tool_result" && event.status === "error",
+        ).length,
+        permissionDecisionCount: toolGateDecisions.length,
+        durationMs: Date.now() - startedAt,
+      },
+      toolGate: summarizeLoopToolGate(toolGateDecisions),
+      structuredReport,
+    },
+    duration: Date.now() - startedAt,
+  };
+}

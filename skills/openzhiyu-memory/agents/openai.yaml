@@ -1,0 +1,4 @@
+interface:
+  display_name: "Zhiyu Memory"
+  short_description: "Recall and write scoped memory with evidence and auditability"
+  default_prompt: "Use $openzhiyu-memory to recall the right scoped context, verify evidence, and write back only reusable memory."

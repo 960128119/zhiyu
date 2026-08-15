@@ -1,0 +1,277 @@
+apiVersion: openzhiyu.ai/v1alpha1
+kind: Workshop
+metadata:
+  name: watchlist-hunter
+  title: 自选股猎手
+  labels:
+    openzhiyu.ai/domain: quant
+    openzhiyu.ai/role: watchlist-selector
+    openzhiyu.ai/risk: watchlist-control
+  annotations:
+    openzhiyu.ai/schema-status: draft
+    openzhiyu.ai/source: watchlist-selection-control
+spec:
+  mission: >
+    发现候选、维护自选股池，输出可审计调整提案。
+  role: watchlist_selector
+  autonomyLevel: auto
+
+  control:
+    object: paper_trading_watchlist
+    objective: maintain_a_small_explainable_auditable_candidate_set
+    mode: internal_watchlist_control
+    feedback:
+      - market_candidate_discovery
+      - current_watchlist_review
+      - watchlist_change_proposals
+      - proposal_application_results
+      - data_quality_warnings
+      - workshop_memory
+    invariants:
+      - 只维护内部模拟盘使用的自选股池和候选池。
+      - 不做任何模拟盘或真实盘交易。
+      - 不连接真实券商。
+      - 不操作真实资金。
+      - 不发送对外交易指令。
+      - 候选发现是观测，不等于加入交易池。
+      - 自选股调整必须通过 quantPaperProposeWatchlistChange 形成可审计提案。
+      - 数据源降级必须显式暴露 provider、detail、warning。
+
+  modelConfig:
+    role: watchlist_selector
+    primarySkills:
+      - watchlist-selection-control
+    memoryRecallProfiles:
+      - id: watchlist-selection
+        matchTerms:
+          - candidate
+          - watchlist
+          - promotion
+          - replacement
+          - "\u5019\u9009\u80a1"
+          - "\u81ea\u9009\u80a1"
+          - "\u5019\u9009\u6c60"
+          - "\u66ff\u6362"
+        memoryTypeBoosts:
+          plan: 45
+          fact: 20
+          insight: 10
+          boundary: 25
+    allowedTools:
+      - quantMarketDiscoverCandidates
+      - quantPaperGetWatchlist
+      - quantPaperGetAccount
+      - quantRuleEvaluate
+      - quantPaperProposeWatchlistChange
+      - aStockTrendSystem
+      - aStockSignals
+      - aStockMarketMood
+      - workshopReadMemory
+      - workshopSearchMemory
+      - workshopRecordMemoryRecallFeedback
+      - workshopGetMemoryEvidence
+      - workshopLogEvent
+      - workshopWriteMemory
+    disallowedTools:
+      - quantPaperPlaceOrder
+      - quantPaperCancelOrder
+      - realBrokerOrder
+      - externalPayment
+      - wechatSendMessage
+      - outboxSend
+    observationTools:
+      - quantPaperGetWatchlist
+      - quantPaperGetAccount
+      - quantMarketDiscoverCandidates
+      - quantRuleEvaluate
+      - aStockTrendSystem
+      - aStockSignals
+      - aStockMarketMood
+    loopSkillMap:
+      交易日收盘后自选股筛选: watchlist-selection-control
+    explorationPolicy:
+      minThemesPerRun: 2
+      promotionBias: promote when evidence is good enough for learning, not only when certainty is perfect
+      requireConcreteProposalWhenBetterReplacementFound: true
+      noProposalRequiresBlocker: true
+
+  boundaryPolicy:
+    mode: auto
+    externalMessages: blocked
+    deniedPrecedence: true
+    hardDeniedActions:
+      - bash
+      - shell
+      - exec
+      - Bash
+      - Edit
+      - Write
+      - rm
+      - delete
+      - remove
+      - drop
+      - truncate
+      - placeOrder
+      - executeOrder
+      - submitOrder
+      - buy
+      - sell
+      - trade
+      - makePayment
+      - payInvoice
+      - transferMoney
+      - wireTransfer
+      - wechatDesktopSendMessage
+      - douyinPublishApprovedDraft
+      - quantPaperPlaceOrder
+      - quantPaperCancelOrder
+      - deleteLoopTask
+    customInstructions: |
+      这是自选股猎手车间。它维护候选池和核心/交易自选股池，为操盘交易员提供可交易学习样本。
+      允许读取当前自选股、扫描市场候选、读取趋势/信号/市场情绪，并在证据足够时调用 quantPaperProposeWatchlistChange 生成可审计的自选股调整提案。
+      禁止任何模拟盘下单、撤单、真实交易、真实资金划转、真实券商连接或对外发送交易指令。
+      不得调用 quantPaperPlaceOrder 或 quantPaperCancelOrder。
+      每次不提案时必须写清楚具体 blocker，不能只写“维持现状”。
+      对外消息默认禁止。
+
+  sources:
+    - name: quantPaperGetWatchlist
+      type: connector
+      purpose: 读取当前模拟盘自选股和最新报价快照。
+    - name: quantMarketDiscoverCandidates
+      type: connector
+      purpose: 按主题或风格方向扫描市场候选，形成候选池观测。
+    - name: quantPaperProposeWatchlistChange
+      type: connector
+      purpose: 创建可审计的自选股调整提案，校验通过后应用。
+    - name: aStockTrendSystem
+      type: connector
+      purpose: 读取自选股和候选股趋势结构、相对强弱和风控状态。
+    - name: aStockSignals
+      type: connector
+      purpose: 读取资金、信号和候选辅助证据。
+    - name: aStockMarketMood
+      type: connector
+      purpose: 读取市场情绪、行业热度、涨跌停和风险背景。
+    - name: watchlistMemory
+      type: memory
+      query: 自选股 猎手 候选 提案 blocker 学习
+
+  loops:
+    - name: post-close-watchlist-selection
+      title: 交易日收盘后自选股筛选
+      description: 交易日 16:20 扫描候选、复核自选股，并在证据足够时自动应用自选股调整。
+      skill: watchlist-selection-control
+      status: active
+      trigger:
+        type: cron
+        expression: "20 16 * * 1-5"
+        timezone: Asia/Shanghai
+        tradingCalendar: a-share
+        tradingDayOnly: true
+      goal: |
+        维护候选池和核心/交易自选股池，为操盘交易员提供可交易学习样本。
+        每次至少扫描两个主题或风格方向，调用 quantMarketDiscoverCandidates。
+        发现明显优于现有弱标的的候选时，必须调用 quantPaperProposeWatchlistChange。
+        如果连续维持现状，必须写清楚阻止提案的具体原因：估值、趋势、流动性、数据质量、持仓保护或证据不足。
+      context:
+        sources:
+          - type: connector
+            name: quantPaperGetWatchlist
+          - type: connector
+            name: quantMarketDiscoverCandidates
+          - type: connector
+            name: aStockTrendSystem
+          - type: connector
+            name: aStockSignals
+          - type: connector
+            name: aStockMarketMood
+          - type: memory
+            name: watchlistMemory
+            query: 自选股 猎手 候选 提案 blocker 学习
+        instructions: |
+          不要只复述当前自选股；每次必须做候选发现。
+          候选不是立刻交易，但高质量候选要通过 quantPaperProposeWatchlistChange 晋升到 active core/trading watchlist。
+          保持持仓和未成交委托标的受保护，不从行情跟踪宇宙移除。
+          如果 quantMarketDiscoverCandidates 返回降级、样本或不可用数据，必须记录 provider/detail/warning 并降低提案强度。
+      actionPolicy:
+        allowed:
+          - quantMarketDiscoverCandidates
+          - quantPaperGetWatchlist
+          - quantPaperGetAccount
+          - quantRuleEvaluate
+          - quantPaperProposeWatchlistChange
+          - aStockTrendSystem
+          - aStockSignals
+          - aStockMarketMood
+          - workshopReadMemory
+          - workshopSearchMemory
+          - workshopRecordMemoryRecallFeedback
+          - workshopGetMemoryEvidence
+          - workshopLogEvent
+          - workshopWriteMemory
+        requiresApproval: []
+        denied:
+          - quantPaperPlaceOrder
+          - quantPaperCancelOrder
+          - realBrokerOrder
+          - externalPayment
+          - wechatSendMessage
+          - outboxSend
+      verification:
+        type: structured_check
+        requiredFields:
+          - marketScanSummary
+          - currentWatchlistReview
+          - candidatePool
+          - watchlistDecision
+          - proposalOrBlocker
+        requiredSources:
+          - quantPaperGetWatchlist
+          - quantPaperGetAccount
+          - quantMarketDiscoverCandidates
+          - quantRuleEvaluate
+        successCriteria:
+          - 每次至少调用 quantMarketDiscoverCandidates 做候选发现
+          - 有明确 add/remove/replace 时调用 quantPaperProposeWatchlistChange
+          - 无提案时记录具体 blocker，不允许只写维持现状
+          - 不调用任何模拟盘下单、撤单或真实交易工具
+      approvalPolicy:
+        defaultMode: allow
+        externalWrites: deny
+      retryPolicy:
+        maxAttempts: 2
+        onFailure: summarize_and_block
+      escalationPolicy:
+        onBlocked: notify_user
+        onNeedsApproval: notify_user
+
+  creationReport:
+    title: 自选股猎手车间声明
+    body: |
+      创建一个内部自选股猎手车间。
+      被控对象是内部模拟盘使用的候选池和核心/交易自选股池。
+      观测输入包括当前自选股、市场候选、趋势系统、资金信号、市场情绪和车间记忆。
+      控制动作包括读取自选股、扫描候选、写入车间事件、写入车间记忆、生成可审计自选股调整提案。
+      禁止模拟盘下单、撤单、真实交易、真实资金划转、真实券商连接和对外发送交易指令。
+      已配置交易日收盘后自选股筛选 Loop。
+      每轮必须暴露市场扫描、自选股复核、候选池、调整决策、提案或 blocker。
+    requiredEvents:
+      - 车间已创建
+      - 自选股猎手候选发现与提案闭环已配置
+    requiredFields:
+      - marketScanSummary
+      - currentWatchlistReview
+      - candidatePool
+      - watchlistDecision
+      - proposalOrBlocker
+
+  applyPolicy:
+    idempotency:
+      key: metadata.name
+      loopKey: loops.name
+      behavior: upsert
+    dryRunSupported: true
+    diffSupported: true
+    versionSnapshot: true
+    auditEvent: true

@@ -1,0 +1,290 @@
+apiVersion: openzhiyu.ai/v1alpha1
+kind: Workshop
+metadata:
+  name: harness-quality-steward
+  title: "Harness 质量管家"
+  labels:
+    openzhiyu.ai/domain: platform
+    openzhiyu.ai/role: harness-quality-steward
+    openzhiyu.ai/risk: proposal-only-quality-control
+
+spec:
+  mission: >
+    Observe versioned Work Harness behavior, diagnose recurring evidence-backed
+    failures, run isolated matched evaluations, and submit narrow owner-reviewable
+    proposals without applying or publishing any production change.
+  role: harness_quality_steward
+  autonomyLevel: auto
+
+  control:
+    object: work_harness_quality
+    objective: reduce_repeatable_failures_without_weakening_boundaries
+    mode: observe_diagnose_evaluate_propose
+    feedback:
+      - work_run_evidence_bundles
+      - work_run_diagnostics
+      - evaluation_campaigns
+      - evolution_verdicts
+      - owner_review_outcomes
+    invariants:
+      - Quality Work cannot inspect raw cross-Work memory or raw event bodies.
+      - Quality Work cannot approve, materialize, publish, or apply its proposals.
+      - Quality Work cannot target itself with a Harness proposal.
+      - Quality Work cannot change permissions, grants, denied precedence, audit, credentials, real-world actions, or protected verifiers.
+      - Candidate evaluation cannot send messages, use real funds, delete data, pay, or change access.
+      - Hard-invariant failures dominate all task and cost scores.
+      - Insufficient or partial evidence produces an observation, not a speculative change.
+
+  modelConfig:
+    role: harness_quality_steward
+    primarySkills:
+      - harness-quality-control
+    allowedTools:
+      - workshopInspectHarnessQuality
+      - workshopCreateHarnessProposal
+      - workshopCreateHarnessEvaluationCampaign
+      - workshopRunHarnessEvaluation
+      - workshopLogEvent
+      - workshopReadMemory
+      - workshopSearchMemory
+      - workshopWriteMemory
+    disallowedTools:
+      - workshopProposeAgentChange
+      - workshopReviewMemory
+      - workshopCreateLoopTask
+      - workshopCreateOutboxDraft
+      - wechatCreateReplyDraft
+      - wechatDesktopSendMessage
+      - quantPaperPlaceOrder
+      - quantPaperCancelOrder
+      - douyinPublishApprovedDraft
+      - deleteLoopTask
+    observationTools:
+      - workshopInspectHarnessQuality
+    loopSkillMap:
+      "每日 Harness 质量审计": harness-quality-control
+      "Harness 失败阈值复核": harness-quality-control
+    feedbackSignals:
+      - evidence_completeness
+      - recurring_failure_classes
+      - verifier_pass_rate
+      - hard_invariant_failures
+      - prediction_accuracy
+      - owner_review_outcomes
+
+  boundaryPolicy:
+    mode: auto
+    externalMessages: blocked
+    deniedPrecedence: true
+    hardDeniedActions:
+      - workshopProposeAgentChange
+      - workshopReviewMemory
+      - workshopCreateLoopTask
+      - workshopCreateOutboxDraft
+      - wechatCreateReplyDraft
+      - wechatDesktopSendMessage
+      - quantPaperPlaceOrder
+      - quantPaperCancelOrder
+      - douyinPublishApprovedDraft
+      - deleteLoopTask
+      - permission_change
+      - grant_change
+      - external_send
+      - real_funds
+      - payment
+      - delete
+      - harness_publish
+      - harness_apply
+    customInstructions: |
+      Operate at Harness Quality Work Level 1 only.
+      Read desensitized evidence, diagnose, evaluate isolated candidates, and propose.
+      Never approve, apply, publish, or expand any permission or external-action boundary.
+      Owner decisions and denied rules always take precedence.
+
+  sources:
+    - name: workshopInspectHarnessQuality
+      type: connector
+      purpose: Read target inventory and desensitized Harness evidence and control state.
+    - name: qualityMemory
+      type: memory
+      query: Harness quality baseline recurring failure proposal campaign verdict owner review
+
+  loops:
+    - name: daily-harness-quality-audit
+      title: "每日 Harness 质量审计"
+      description: Audit owned Works for recurring Harness failures and pending isolated evaluations.
+      skill: harness-quality-control
+      status: active
+      trigger:
+        type: cron
+        expression: "15 4 * * *"
+        timezone: Asia/Shanghai
+      goal: |
+        List owned Harness targets, inspect each target with recent evidence, and compare against this Work's prior checkpoint.
+        Separate incomplete observation from repeatable failure.
+        Submit a narrow Proposal v2 only when at least two independent verified Evidence Bundles support the same failure pattern, or when a deterministic configuration validation defect exists.
+        If an owner-materialized candidate has a pending campaign, run the isolated campaign and report its verdict.
+        Never approve, materialize, publish, or apply a change.
+      context:
+        sources:
+          - type: connector
+            name: workshopInspectHarnessQuality
+          - type: memory
+            name: qualityMemory
+            query: Harness quality baseline recurring failure proposal campaign verdict owner review
+        instructions: |
+          Start with workshopInspectHarnessQuality without targetWorkId to obtain target ids.
+          Inspect targets one at a time. Do not inspect this Harness Quality Work itself.
+          Do not infer a grant gap from denied counts.
+          Do not treat missing logs as a failure. Do not copy raw memory or event content.
+          Prefer one component type per proposal and numeric prediction thresholds.
+          Stop after proposal creation until the owner has approved and materialized a candidate.
+      actionPolicy:
+        allowed:
+          - workshopInspectHarnessQuality
+          - workshopCreateHarnessProposal
+          - workshopCreateHarnessEvaluationCampaign
+          - workshopRunHarnessEvaluation
+          - workshopLogEvent
+          - workshopReadMemory
+          - workshopSearchMemory
+          - workshopWriteMemory
+        requiresApproval: []
+        denied:
+          - workshopProposeAgentChange
+          - workshopReviewMemory
+          - workshopCreateLoopTask
+          - workshopCreateOutboxDraft
+          - wechatCreateReplyDraft
+          - wechatDesktopSendMessage
+          - quantPaperPlaceOrder
+          - quantPaperCancelOrder
+          - douyinPublishApprovedDraft
+          - deleteLoopTask
+      verification:
+        type: structured_check
+        protected: true
+        requiredFields:
+          - observationWindow
+          - targetCoverage
+          - evidenceCompleteness
+          - recurringFailurePatterns
+          - proposalsCreatedOrWithheld
+          - campaignVerdicts
+          - ownerActionsRequired
+          - nextCheckpoint
+        requiredSources:
+          - workshopInspectHarnessQuality
+        successCriteria:
+          - Every proposal cites independently verified target evidence.
+          - No proposal targets protected, observe-only, permission, grant, audit, or real-world-action controls.
+          - Partial evidence is reported as uncertainty.
+          - Every campaign is isolated and preserves hard-invariant priority.
+          - No production configuration was applied or published.
+      approvalPolicy:
+        defaultMode: allow
+        externalWrites: deny
+      retryPolicy:
+        maxAttempts: 2
+        onFailure: summarize_and_block
+      escalationPolicy:
+        onBlocked: notify_user
+        onNeedsApproval: notify_user
+
+    - name: harness-failure-threshold-review
+      title: "Harness 失败阈值复核"
+      description: Poll aggregate evidence and open a focused review only after a recurring failure threshold is met.
+      skill: harness-quality-control
+      status: active
+      trigger:
+        type: interval
+        minutes: 2880
+      goal: |
+        Inspect target inventory and recent complete Evidence Bundles.
+        Continue only when the same failure class appears in at least three complete bundles for one non-self target within seven days and no equivalent open proposal exists.
+        Build one focused Proposal v2 or record why the threshold did not justify a change.
+        Never modify evaluation suites, hidden holdouts, permissions, grants, protected components, or production Harness state.
+      context:
+        sources:
+          - type: connector
+            name: workshopInspectHarnessQuality
+          - type: memory
+            name: qualityMemory
+            query: threshold review equivalent open proposal previous checkpoint
+        instructions: |
+          This Loop implements threshold triggering by bounded polling because Loop triggers do not accept arbitrary event predicates.
+          Require three complete bundles in seven days with the same failure class.
+          Always choose a target from the non-self inventory returned by workshopInspectHarnessQuality.
+          Deduplicate against open proposals and prior checkpoints.
+          If the threshold is not met, write a compact checkpoint and stop.
+      actionPolicy:
+        allowed:
+          - workshopInspectHarnessQuality
+          - workshopCreateHarnessProposal
+          - workshopLogEvent
+          - workshopReadMemory
+          - workshopSearchMemory
+          - workshopWriteMemory
+        requiresApproval: []
+        denied:
+          - workshopCreateHarnessEvaluationCampaign
+          - workshopRunHarnessEvaluation
+          - workshopProposeAgentChange
+          - workshopReviewMemory
+          - workshopCreateLoopTask
+          - workshopCreateOutboxDraft
+          - wechatCreateReplyDraft
+          - wechatDesktopSendMessage
+          - quantPaperPlaceOrder
+          - quantPaperCancelOrder
+          - douyinPublishApprovedDraft
+          - deleteLoopTask
+      verification:
+        type: structured_check
+        protected: true
+        requiredFields:
+          - observationWindow
+          - targetWorkId
+          - thresholdEvidence
+          - duplicateProposalCheck
+          - actionTaken
+          - nextCheckpoint
+        requiredSources:
+          - workshopInspectHarnessQuality
+        successCriteria:
+          - A proposal is created only after the explicit threshold is met.
+          - The targetWorkId is not the Harness Quality Work itself.
+          - Equivalent open proposals are not duplicated.
+          - No evaluation or production action occurs in this focused review Loop.
+      approvalPolicy:
+        defaultMode: allow
+        externalWrites: deny
+      retryPolicy:
+        maxAttempts: 1
+        onFailure: summarize_and_block
+      escalationPolicy:
+        onBlocked: notify_user
+        onNeedsApproval: notify_user
+
+  creationReport:
+    title: "Harness 质量管家车间声明"
+    body: |
+      Create a proposal-only Harness Quality Work.
+      It reads desensitized evidence, evaluates isolated candidates, and submits owner-reviewable proposals.
+      It has no production publish, permission, grant, external-send, destructive, or real-funds capability.
+    requiredEvents:
+      - harness_quality_work_created
+    requiredFields:
+      - targetCoverage
+      - boundarySummary
+      - nextCheckpoint
+
+  applyPolicy:
+    idempotency:
+      key: metadata.name
+      loopKey: loops.name
+      behavior: upsert
+    dryRunSupported: true
+    diffSupported: true
+    versionSnapshot: true
+    auditEvent: true

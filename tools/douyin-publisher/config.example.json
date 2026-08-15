@@ -1,0 +1,6 @@
+{
+  "platform": "douyin",
+  "account_label": "default",
+  "session_dir": "sessions/default",
+  "notes": "Keep browser login state on the local machine. Do not store account passwords here."
+}
